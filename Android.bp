@@ -26,7 +26,7 @@ android_library {
     resource_dirs: ["res"],
 
     static_libs: [
-        "androidx-constraintlayout_constraintlayout-core",
+        "androidx-constraintlayout_constraintlayout-solver",
         "androidx-constraintlayout_constraintlayout",
         "androidx.lifecycle_lifecycle-extensions",
         "car-media-common",
