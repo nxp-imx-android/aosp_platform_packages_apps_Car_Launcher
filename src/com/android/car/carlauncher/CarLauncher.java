@@ -18,6 +18,7 @@ package com.android.car.carlauncher;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.car.user.CarUserManager.USER_LIFECYCLE_EVENT_TYPE_SWITCHING;
+import static android.car.user.CarUserManager.USER_LIFECYCLE_EVENT_TYPE_UNLOCKED;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 
 import android.app.ActivityManager;
@@ -38,6 +39,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.ViewGroup;
@@ -81,6 +83,7 @@ public class CarLauncher extends FragmentActivity {
             new AtomicReference<>();
 
     private ActivityManager mActivityManager;
+    private UserManager mUserManager;
     private CarUserManager mCarUserManager;
     private TaskViewManager mTaskViewManager;
 
@@ -91,6 +94,7 @@ public class CarLauncher extends FragmentActivity {
     private int mCarLauncherTaskId = INVALID_TASK_ID;
     private Set<HomeCardModule> mHomeCardModules;
 
+    private boolean mUserUnlocked;
     /** Set to {@code true} once we've logged that the Activity is fully drawn. */
     private boolean mIsReadyLogged;
 
@@ -179,11 +183,21 @@ public class CarLauncher extends FragmentActivity {
             Log.d(TAG, "UserLifecycleListener.onEvent: For User " + getUserId()
                     + ", received an event " + event);
         }
+        // When user-unlocked, if Maps isn't launched yet, then try to start it.
+        if (event.getEventType() == USER_LIFECYCLE_EVENT_TYPE_UNLOCKED
+                && getUserId() == event.getUserId()
+                && mTaskViewTaskId == INVALID_TASK_ID) {
+            mUserUnlocked = true;
+            startMapsInTaskView();
+            return;
+        }
 
         // When user-switching, onDestroy in the previous user's CarLauncher isn't called.
         // So tries to release the resource explicitly.
-        if (getUserId() == event.getPreviousUserId()) {
+        if (event.getEventType() == USER_LIFECYCLE_EVENT_TYPE_SWITCHING
+                && getUserId() == event.getPreviousUserId()) {
             release();
+            return;
         }
     };
 
@@ -225,6 +239,8 @@ public class CarLauncher extends FragmentActivity {
         mUseSmallCanvasOptimizedMap =
                 CarLauncherUtils.isSmallCanvasOptimizedMapIntentConfigured(this);
 
+        mUserManager = getSystemService(UserManager.class);
+
         Car.createCar(/* context= */ this, /* handler= */ null,
                 Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
                 (car, ready) -> {
@@ -234,8 +250,13 @@ public class CarLauncher extends FragmentActivity {
                         return;
                     }
                     setCarUserManager((CarUserManager) car.getCarManager(Car.CAR_USER_SERVICE));
+                    mUserUnlocked = mUserManager.isUserUnlocked();
+                    if (mUserUnlocked && mTaskViewTaskId == INVALID_TASK_ID) {
+                        startMapsInTaskView();
+                    }
                     // Only listen to user switching events.
                     UserLifecycleEventFilter filter = new UserLifecycleEventFilter.Builder()
+                            .addEventType(USER_LIFECYCLE_EVENT_TYPE_UNLOCKED)
                             .addEventType(USER_LIFECYCLE_EVENT_TYPE_SWITCHING).build();
                     mCarUserManager.addListener(getMainExecutor(), filter, mUserLifecycleListener);
                     CarActivityManager carAM = (CarActivityManager) car.getCarManager(
@@ -327,15 +348,22 @@ public class CarLauncher extends FragmentActivity {
 
     private void startMapsInTaskView() {
         if (mTaskView == null || !mTaskViewReady) {
+            if (DEBUG) Log.d(TAG, "Can't start Maps due to TaskView isn't ready.");
+            return;
+        }
+        if (!mUserUnlocked) {
+            if (DEBUG) Log.d(TAG, "Can't start Maps due to the user isn't unlocked.");
             return;
         }
         // If we happen to be be resurfaced into a multi display mode we skip launching content
         // in the activity view as we will get recreated anyway.
         if (isInMultiWindowMode() || isInPictureInPictureMode()) {
+            if (DEBUG) Log.d(TAG, "Can't start Maps due to CarLauncher isn't in a correct mode");
             return;
         }
         // Don't start Maps when the display is off for ActivityVisibilityTests.
         if (getDisplay().getState() != Display.STATE_ON) {
+            if (DEBUG) Log.d(TAG, "Can't start Maps due to the display is off");
             return;
         }
         try {
