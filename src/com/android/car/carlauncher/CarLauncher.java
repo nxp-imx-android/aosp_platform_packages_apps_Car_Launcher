@@ -94,7 +94,6 @@ public class CarLauncher extends FragmentActivity {
     private int mCarLauncherTaskId = INVALID_TASK_ID;
     private Set<HomeCardModule> mHomeCardModules;
 
-    private boolean mUserUnlocked;
     /** Set to {@code true} once we've logged that the Activity is fully drawn. */
     private boolean mIsReadyLogged;
 
@@ -187,7 +186,6 @@ public class CarLauncher extends FragmentActivity {
         if (event.getEventType() == USER_LIFECYCLE_EVENT_TYPE_UNLOCKED
                 && getUserId() == event.getUserId()
                 && mTaskViewTaskId == INVALID_TASK_ID) {
-            mUserUnlocked = true;
             startMapsInTaskView();
             return;
         }
@@ -239,8 +237,6 @@ public class CarLauncher extends FragmentActivity {
         mUseSmallCanvasOptimizedMap =
                 CarLauncherUtils.isSmallCanvasOptimizedMapIntentConfigured(this);
 
-        mUserManager = getSystemService(UserManager.class);
-
         Car.createCar(/* context= */ this, /* handler= */ null,
                 Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
                 (car, ready) -> {
@@ -250,11 +246,6 @@ public class CarLauncher extends FragmentActivity {
                         return;
                     }
                     setCarUserManager((CarUserManager) car.getCarManager(Car.CAR_USER_SERVICE));
-                    mUserUnlocked = mUserManager.isUserUnlocked();
-                    if (mUserUnlocked && mTaskViewTaskId == INVALID_TASK_ID) {
-                        startMapsInTaskView();
-                    }
-                    // Only listen to user switching events.
                     UserLifecycleEventFilter filter = new UserLifecycleEventFilter.Builder()
                             .addEventType(USER_LIFECYCLE_EVENT_TYPE_UNLOCKED)
                             .addEventType(USER_LIFECYCLE_EVENT_TYPE_SWITCHING).build();
@@ -266,6 +257,7 @@ public class CarLauncher extends FragmentActivity {
                 });
 
         mActivityManager = getSystemService(ActivityManager.class);
+        mUserManager = getSystemService(UserManager.class);
         mCarLauncherTaskId = getTaskId();
         TaskStackChangeListeners.getInstance().registerTaskStackListener(mTaskStackListener);
 
@@ -354,7 +346,7 @@ public class CarLauncher extends FragmentActivity {
             if (DEBUG) Log.d(TAG, "Can't start Maps due to TaskView isn't ready.");
             return;
         }
-        if (!mUserUnlocked) {
+        if (!mUserManager.isUserUnlocked()) {
             if (DEBUG) Log.d(TAG, "Can't start Maps due to the user isn't unlocked.");
             return;
         }
