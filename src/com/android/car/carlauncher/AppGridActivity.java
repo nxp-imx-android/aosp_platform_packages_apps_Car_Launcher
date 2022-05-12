@@ -25,6 +25,7 @@ import android.app.usage.UsageStatsManager;
 import android.car.Car;
 import android.car.CarNotConnectedException;
 import android.car.content.pm.CarPackageManager;
+import android.car.drivingstate.CarUxRestrictions;
 import android.car.drivingstate.CarUxRestrictionsManager;
 import android.car.media.CarMediaManager;
 import android.content.BroadcastReceiver;
@@ -126,10 +127,18 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
             try {
                 mCarUxRestrictionsManager = (CarUxRestrictionsManager) mCar.getCarManager(
                         Car.CAR_UX_RESTRICTION_SERVICE);
-                mGridAdapter.setIsDistractionOptimizationRequired(
-                        mCarUxRestrictionsManager
-                                .getCurrentCarUxRestrictions()
-                                .isRequiresDistractionOptimization());
+                CarUxRestrictions carUxRestrictions = mCarUxRestrictionsManager
+                        .getCurrentCarUxRestrictions();
+                boolean isDistractionOptimizationRequired;
+                if (carUxRestrictions == null) {
+                    Log.v(TAG, "No CarUxRestrictions on display");
+                    isDistractionOptimizationRequired = false;
+                } else {
+                    isDistractionOptimizationRequired = carUxRestrictions
+                            .isRequiresDistractionOptimization();
+                }
+                mGridAdapter
+                        .setIsDistractionOptimizationRequired(isDistractionOptimizationRequired);
                 mCarUxRestrictionsManager.registerListener(
                         restrictionInfo ->
                                 mGridAdapter.setIsDistractionOptimizationRequired(
