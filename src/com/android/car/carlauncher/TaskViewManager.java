@@ -21,11 +21,15 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static com.android.car.carlauncher.CarLauncher.TAG;
 import static com.android.wm.shell.ShellTaskOrganizer.TASK_LISTENER_TYPE_FULLSCREEN;
 
-import android.annotation.UiContext;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.app.Activity;
 import android.app.ActivityTaskManager;
+import android.app.Application.ActivityLifecycleCallbacks;
 import android.app.TaskInfo;
 import android.car.app.CarActivityManager;
-import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
 import android.util.Slog;
 import android.window.TaskAppearedInfo;
 import android.window.WindowContainerToken;
@@ -36,23 +40,31 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TransactionPool;
+import com.android.wm.shell.common.annotations.ExternalMainThread;
+import com.android.wm.shell.common.annotations.ShellMainThread;
 import com.android.wm.shell.fullscreen.FullscreenTaskListener;
 import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.startingsurface.phone.PhoneStartingWindowTypeAlgorithm;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public final class TaskViewManager {
-    private static final boolean DBG = false;
+    private static final boolean DBG = Log.isLoggable(TAG, Log.DEBUG);
 
-    private final Context mContext;
+    private final Activity mContext;
+    @ShellMainThread
     private final HandlerExecutor mExecutor;
     private final SyncTransactionQueue mSyncQueue;
     private final ShellTaskOrganizer mTaskOrganizer;
+    // All TaskView are bound to the Host Activity if it exists.
+    @ShellMainThread
+    private final List<CarTaskView> mTaskViews = new ArrayList<>();
 
-    public TaskViewManager(@UiContext Context context, HandlerExecutor handlerExecutor,
+    public TaskViewManager(Activity context, HandlerExecutor handlerExecutor,
             AtomicReference<CarActivityManager> carActivityManagerRef) {
         mContext = context;
         mExecutor = handlerExecutor;
@@ -60,7 +72,9 @@ public final class TaskViewManager {
         TransactionPool transactionPool = new TransactionPool();
         mSyncQueue = new SyncTransactionQueue(transactionPool, mExecutor);
         initTaskOrganizer(carActivityManagerRef, transactionPool);
-        if (DBG) Slog.d(TAG, "TaskViewManager.create");
+
+        mContext.registerActivityLifecycleCallbacks(mActivityLifecycleCallbacks);
+        if (DBG) Slog.d(TAG, "TaskViewManager.create: " + mContext);
     }
 
     private void initTaskOrganizer(AtomicReference<CarActivityManager> carActivityManagerRef,
@@ -78,22 +92,20 @@ public final class TaskViewManager {
     }
 
     /**
-     * Unregisters the underlying {@link ShellTaskOrganizer}.
+     * Releases {@link TaskViewManager} and unregisters the underlying {@link ShellTaskOrganizer}.
+     * It also removes all TaskViews which are created by this
+     * {@link TaskViewManager}.
      */
     public void release() {
         if (DBG) Slog.d(TAG, "TaskViewManager.release");
-        mTaskOrganizer.unregisterOrganizer();
-    }
-
-    /**
-     * Creates a new {@link CarTaskView}.
-     *
-     * @param onCreate a callback to get the instance of the created TaskView.
-     */
-    public void createTaskView(Consumer<CarTaskView> onCreate) {
-        CarTaskView taskView = new CarTaskView(mContext, mTaskOrganizer, mSyncQueue);
         mExecutor.execute(() -> {
-            onCreate.accept(taskView);
+            if (DBG) Slog.d(TAG, "TaskViewManager.release");
+            for (int i = mTaskViews.size() - 1; i >= 0; --i) {
+                mTaskViews.get(i).release();
+            }
+            mTaskViews.clear();
+            mContext.unregisterActivityLifecycleCallbacks(mActivityLifecycleCallbacks);
+            mTaskOrganizer.unregisterOrganizer();
         });
     }
 
@@ -128,6 +140,75 @@ public final class TaskViewManager {
     public void enqueueTransaction(WindowContainerTransaction windowContainerTransaction) {
         mSyncQueue.queue(windowContainerTransaction);
     }
+
+    /**
+     * Creates a new {@link CarTaskView}.
+     *
+     * @param callbackExecutor the {@link Executor} where the callback is called.
+     * @param onCreate a callback to get the instance of the created TaskView.
+     */
+    public void createTaskView(Executor callbackExecutor, Consumer<CarTaskView> onCreate) {
+        mExecutor.execute(() -> {
+            CarTaskView taskView = new CarTaskView(mContext, mTaskOrganizer, mSyncQueue);
+            mTaskViews.add(taskView);
+            callbackExecutor.execute(() -> onCreate.accept(taskView));
+        });
+    }
+
+    /**
+     * Destroys the given {@code TaskView}.
+     */
+    public void destroyTaskView(CarTaskView taskView) {
+        mExecutor.execute(() -> {
+            mTaskViews.remove(taskView);
+            taskView.release();
+        });
+    }
+
+    /**
+     * Shows the embedded Task of the given {@code TaskView}.
+     */
+    public void showEmbeddedTask(@NonNull CarTaskView taskView) {
+        mExecutor.execute(() -> {
+            taskView.showEmbeddedTask();
+        });
+    }
+
+    // The callback is called only for HostActivity.
+    @ExternalMainThread
+    private final ActivityLifecycleCallbacks mActivityLifecycleCallbacks =
+            new ActivityLifecycleCallbacks() {
+                @Override
+                public void onActivityCreated(@NonNull Activity activity,
+                        @Nullable Bundle savedInstanceState) {}
+
+                @Override
+                public void onActivityStarted(@NonNull Activity activity) {}
+
+                @Override
+                public void onActivityResumed(@NonNull Activity activity) {
+                    mExecutor.execute(() -> {
+                        for (int i = mTaskViews.size() - 1; i >= 0; --i) {
+                            mTaskViews.get(i).showEmbeddedTask();
+                        }
+                    });
+                }
+
+                @Override
+                public void onActivityPaused(@NonNull Activity activity) {}
+
+                @Override
+                public void onActivityStopped(@NonNull Activity activity) {}
+
+                @Override
+                public void onActivitySaveInstanceState(@NonNull Activity activity,
+                        @NonNull Bundle outState) {}
+
+                @Override
+                public void onActivityDestroyed(@NonNull Activity activity) {
+                    release();
+                }
+            };
 
     private static void cleanUpExistingTaskViewTasks(List<TaskAppearedInfo> taskAppearedInfos) {
         ActivityTaskManager atm = ActivityTaskManager.getInstance();

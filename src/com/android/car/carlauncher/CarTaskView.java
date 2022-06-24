@@ -16,17 +16,15 @@
 
 package com.android.car.carlauncher;
 
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
-import android.view.View;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
-
-import androidx.annotation.Nullable;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.TaskView;
@@ -60,17 +58,19 @@ public class CarTaskView extends TaskView {
         applyInsets();
     }
 
-    @Override
-    protected void onWindowVisibilityChanged(int visibility) {
-        super.onWindowVisibilityChanged(visibility);
-        if (visibility == View.VISIBLE && mTaskToken != null) {
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            // Clears the hidden flag to make it TopFocusedRootTask: b/228092608
-            wct.setHidden(mTaskToken, /* hidden= */ false);
-            // Moves the embedded task to the top to make it resumed: b/225388469
-            wct.reorder(mTaskToken, /* onTop= */ true);
-            mSyncQueue.queue(wct);
+    /**
+     * Moves the embedded task over the embedding task to make it shown.
+     */
+    public void showEmbeddedTask() {
+        if (mTaskToken == null) {
+            return;
         }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        // Clears the hidden flag to make it TopFocusedRootTask: b/228092608
+        wct.setHidden(mTaskToken, /* hidden= */ false);
+        // Moves the embedded task to the top to make it resumed: b/225388469
+        wct.reorder(mTaskToken, /* onTop= */ true);
+        mSyncQueue.queue(wct);
     }
 
     // TODO(b/238473897): Consider taking insets one by one instead of taking all insets.
