@@ -18,6 +18,9 @@ package com.android.car.carlauncher;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.graphics.Rect;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.window.WindowContainerToken;
@@ -36,10 +39,12 @@ import com.android.wm.shell.common.SyncTransactionQueue;
  * <li>b/225388469: Moves the embedded task to the top to make it resumed.</li>
  * </ul>
  */
-class CarTaskView extends TaskView {
+public class CarTaskView extends TaskView {
+    private static final String TAG = CarTaskView.class.getSimpleName();
     @Nullable
     private WindowContainerToken mTaskToken;
     private final SyncTransactionQueue mSyncQueue;
+    private final SparseArray<Rect> mInsets = new SparseArray<>();
 
     public CarTaskView(Context context, ShellTaskOrganizer organizer,
             SyncTransactionQueue syncQueue) {
@@ -51,6 +56,8 @@ class CarTaskView extends TaskView {
     public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
         mTaskToken = taskInfo.token;
         super.onTaskAppeared(taskInfo, leash);
+
+        applyInsets();
     }
 
     @Override
@@ -64,5 +71,33 @@ class CarTaskView extends TaskView {
             wct.reorder(mTaskToken, /* onTop= */ true);
             mSyncQueue.queue(wct);
         }
+    }
+
+    // TODO(b/238473897): Consider taking insets one by one instead of taking all insets.
+    /**
+     * Set & apply the given {@code insets} on the Task.
+     */
+    public void setInsets(SparseArray<Rect> insets) {
+        mInsets.clear();
+        for (int i = insets.size() - 1; i >= 0; i--) {
+            mInsets.append(insets.keyAt(i), insets.valueAt(i));
+        }
+        applyInsets();
+    }
+
+    private void applyInsets() {
+        if (mInsets == null || mInsets.size() == 0) {
+            Log.w(TAG, "Cannot apply null or empty insets");
+            return;
+        }
+        if (mTaskToken == null) {
+            Log.w(TAG, "Cannot apply insets as the task token is not present.");
+            return;
+        }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        for (int i = 0; i < mInsets.size(); i++) {
+            wct.addRectInsetsProvider(mTaskToken, mInsets.valueAt(i), new int[]{mInsets.keyAt(i)});
+        }
+        mSyncQueue.queue(wct);
     }
 }
