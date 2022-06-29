@@ -28,6 +28,8 @@ import android.car.app.CarActivityManager;
 import android.content.Context;
 import android.util.Slog;
 import android.window.TaskAppearedInfo;
+import android.window.WindowContainerToken;
+import android.window.WindowContainerTransaction;
 
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -40,7 +42,6 @@ import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.startingsurface.phone.PhoneStartingWindowTypeAlgorithm;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -77,16 +78,56 @@ public final class TaskViewManager {
         cleanUpExistingTaskViewTasks(taskAppearedInfos);
     }
 
-    void release() {
+    /**
+     * Unregisters the underlying {@link ShellTaskOrganizer}.
+     */
+    public void release() {
         if (DBG) Slog.d(TAG, "TaskViewManager.release");
         mTaskOrganizer.unregisterOrganizer();
     }
 
-    void createTaskView(Consumer<TaskView> onCreate) {
+    /**
+     * Creates a new {@link TaskView}.
+     *
+     * @param onCreate a callback to get the instance of the created TaskView.
+     */
+    public void createTaskView(Consumer<TaskView> onCreate) {
         CarTaskView taskView = new CarTaskView(mContext, mTaskOrganizer, mSyncQueue);
         mExecutor.execute(() -> {
             onCreate.accept(taskView);
         });
+    }
+
+    /**
+     * Creates a root task in the specified {code windowingMode}.
+     */
+    public void createRootTask(int displayId, int windowingMode,
+            ShellTaskOrganizer.TaskListener listener) {
+        mTaskOrganizer.createRootTask(displayId, windowingMode, listener);
+    }
+
+    /**
+     * Deletes the root task corresponding to the given {@code token}.
+     */
+    public void deleteRootTask(WindowContainerToken token) {
+        mTaskOrganizer.deleteRootTask(token);
+    }
+
+    // TODO(b/235151420): Remove this API as part of TaskViewManager API improvement
+    /**
+     * Runs the given {@code runnable} in the {@link SyncTransactionQueue} used by {@link TaskView}.
+     */
+    public void runInSync(SyncTransactionQueue.TransactionRunnable runnable) {
+        mSyncQueue.runInSync(runnable);
+    }
+
+    // TODO(b/235151420): Remove this API as part of TaskViewManager API improvement
+    /**
+     * Applies the given {@code windowContainerTransaction} to the underlying
+     * {@link ShellTaskOrganizer}.
+     */
+    public void enqueueTransaction(WindowContainerTransaction windowContainerTransaction) {
+        mSyncQueue.queue(windowContainerTransaction);
     }
 
     private static void cleanUpExistingTaskViewTasks(List<TaskAppearedInfo> taskAppearedInfos) {
