@@ -61,7 +61,6 @@
     <string-array name="hidden_apps" translatable="false">
         <item>com.android.car.themeplayground</item>
         <item>com.google.android.auto.welcome</item>
-        <item>com.android.car.acast.source</item>
         <item>com.google.android.embedded.projection</item>
         <item>com.android.car.bugreport</item>
         <item>com.android.car.trust</item>
