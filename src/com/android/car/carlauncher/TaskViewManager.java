@@ -33,7 +33,6 @@ import android.window.WindowContainerTransaction;
 
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.TaskView;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TransactionPool;
@@ -87,11 +86,11 @@ public final class TaskViewManager {
     }
 
     /**
-     * Creates a new {@link TaskView}.
+     * Creates a new {@link CarTaskView}.
      *
      * @param onCreate a callback to get the instance of the created TaskView.
      */
-    public void createTaskView(Consumer<TaskView> onCreate) {
+    public void createTaskView(Consumer<CarTaskView> onCreate) {
         CarTaskView taskView = new CarTaskView(mContext, mTaskOrganizer, mSyncQueue);
         mExecutor.execute(() -> {
             onCreate.accept(taskView);
