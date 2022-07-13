@@ -21,7 +21,9 @@ import static android.car.settings.CarSettings.Secure.KEY_PACKAGES_DISABLED_ON_R
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.admin.DevicePolicyManager;
 import android.car.Car;
 import android.car.CarNotConnectedException;
 import android.car.content.pm.CarPackageManager;
@@ -39,16 +41,22 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.service.media.MediaBrowserService;
 import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Log;
+import android.util.Pair;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+
+import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -64,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -75,6 +84,7 @@ public class AppLauncherUtils {
     @Retention(SOURCE)
     @IntDef({APP_TYPE_LAUNCHABLES, APP_TYPE_MEDIA_SERVICES})
     @interface AppTypes {}
+
     static final int APP_TYPE_LAUNCHABLES = 1;
     static final int APP_TYPE_MEDIA_SERVICES = 2;
 
@@ -208,7 +218,8 @@ public class AppLauncherUtils {
             CarPackageManager carPackageManager,
             PackageManager packageManager,
             @NonNull Predicate<ResolveInfo> videoAppPredicate,
-            CarMediaManager carMediaManager) {
+            CarMediaManager carMediaManager,
+            ShortcutsListener shortcutsListener) {
 
         if (launcherApps == null || carPackageManager == null || packageManager == null
                 || carMediaManager == null) {
@@ -248,28 +259,21 @@ public class AppLauncherUtils {
                     Intent intent = new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE);
                     intent.putExtra(Car.CAR_EXTRA_MEDIA_COMPONENT, componentName.flattenToString());
 
+                    CharSequence displayName = info.serviceInfo.loadLabel(packageManager);
                     AppMetaData appMetaData = new AppMetaData(
-                        info.serviceInfo.loadLabel(packageManager),
-                        componentName,
-                        info.serviceInfo.loadIcon(packageManager),
-                        isDistractionOptimized,
-                        contextArg -> {
-                            if (openMediaCenter) {
-                                AppLauncherUtils.launchApp(contextArg, intent);
-                            } else {
-                                selectMediaSourceAndFinish(contextArg, componentName,
-                                        carMediaManager);
-                            }
-                        },
-                        contextArg -> {
-                            // getLaunchIntentForPackage looks for a main activity in the category
-                            // Intent.CATEGORY_INFO, then Intent.CATEGORY_LAUNCHER, and returns null
-                            // if neither are found
-                            Intent packageLaunchIntent =
-                                    packageManager.getLaunchIntentForPackage(packageName);
-                            AppLauncherUtils.launchApp(contextArg,
-                                    packageLaunchIntent != null ? packageLaunchIntent : intent);
-                        });
+                            displayName,
+                            componentName,
+                            info.serviceInfo.loadIcon(packageManager),
+                            isDistractionOptimized,
+                            contextArg -> {
+                                if (openMediaCenter) {
+                                    AppLauncherUtils.launchApp(contextArg, intent);
+                                } else {
+                                    selectMediaSourceAndFinish(contextArg, componentName,
+                                            carMediaManager);
+                                }
+                            },
+                            buildShortcuts(packageName, displayName, shortcutsListener));
                     launchablesMap.put(componentName, appMetaData);
                 }
             }
@@ -284,21 +288,22 @@ public class AppLauncherUtils {
                 if (shouldAddToLaunchables(componentName, appsToHide, customMediaComponents,
                         appTypes, APP_TYPE_LAUNCHABLES)) {
                     boolean isDistractionOptimized =
-                        isActivityDistractionOptimized(carPackageManager, packageName,
-                            info.getName());
+                            isActivityDistractionOptimized(carPackageManager, packageName,
+                                    info.getName());
 
                     Intent intent = new Intent(Intent.ACTION_MAIN)
-                        .setComponent(componentName)
-                        .addCategory(Intent.CATEGORY_LAUNCHER)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            .setComponent(componentName)
+                            .addCategory(Intent.CATEGORY_LAUNCHER)
+                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
+                    CharSequence displayName = info.getLabel();
                     AppMetaData appMetaData = new AppMetaData(
-                        info.getLabel(),
-                        componentName,
-                        info.getBadgedIcon(0),
-                        isDistractionOptimized,
-                        contextArg -> AppLauncherUtils.launchApp(contextArg, intent),
-                        null);
+                            displayName,
+                            componentName,
+                            info.getBadgedIcon(0),
+                            isDistractionOptimized,
+                            contextArg -> AppLauncherUtils.launchApp(contextArg, intent),
+                            buildShortcuts(packageName, displayName, shortcutsListener));
                     launchablesMap.put(componentName, appMetaData);
                 }
             }
@@ -321,8 +326,9 @@ public class AppLauncherUtils {
                         .addCategory(Intent.CATEGORY_LAUNCHER)
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
+                CharSequence displayName = info.activityInfo.loadLabel(packageManager);
                 AppMetaData appMetaData = new AppMetaData(
-                        info.activityInfo.loadLabel(packageManager),
+                        displayName,
                         componentName,
                         info.activityInfo.loadIcon(packageManager),
                         isDistractionOptimized,
@@ -342,12 +348,118 @@ public class AppLauncherUtils {
                             Log.i(TAG, "Successfully enabled package [" + packageName + "]");
                             AppLauncherUtils.launchApp(contextArg, intent);
                         },
-                        null);
+                        buildShortcuts(packageName, displayName, shortcutsListener));
                 launchablesMap.put(componentName, appMetaData);
             }
         }
 
         return new LauncherAppsInfo(launchablesMap, mediaServicesMap);
+    }
+
+    private static Consumer<Pair<Context, View>> buildShortcuts(String packageName,
+            CharSequence displayName, ShortcutsListener shortcutsListener) {
+        return pair -> {
+            CarUiShortcutsPopup carUiShortcutsPopup = new CarUiShortcutsPopup.Builder()
+                    .addShortcut(new CarUiShortcutsPopup.ShortcutItem() {
+                        @Override
+                        public CarUiShortcutsPopup.ItemData data() {
+                            return new CarUiShortcutsPopup.ItemData(
+                                    R.drawable.ic_force_stop_caution_icon,
+                                    pair.first.getResources().getString(
+                                            R.string.app_launcher_stop_app_action));
+                        }
+
+                        @Override
+                        public boolean onClick() {
+                            if (isEnabled()) {
+                                shortcutsListener.onShortcutsItemClick(packageName, displayName);
+                            }
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isEnabled() {
+                            return shouldShowStopApp(packageName, pair.first);
+                        }
+                    }).build(pair.first,
+                            pair.second);
+
+            if (shouldShowStopApp(packageName, pair.first)) {
+                carUiShortcutsPopup.show();
+                shortcutsListener.onShortcutsShow(carUiShortcutsPopup);
+            }
+        };
+    }
+
+    /**
+     * Force stops an app and shows a Toast
+     * <p>Note: Uses hidden apis<p/>
+     *
+     * @param packageName name of the package to stop the app
+     * @param context     app context
+     * @param displayName name of the application
+     */
+    public static void forceStop(String packageName, Context context, CharSequence displayName) {
+        ActivityManager activityManager = context.getSystemService(ActivityManager.class);
+        if (activityManager != null) {
+            activityManager.forceStopPackage(packageName);
+            String message = context.getResources()
+                    .getString(R.string.app_launcher_stop_app_success_toast_text, displayName);
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * <p>Note: Uses hidden apis<p/>
+     * @return true if the user has restrictions to force stop an app with {@code appInfo}
+     */
+    private static boolean hasUserRestriction(ApplicationInfo appInfo, Context context) {
+        String restriction = UserManager.DISALLOW_APPS_CONTROL;
+        UserManager userManager = context.getSystemService(UserManager.class);
+        if (userManager == null) {
+            Log.e(TAG, " Disabled because , UserManager is null");
+            return true;
+        }
+        if (!userManager.hasUserRestriction(restriction)) {
+            return false;
+        }
+        UserHandle user = UserHandle.getUserHandleForUid(appInfo.uid);
+        if (userManager.hasBaseUserRestriction(restriction, user)) {
+            Log.d(TAG, " Disabled because " + user + " has " + restriction
+                    + " restriction");
+            return true;
+        }
+        // Not disabled for this User
+        return false;
+    }
+
+    /**
+     * <p>Note: uses hidden apis</p>
+     *
+     * @param packageName name of the package to stop the app
+     * @param context     app context
+     * @return true if an app should show the Stop app action
+     */
+    private static boolean shouldShowStopApp(String packageName, Context context) {
+        DevicePolicyManager dm = context.getSystemService(DevicePolicyManager.class);
+        if (dm == null || dm.packageHasActiveAdmins(packageName)) {
+            return false;
+        }
+        try {
+            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(packageName,
+                    PackageManager.ApplicationInfoFlags.of(PackageManager.GET_META_DATA));
+            // Show only if the User has no restrictions to force stop this app
+            if (hasUserRestriction(appInfo, context)) {
+                return false;
+            }
+            // Show only if the app is running
+            if ((appInfo.flags & ApplicationInfo.FLAG_STOPPED) == 0) {
+                return true;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.d(TAG, "shouldShowStopApp() Package " + packageName + " was not found");
+        }
+        return false;
     }
 
     /**
@@ -447,7 +559,7 @@ public class AppLauncherUtils {
                     }
                     if (TAG_USES.equals(tag)) {
                         String nameValue =
-                                parser.getAttributeValue(/* namespace= */ null , ATTRIBUTE_NAME);
+                                parser.getAttributeValue(/* namespace= */ null, ATTRIBUTE_NAME);
                         if (TextUtils.isEmpty(nameValue)) {
                             Log.w(TAG, "Invalid XML; uses tag with missing/empty name attribute");
                             return new ArrayList<>();
@@ -497,7 +609,7 @@ public class AppLauncherUtils {
     private static List<ResolveInfo> getDisabledActivities(Context context,
             PackageManager packageManager, Set<String> enabledPackages) {
         ContentResolver contentResolverForUser = context.createContextAsUser(
-                UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
+                        UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
                 .getContentResolver();
         String settingsValue = Settings.Secure.getString(contentResolverForUser,
                 KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE);
@@ -585,5 +697,15 @@ public class AppLauncherUtils {
             Log.e(TAG, "Car not connected when getting DO info", e);
         }
         return isDistractionOptimized;
+    }
+
+    /**
+     * Callback when a ShortcutsPopup View is shown
+     */
+    protected interface ShortcutsListener {
+
+        void onShortcutsShow(CarUiShortcutsPopup carUiShortcutsPopup);
+
+        void onShortcutsItemClick(String packageName, CharSequence displayName);
     }
 }

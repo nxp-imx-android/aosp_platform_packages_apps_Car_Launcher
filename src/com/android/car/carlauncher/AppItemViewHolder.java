@@ -17,6 +17,7 @@
 package com.android.car.carlauncher;
 
 import android.content.Context;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,7 +71,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
             if (hasLongClickCallback) {
                 // Note setOnLongClickListener implicitly sets view to be long clickable
                 mAppItem.setOnLongClickListener(v -> {
-                    app.getAlternateLaunchCallback().accept(mContext);
+                    app.getAlternateLaunchCallback().accept(Pair.create(mContext, v));
                     return true;
                 });
             }
