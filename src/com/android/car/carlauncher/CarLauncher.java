@@ -108,6 +108,10 @@ public class CarLauncher extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (DEBUG) {
+            Log.d(TAG, "onCreate(" + getUserId() + ")");
+        }
+
         if (CarLauncherUtils.isCustomDisplayPolicyDefined(this)) {
             Intent controlBarIntent = new Intent(this, ControlBarActivity.class);
             controlBarIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
