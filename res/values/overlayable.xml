@@ -20,6 +20,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="array" name="config_homeCardPreferredMapActivities"/>
       <item type="array" name="config_taskViewPackages"/>
       <item type="array" name="hidden_apps"/>
+      <item type="attr" name="cardCornerRadius"/>
       <item type="color" name="card_background_scrim"/>
       <item type="color" name="date_divider_bar_color"/>
       <item type="color" name="dialer_button_icon_color"/>
