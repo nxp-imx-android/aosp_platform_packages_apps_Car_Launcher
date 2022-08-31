@@ -19,6 +19,8 @@ package com.android.car.carlauncher;
 import android.content.ComponentName;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Pair;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -38,7 +40,7 @@ final class AppMetaData {
     private final Drawable mIcon;
     private final boolean mIsDistractionOptimized;
     private final Consumer<Context> mLaunchCallback;
-    private final Consumer<Context> mAlternateLaunchCallback;
+    private final Consumer<Pair<Context, View>> mAlternateLaunchCallback;
 
     /**
      * AppMetaData
@@ -57,7 +59,7 @@ final class AppMetaData {
             Drawable icon,
             boolean isDistractionOptimized,
             Consumer<Context> launchCallback,
-            Consumer<Context> alternateLaunchCallback) {
+            Consumer<Pair<Context, View>> alternateLaunchCallback) {
         mDisplayName = displayName == null ? "" : displayName.toString();
         mComponentName = componentName;
         mIcon = icon;
@@ -82,7 +84,7 @@ final class AppMetaData {
         return mLaunchCallback;
     }
 
-    Consumer<Context> getAlternateLaunchCallback() {
+    Consumer<Pair<Context, View>> getAlternateLaunchCallback() {
         return mAlternateLaunchCallback;
     }
 

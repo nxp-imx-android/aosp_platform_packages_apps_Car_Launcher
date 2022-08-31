@@ -20,6 +20,7 @@ import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_LAUNCHABLES;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_MEDIA_SERVICES;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.car.Car;
@@ -50,11 +51,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup;
 
 import com.android.car.carlauncher.AppLauncherUtils.LauncherAppsInfo;
+import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
 import com.android.car.ui.core.CarUi;
 import com.android.car.ui.recyclerview.CarUiRecyclerView;
+import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup;
 import com.android.car.ui.toolbar.MenuItem;
 import com.android.car.ui.toolbar.NavButtonMode;
 import com.android.car.ui.toolbar.ToolbarController;
@@ -70,7 +73,8 @@ import java.util.Set;
 /**
  * Launcher activity that shows a grid of apps.
  */
-public class AppGridActivity extends Activity implements InsetsChangedListener {
+public class AppGridActivity extends Activity implements InsetsChangedListener,
+        AppLauncherUtils.ShortcutsListener {
     private static final String TAG = "AppGridActivity";
     private static final String MODE_INTENT_EXTRA = "com.android.car.carlauncher.mode";
 
@@ -86,7 +90,9 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
     private CarUxRestrictionsManager mCarUxRestrictionsManager;
     private CarPackageManager mCarPackageManager;
     private CarMediaManager mCarMediaManager;
+    private CarUiShortcutsPopup mCarUiShortcutsPopup;
     private Mode mMode;
+    private AlertDialog mStopAppAlertDialog;
 
     /**
      * enum to define the state of display area possible.
@@ -205,6 +211,20 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
         });
         gridView.setLayoutManager(gridLayoutManager);
         gridView.setAdapter(mGridAdapter);
+        gridView.addOnScrollListener(new CarUiRecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(CarUiRecyclerView carUiRecyclerView, int i, int i1) {
+                if (mCarUiShortcutsPopup != null) {
+                    mCarUiShortcutsPopup.dismiss();
+                    mCarUiShortcutsPopup = null;
+                }
+            }
+
+            @Override
+            public void onScrollStateChanged(CarUiRecyclerView carUiRecyclerView, int i) {
+                //do nothing
+            }
+        });
     }
 
     @Override
@@ -246,7 +266,6 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
     @Override
     protected void onResume() {
         super.onResume();
-
         // Using onResume() to refresh most recently used apps because we want to refresh even if
         // the app being launched crashes/doesn't cover the entire screen.
         updateAppsLists();
@@ -264,7 +283,8 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
                 mCarPackageManager,
                 mPackageManager,
                 new AppLauncherUtils.VideoAppPredicate(mPackageManager),
-                mCarMediaManager);
+                mCarMediaManager,
+                this);
         mGridAdapter.setAllApps(appsInfo.getLaunchableComponentsList());
         mGridAdapter.setMostRecentApps(getMostRecentApps(appsInfo));
     }
@@ -305,6 +325,18 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
         if (mCar != null) {
             mCar.disconnect();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mCarUiShortcutsPopup != null) {
+            mCarUiShortcutsPopup.dismissImmediate();
+            mCarUiShortcutsPopup = null;
+        }
+        if (mStopAppAlertDialog != null) {
+            mStopAppAlertDialog.dismiss();
+        }
+        super.onPause();
     }
 
     /**
@@ -387,6 +419,22 @@ public class AppGridActivity extends Activity implements InsetsChangedListener {
 
         requireViewById(android.R.id.content)
                 .setPadding(insets.getLeft(), 0, insets.getRight(), 0);
+    }
+
+    @Override
+    public void onShortcutsShow(CarUiShortcutsPopup carUiShortcutsPopup) {
+        mCarUiShortcutsPopup = carUiShortcutsPopup;
+    }
+
+    @Override
+    public void onShortcutsItemClick(String packageName, CharSequence displayName) {
+        mStopAppAlertDialog = new AlertDialogBuilder(this)
+                .setTitle(R.string.app_launcher_stop_app_dialog_title)
+                .setMessage(R.string.app_launcher_stop_app_dialog_text)
+                .setPositiveButton(android.R.string.ok,
+                        (d, w) -> AppLauncherUtils.forceStop(packageName, AppGridActivity.this,
+                                displayName))
+                .setNegativeButton(android.R.string.cancel, /* onClickListener= */ null).show();
     }
 
     /**

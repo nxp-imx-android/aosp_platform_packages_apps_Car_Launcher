@@ -88,6 +88,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     @Mock private Context mMockContext;
     @Mock private LauncherApps mMockLauncherApps;
     @Mock private PackageManager mMockPackageManager;
+    @Mock private AppLauncherUtils.ShortcutsListener mMockShortcutsListener;
 
     private CarMediaManager mCarMediaManager;
     private CarPackageManager mCarPackageManager;
@@ -114,7 +115,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 /* customMediaComponents= */ new ArraySet<>(),
                 /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
-                mMockPackageManager, MATCH_NO_APP, mCarMediaManager);
+                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener);
 
         List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
 
@@ -145,7 +146,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 /* customMediaComponents= */ new ArraySet<>(),
                 /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
-                mMockPackageManager, MATCH_NO_APP, mCarMediaManager);
+                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener);
 
         List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
 
@@ -171,7 +172,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 /* customMediaComponents= */ new ArraySet<>(),
                 /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
-                mMockPackageManager, new TestVideoAppPredicate(), mCarMediaManager);
+                mMockPackageManager, new TestVideoAppPredicate(), mCarMediaManager,
+                mMockShortcutsListener);
 
         // mMockLauncherApps is never stubbed, only services & disabled activities are expected.
         List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
