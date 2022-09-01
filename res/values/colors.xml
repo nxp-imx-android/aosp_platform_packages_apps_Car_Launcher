@@ -24,4 +24,5 @@
     <color name="dialer_end_call_button_color">#EE675C</color>
     <color name="minimized_progress_bar_background">#5CFFFFFF</color>
     <color name="stop_caution_icon_color">@*android:color/white</color>
+    <color name="launcher_home_icon_color">#66B5FF</color>
 </resources>
