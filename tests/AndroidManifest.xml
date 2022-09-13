@@ -31,5 +31,4 @@
     <instrumentation android:name="androidx.test.runner.AndroidJUnitRunner"
                      android:targetPackage="com.android.car.carlauncher.test"
                      android:label="Tests for Car Launcher"/>
-
 </manifest>
