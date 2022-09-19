@@ -31,16 +31,19 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManager;
 import android.car.Car;
 import android.car.content.pm.CarPackageManager;
 import android.car.media.CarMediaManager;
 import android.car.test.mocks.AbstractExtendedMockitoTestCase;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,6 +53,7 @@ import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.content.res.Resources;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.media.MediaBrowserService;
@@ -62,6 +66,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -71,7 +76,9 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -235,6 +242,128 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                     AppLauncherUtils.parseAutomotiveAppTypes(createPullParser(invalidXml));
             assertEquals(0, appTypes.size());
         }
+    }
+
+    private void forceStopInit(ActivityManager activityManager, CarMediaManager carMediaManager,
+            ComponentName currentMediaComponentName, ComponentName previousMediaComponentName,
+            Map<Integer, Boolean> currentModes, boolean isMedia) {
+        when(mMockContext.getSystemService(
+                ArgumentMatchers.<Class<ActivityManager>>any())).thenReturn(activityManager);
+        when(mMockContext.getResources()).thenReturn(mock(Resources.class));
+        if (isMedia) {
+            currentModes.forEach((mode, current) -> {
+                if (current) {
+                    when(carMediaManager.getMediaSource(mode)).thenReturn(
+                            currentMediaComponentName);
+                } else {
+                    when(carMediaManager.getMediaSource(mode)).thenReturn(
+                            previousMediaComponentName);
+                }
+            });
+            List<ComponentName> lastMediaSources = new ArrayList<>();
+            lastMediaSources.add(currentMediaComponentName);
+            if (previousMediaComponentName != null) {
+                lastMediaSources.add(previousMediaComponentName);
+            }
+            when(carMediaManager.getLastMediaSources(anyInt())).thenReturn(lastMediaSources);
+        } else {
+            when(carMediaManager.getMediaSource(anyInt())).thenReturn(previousMediaComponentName);
+        }
+    }
+
+    @Test
+    public void forceStopNonMediaApp_shouldStopApp() {
+        String packageName = "com.example.app";
+        CharSequence displayName = "App";
+        ActivityManager activityManager = mock(ActivityManager.class);
+        CarMediaManager carMediaManager = mock(CarMediaManager.class);
+        forceStopInit(activityManager, carMediaManager,
+                /* currentMediaComponentName= */null, /* previousMediaComponentName= */null,
+                /* currentModes= */Map.of(), /* isMedia= */false);
+        Map<ComponentName, ResolveInfo> mediaServices = new HashMap<>();
+
+        AppLauncherUtils.forceStop(packageName, mMockContext, displayName, carMediaManager,
+                mediaServices, mMockShortcutsListener);
+
+        verify(activityManager).forceStopPackage(packageName);
+        verify(mMockShortcutsListener).onStopAppSuccess(nullable(String.class));
+        verify(carMediaManager, never()).setMediaSource(nullable(ComponentName.class), anyInt());
+    }
+
+    @Test
+    public void forceStopCurrentPlaybackOnlyMediaApp_shouldSetPlaybackOnlyToPreviousAndStopApp() {
+        String packageName = "com.example.app";
+        CharSequence displayName = "App";
+        ActivityManager activityManager = mock(ActivityManager.class);
+        CarMediaManager carMediaManager = mock(CarMediaManager.class);
+        ComponentName currentMediaComponentName = new ComponentName(packageName,
+                "com.example.service");
+        ComponentName previousMediaComponentName = new ComponentName("test", "test");
+        Map<Integer, Boolean> currentModes = new HashMap<>();
+        currentModes.put(CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK, true);
+        currentModes.put(CarMediaManager.MEDIA_SOURCE_MODE_BROWSE, false);
+        forceStopInit(activityManager, carMediaManager, currentMediaComponentName,
+                previousMediaComponentName, /* currentModes= */currentModes, /* isMedia= */true);
+        Map<ComponentName, ResolveInfo> mediaServices = new HashMap<>();
+
+        AppLauncherUtils.forceStop(packageName, mMockContext, displayName, carMediaManager,
+                mediaServices, mMockShortcutsListener);
+
+        verify(activityManager).forceStopPackage(packageName);
+        verify(mMockShortcutsListener).onStopAppSuccess(nullable(String.class));
+        verify(carMediaManager).setMediaSource(previousMediaComponentName,
+                CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK);
+        verify(carMediaManager, never()).setMediaSource(previousMediaComponentName,
+                CarMediaManager.MEDIA_SOURCE_MODE_BROWSE);
+
+    }
+
+    @Test
+    public void forceStopCurrentMediaApp_noHistory_shouldSetToOtherMediaServiceAndStopApp() {
+        String packageName = "com.example.app";
+        CharSequence displayName = "App";
+        ActivityManager activityManager = mock(ActivityManager.class);
+        CarMediaManager carMediaManager = mock(CarMediaManager.class);
+        ComponentName currentMediaComponentName = new ComponentName(packageName,
+                "com.example.service");
+        ComponentName otherMediaComponentName = new ComponentName("other.package", "other.test");
+        Map<Integer, Boolean> currentModes = new HashMap<>();
+        currentModes.put(CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK, true);
+        currentModes.put(CarMediaManager.MEDIA_SOURCE_MODE_BROWSE, true);
+        forceStopInit(activityManager, carMediaManager, currentMediaComponentName,
+                /* previousMediaComponentName= */null,
+                /* currentModes= */currentModes, /* isMedia= */true);
+        Map<ComponentName, ResolveInfo> mediaServices = new HashMap<>();
+        mediaServices.put(otherMediaComponentName, mock(ResolveInfo.class));
+
+        AppLauncherUtils.forceStop(packageName, mMockContext, displayName, carMediaManager,
+                mediaServices, mMockShortcutsListener);
+
+        verify(activityManager).forceStopPackage(packageName);
+        verify(mMockShortcutsListener).onStopAppSuccess(nullable(String.class));
+        verify(carMediaManager, times(2)).setMediaSource(eq(otherMediaComponentName), anyInt());
+    }
+
+    @Test
+    public void forceStopNonCurrentMediaApp_shouldOnlyStopApp() {
+        String packageName = "com.example.app";
+        CharSequence displayName = "App";
+        ActivityManager activityManager = mock(ActivityManager.class);
+        CarMediaManager carMediaManager = mock(CarMediaManager.class);
+        ComponentName currentMediaComponentName = new ComponentName(packageName,
+                "com.example.service");
+        ComponentName previousMediaComponentName = new ComponentName("test", "test");
+        forceStopInit(activityManager, carMediaManager, currentMediaComponentName,
+                previousMediaComponentName, /* currentModes= */Collections.emptyMap(),
+                /* isMedia= */true);
+        Map<ComponentName, ResolveInfo> mediaServices = new HashMap<>();
+
+        AppLauncherUtils.forceStop(packageName, mMockContext, displayName, carMediaManager,
+                mediaServices, mMockShortcutsListener);
+
+        verify(activityManager).forceStopPackage(packageName);
+        verify(mMockShortcutsListener).onStopAppSuccess(nullable(String.class));
+        verify(carMediaManager, never()).setMediaSource(any(ComponentName.class), anyInt());
     }
 
     private XmlPullParser createPullParser(String xmlText) {
