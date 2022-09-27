@@ -49,7 +49,6 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -71,6 +70,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -158,6 +158,12 @@ public class AppLauncherUtils {
         @NonNull
         List<AppMetaData> getLaunchableComponentsList() {
             return new ArrayList<>(mLaunchables.values());
+        }
+
+        /** Returns list of Media Services for the launcher **/
+        @NonNull
+        Map<ComponentName, ResolveInfo> getMediaServices() {
+            return mMediaServices;
         }
     }
 
@@ -392,21 +398,58 @@ public class AppLauncherUtils {
     }
 
     /**
-     * Force stops an app and shows a Toast
+     * Force stops an app
      * <p>Note: Uses hidden apis<p/>
-     *
-     * @param packageName name of the package to stop the app
-     * @param context     app context
-     * @param displayName name of the application
      */
-    public static void forceStop(String packageName, Context context, CharSequence displayName) {
+    public static void forceStop(String packageName, Context context, CharSequence displayName,
+            CarMediaManager carMediaManager, Map<ComponentName, ResolveInfo> mediaServices,
+            ShortcutsListener listener) {
         ActivityManager activityManager = context.getSystemService(ActivityManager.class);
         if (activityManager != null) {
+            maybeReplaceMediaSource(carMediaManager, packageName, mediaServices,
+                    CarMediaManager.MEDIA_SOURCE_MODE_BROWSE);
+            maybeReplaceMediaSource(carMediaManager, packageName, mediaServices,
+                    CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK);
             activityManager.forceStopPackage(packageName);
             String message = context.getResources()
                     .getString(R.string.app_launcher_stop_app_success_toast_text, displayName);
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            listener.onStopAppSuccess(message);
         }
+    }
+
+    private static boolean isCurrentMediaSource(CarMediaManager carMediaManager,
+            String packageName, @CarMediaManager.MediaSourceMode int mode) {
+        ComponentName componentName = carMediaManager.getMediaSource(mode);
+        if (componentName == null) {
+            //There is no current media source.
+            return false;
+        }
+        return Objects.equals(componentName.getPackageName(), packageName);
+    }
+
+    /***
+     * Updates the MediaSource to second most recent if {@code  packageName} is current media source
+     * Sets to MediaSource to null if no previous MediaSource exists.
+     */
+    private static void maybeReplaceMediaSource(CarMediaManager carMediaManager, String packageName,
+            Map<ComponentName, ResolveInfo> allMediaServices,
+            @CarMediaManager.MediaSourceMode int mode) {
+        if (!isCurrentMediaSource(carMediaManager, packageName, mode)) {
+            return;
+        }
+        //find the most recent source from history not equal to force-stopping package.
+        List<ComponentName> mediaSources = carMediaManager.getLastMediaSources(mode);
+        ComponentName componentName = mediaSources.stream().filter(c-> (!c.getPackageName()
+                .equals(packageName))).findFirst().orElse(null);
+        if (componentName == null) {
+            //no recent package found, find from all available media services.
+            componentName = allMediaServices.keySet().stream().filter(
+                    c -> (!c.getPackageName().equals(packageName))).findFirst().orElse(null);
+            if (componentName == null) {
+                Log.e(TAG, "Stop-app, no alternative media service found");
+            }
+        }
+        carMediaManager.setMediaSource(componentName, mode);
     }
 
     /**
@@ -707,5 +750,7 @@ public class AppLauncherUtils {
         void onShortcutsShow(CarUiShortcutsPopup carUiShortcutsPopup);
 
         void onShortcutsItemClick(String packageName, CharSequence displayName);
+
+        void onStopAppSuccess(String message);
     }
 }

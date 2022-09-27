@@ -43,6 +43,7 @@ import android.os.IBinder;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -93,6 +94,7 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
     private CarUiShortcutsPopup mCarUiShortcutsPopup;
     private Mode mMode;
     private AlertDialog mStopAppAlertDialog;
+    private LauncherAppsInfo mAppsInfo;
 
     /**
      * enum to define the state of display area possible.
@@ -274,7 +276,7 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
     /** Updates the list of all apps, and the list of the most recently used ones. */
     private void updateAppsLists() {
         Set<String> appsToHide = mShowAllApps ? Collections.emptySet() : mHiddenApps;
-        LauncherAppsInfo appsInfo = AppLauncherUtils.getLauncherApps(getApplicationContext(),
+        mAppsInfo = AppLauncherUtils.getLauncherApps(getApplicationContext(),
                 appsToHide,
                 mCustomMediaComponents,
                 mMode.mAppTypes,
@@ -285,8 +287,8 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
                 new AppLauncherUtils.VideoAppPredicate(mPackageManager),
                 mCarMediaManager,
                 this);
-        mGridAdapter.setAllApps(appsInfo.getLaunchableComponentsList());
-        mGridAdapter.setMostRecentApps(getMostRecentApps(appsInfo));
+        mGridAdapter.setAllApps(mAppsInfo.getLaunchableComponentsList());
+        mGridAdapter.setMostRecentApps(getMostRecentApps(mAppsInfo));
     }
 
     @Override
@@ -433,8 +435,13 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
                 .setMessage(R.string.app_launcher_stop_app_dialog_text)
                 .setPositiveButton(android.R.string.ok,
                         (d, w) -> AppLauncherUtils.forceStop(packageName, AppGridActivity.this,
-                                displayName))
+                                displayName, mCarMediaManager, mAppsInfo.getMediaServices(), this))
                 .setNegativeButton(android.R.string.cancel, /* onClickListener= */ null).show();
+    }
+
+    @Override
+    public void onStopAppSuccess(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     /**
