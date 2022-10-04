@@ -180,7 +180,10 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="style" name="HorizontalLineDivider"/>
       <item type="style" name="Theme.Launcher"/>
       <item type="style" name="Theme.Launcher.AppGridActivity"/>
+      <item type="style" name="Theme.Launcher.AppGridActivity.NoToolbar"/>
       <item type="style" name="TitleText"/>
+      <item type="bool" name="car_app_show_recent_apps" />
+      <item type="bool" name="car_app_show_toolbar" />
     </policy>
   </overlayable>
 </resources>

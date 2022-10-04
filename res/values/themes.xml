@@ -26,4 +26,9 @@
         <item name="textAppearanceGridItemSecondary">@android:style/TextAppearance.DeviceDefault.Small</item>
     </style>
 
+    <style name="Theme.Launcher.AppGridActivity.NoToolbar" parent="Theme.CarUi.NoToolbar">
+        <item name="textAppearanceGridItem">@android:style/TextAppearance.DeviceDefault.Medium</item>
+        <item name="textAppearanceGridItemSecondary">@android:style/TextAppearance.DeviceDefault.Small</item>
+    </style>
+
 </resources>
