@@ -20,14 +20,10 @@
     <string name="app_title" msgid="1995858460392177468">"ಕಾರ್ ಲಾಂಚರ್"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"ಮಾಧ್ಯಮ ಆ್ಯಪ್‌ಗಳು"</string>
-    <!-- no translation found for app_launcher_stop_app_action (1081680842410279692) -->
-    <skip />
-    <!-- no translation found for app_launcher_stop_app_success_toast_text (2117271772351005349) -->
-    <skip />
-    <!-- no translation found for app_launcher_stop_app_dialog_title (8276889322638001144) -->
-    <skip />
-    <!-- no translation found for app_launcher_stop_app_dialog_text (3264059639436254372) -->
-    <skip />
+    <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"ಆ್ಯಪ್ ಅನ್ನು ನಿಲ್ಲಿಸಿ"</string>
+    <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ."</string>
+    <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"ಆ್ಯಪ್ ಅನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
+    <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"ನೀವು ಆ್ಯಪ್ ಅನ್ನು ಬಲವಂತವಾಗಿ ನಿಲ್ಲಿಸಿದರೆ, ಅದು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದಿರಬಹುದು."</string>
     <string name="default_media_song_title" msgid="2970305231647817808"></string>
     <string name="driving_toast_text" msgid="149483091947120092">"ಡ್ರೈವ್ ಮಾಡುವಾಗ <xliff:g id="APP_NAME">%1$s</xliff:g> ಬಳಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ."</string>
     <string name="tap_for_more_info_text" msgid="2043549383814415585">"ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ಕಾರ್ಡ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
