@@ -81,6 +81,8 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
 
     private int mColumnNumber;
     private boolean mShowAllApps = true;
+    private boolean mShowRecentApps = true;
+    private boolean mShowToolbar = true;
     private final Set<String> mHiddenApps = new HashSet<>();
     private final Set<String> mCustomMediaComponents = new HashSet<>();
     private AppGridAdapter mGridAdapter;
@@ -169,9 +171,16 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        mShowToolbar = getResources().getBoolean(R.bool.car_app_show_toolbar);
+        if (mShowToolbar) {
+            setTheme(R.style.Theme_Launcher_AppGridActivity);
+        } else {
+            setTheme(R.style.Theme_Launcher_AppGridActivity_NoToolbar);
+        }
         super.onCreate(savedInstanceState);
 
         mColumnNumber = getResources().getInteger(R.integer.car_app_selector_column_number);
+        mShowRecentApps = getResources().getBoolean(R.bool.car_app_show_recent_apps);
         mPackageManager = getPackageManager();
         mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         mCar = Car.createCar(this, mCarConnectionListener);
@@ -183,24 +192,25 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
 
         updateMode();
 
-        ToolbarController toolbar = CarUi.requireToolbar(this);
+        if (mShowToolbar) {
+            ToolbarController toolbar = CarUi.requireToolbar(this);
 
-        toolbar.setNavButtonMode(NavButtonMode.CLOSE);
+            toolbar.setNavButtonMode(NavButtonMode.CLOSE);
 
-        if (Build.IS_DEBUGGABLE) {
-            toolbar.setMenuItems(Collections.singletonList(MenuItem.builder(this)
-                    .setDisplayBehavior(MenuItem.DisplayBehavior.NEVER)
-                    .setTitle(R.string.hide_debug_apps)
-                    .setOnClickListener(i -> {
-                        mShowAllApps = !mShowAllApps;
-                        i.setTitle(mShowAllApps
-                                ? R.string.hide_debug_apps
-                                : R.string.show_debug_apps);
-                        updateAppsLists();
-                    })
-                    .build()));
+            if (Build.IS_DEBUGGABLE) {
+                toolbar.setMenuItems(Collections.singletonList(MenuItem.builder(this)
+                        .setDisplayBehavior(MenuItem.DisplayBehavior.NEVER)
+                        .setTitle(R.string.hide_debug_apps)
+                        .setOnClickListener(i -> {
+                            mShowAllApps = !mShowAllApps;
+                            i.setTitle(mShowAllApps
+                                    ? R.string.hide_debug_apps
+                                    : R.string.show_debug_apps);
+                            updateAppsLists();
+                        })
+                        .build()));
+            }
         }
-
         mGridAdapter = new AppGridAdapter(this);
         CarUiRecyclerView gridView = requireViewById(R.id.apps_grid);
 
@@ -248,7 +258,9 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
     private void updateMode() {
         mMode = parseMode(getIntent());
         setTitle(mMode.mTitleStringId);
-        CarUi.requireToolbar(this).setTitle(mMode.mTitleStringId);
+        if (mShowToolbar) {
+            CarUi.requireToolbar(this).setTitle(mMode.mTitleStringId);
+        }
     }
 
     /**
@@ -287,8 +299,11 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
                 new AppLauncherUtils.VideoAppPredicate(mPackageManager),
                 mCarMediaManager,
                 this);
+
         mGridAdapter.setAllApps(mAppsInfo.getLaunchableComponentsList());
-        mGridAdapter.setMostRecentApps(getMostRecentApps(mAppsInfo));
+        if (mShowRecentApps) {
+            mGridAdapter.setMostRecentApps(getMostRecentApps(mAppsInfo));
+        }
     }
 
     @Override
