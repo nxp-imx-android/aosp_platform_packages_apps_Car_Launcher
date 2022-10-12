@@ -199,16 +199,20 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     }
 
     protected final void updateDescriptiveTextWithControlsView(CharSequence primaryText,
-            CharSequence secondaryText, Drawable optionalImage,
+            CharSequence secondaryText, CardContent.CardBackgroundImage optionalImage,
             DescriptiveTextWithControlsView.Control leftButton,
             DescriptiveTextWithControlsView.Control centerButton,
             DescriptiveTextWithControlsView.Control rightButton) {
         getDescriptiveTextWithControlsLayoutView().setVisibility(View.VISIBLE);
         mDescriptiveTextWithControlsTitle.setText(primaryText);
         mDescriptiveTextWithControlsSubtitle.setText(secondaryText);
-        mDescriptiveTextWithControlsOptionalImage.setImageDrawable(optionalImage);
+        if (optionalImage != null) {
+            mDescriptiveTextWithControlsOptionalImage.setImageDrawable(
+                    optionalImage.getForeground());
+        }
         mDescriptiveTextWithControlsOptionalImage.setVisibility(
-                optionalImage == null ? View.GONE : View.VISIBLE);
+                (optionalImage == null || optionalImage.getForeground() == null)
+                        ? View.GONE : View.VISIBLE);
 
         updateControlBarButton(leftButton, mControlBarLeftButton);
         updateControlBarButton(centerButton, mControlBarCenterButton);

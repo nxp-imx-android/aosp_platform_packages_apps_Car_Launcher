@@ -37,6 +37,7 @@ import androidx.test.rule.ActivityTestRule;
 import com.android.car.apps.common.CrossfadeImageView;
 import com.android.car.carlauncher.CarLauncher;
 import com.android.car.carlauncher.R;
+import com.android.car.carlauncher.homescreen.ui.CardContent.CardBackgroundImage;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
@@ -52,6 +53,8 @@ public class AudioFragmentTest {
     private static final CardHeader CARD_HEADER = new CardHeader("Test App Name", null);
     private static final BitmapDrawable BITMAP = new BitmapDrawable(
             Bitmap.createBitmap(/* width = */100, /* height = */100, Bitmap.Config.ARGB_8888));
+    private static final CardBackgroundImage CARD_BACKGROUND_IMAGE = new CardBackgroundImage(
+            BITMAP, null);
     private static final String AUDIO_VIEW_TITLE = "Test song title";
     private static final String AUDIO_VIEW_SUBTITLE = "Test artist name";
     private static final long AUDIO_START_TIME = 1L;
@@ -60,7 +63,8 @@ public class AudioFragmentTest {
     private static final TextBlockView TEXT_BLOCK_VIEW = new TextBlockView("Text");
 
     private final DescriptiveTextWithControlsView
-            mDescriptiveTextWithControlsView = new DescriptiveTextWithControlsView(BITMAP,
+            mDescriptiveTextWithControlsView = new DescriptiveTextWithControlsView(
+            CARD_BACKGROUND_IMAGE,
             AUDIO_VIEW_TITLE,
             AUDIO_VIEW_SUBTITLE);
     private final DescriptiveTextWithControlsView.Control mControl =
@@ -68,8 +72,8 @@ public class AudioFragmentTest {
             });
     private final DescriptiveTextWithControlsView
             mDescriptiveTextWithControlsViewWithButtons = new DescriptiveTextWithControlsView(
-            BITMAP, AUDIO_VIEW_TITLE, AUDIO_VIEW_SUBTITLE, AUDIO_START_TIME, mControl,
-            mControl, mControl);
+            CARD_BACKGROUND_IMAGE, AUDIO_VIEW_TITLE, AUDIO_VIEW_SUBTITLE, AUDIO_START_TIME,
+            mControl, mControl, mControl);
 
     @Rule
     public ActivityTestRule<CarLauncher> mActivityTestRule =

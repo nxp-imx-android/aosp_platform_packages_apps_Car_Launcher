@@ -87,6 +87,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     private DescriptiveTextWithControlsView.Control mMuteButton;
     private DescriptiveTextWithControlsView.Control mEndCallButton;
     private DescriptiveTextWithControlsView.Control mDialpadButton;
+    private Drawable mContactImageBackground;
 
     private final ServiceConnection mInCallServiceConnection = new ServiceConnection() {
         @Override
@@ -124,6 +125,8 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
 
         mOngoingCallSubtitle = context.getResources().getString(R.string.ongoing_call_text);
         mDialingCallSubtitle = context.getResources().getString(R.string.dialing_call_text);
+        mContactImageBackground = context.getResources()
+                .getDrawable(R.drawable.control_bar_contact_image_background);
         initializeAudioControls();
 
         mPackageManager = context.getPackageManager();
@@ -325,7 +328,9 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
             contactImage = TelecomUtils.createLetterTile(mContext, initials, contactName);
         }
 
-        mCardContent = createPhoneCardContent(contactImage, contactName, callState);
+        mCardContent = createPhoneCardContent(
+                new CardContent.CardBackgroundImage(contactImage, mContactImageBackground),
+                contactName, callState);
         mPresenter.onModelUpdated(this);
     }
 
@@ -363,8 +368,8 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
                         mContext.getMainExecutor());
     }
 
-    private CardContent createPhoneCardContent(Drawable image, CharSequence title,
-            @Call.CallState int callState) {
+    private CardContent createPhoneCardContent(CardContent.CardBackgroundImage image,
+            CharSequence title, @Call.CallState int callState) {
         switch (callState) {
             case Call.STATE_DIALING:
                 return new DescriptiveTextWithControlsView(image, title, mDialingCallSubtitle,

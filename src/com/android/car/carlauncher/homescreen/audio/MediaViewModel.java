@@ -70,6 +70,7 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
     private CharSequence mArtistName;
     private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private Drawable mAlbumImageBitmap;
+    private Drawable mMediaBackground;
 
     private Observer<Object> mMediaSourceObserver = x -> updateModel();
     private Observer<Object> mMetadataObserver = x -> updateModelMetadata();
@@ -99,6 +100,8 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
 
         mContext = context;
         int max = context.getResources().getInteger(R.integer.media_items_bitmap_max_size_px);
+        mMediaBackground =  context.getResources()
+                .getDrawable(R.drawable.control_bar_image_background);
         Size maxArtSize = new Size(max, max);
         mAlbumArtBinder = new ImageBinder<>(ImageBinder.PlaceholderType.FOREGROUND, maxArtSize,
                 drawable -> {
@@ -149,7 +152,9 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
 
     @Override
     public CardContent getCardContent() {
-        return new DescriptiveTextWithControlsView(mAlbumImageBitmap, mSongTitle, mArtistName);
+        return new DescriptiveTextWithControlsView(
+                new CardContent.CardBackgroundImage(mAlbumImageBitmap, mMediaBackground),
+                mSongTitle, mArtistName);
     }
 
     /**
