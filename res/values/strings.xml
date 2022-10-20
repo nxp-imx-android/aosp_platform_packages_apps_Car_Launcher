@@ -29,6 +29,8 @@
     <string name="app_launcher_stop_app_dialog_text">If you force stop an app, it may
         misbehave.
     </string>
+    <!-- Manage applications, text for dialog when apps can not be stopped -->
+    <string name="app_launcher_stop_app_cant_stop_text">App can’t be stopped.</string>
 
     <string name="default_media_song_title"></string>
 
