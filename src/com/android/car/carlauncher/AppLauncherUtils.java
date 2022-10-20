@@ -378,22 +378,21 @@ public class AppLauncherUtils {
                         @Override
                         public boolean onClick() {
                             if (isEnabled()) {
-                                shortcutsListener.onShortcutsItemClick(packageName, displayName);
+                                shortcutsListener.onShortcutsItemClick(packageName, displayName,
+                                        shouldAllowStopApp(packageName, pair.first));
                             }
                             return true;
                         }
 
                         @Override
                         public boolean isEnabled() {
-                            return shouldShowStopApp(packageName, pair.first);
+                            return true;
                         }
                     }).build(pair.first,
                             pair.second);
 
-            if (shouldShowStopApp(packageName, pair.first)) {
-                carUiShortcutsPopup.show();
-                shortcutsListener.onShortcutsShow(carUiShortcutsPopup);
-            }
+            carUiShortcutsPopup.show();
+            shortcutsListener.onShortcutsShow(carUiShortcutsPopup);
         };
     }
 
@@ -483,7 +482,7 @@ public class AppLauncherUtils {
      * @param context     app context
      * @return true if an app should show the Stop app action
      */
-    private static boolean shouldShowStopApp(String packageName, Context context) {
+    private static boolean shouldAllowStopApp(String packageName, Context context) {
         DevicePolicyManager dm = context.getSystemService(DevicePolicyManager.class);
         if (dm == null || dm.packageHasActiveAdmins(packageName)) {
             return false;
@@ -500,7 +499,7 @@ public class AppLauncherUtils {
                 return true;
             }
         } catch (PackageManager.NameNotFoundException e) {
-            Log.d(TAG, "shouldShowStopApp() Package " + packageName + " was not found");
+            Log.d(TAG, "shouldAllowStopApp() Package " + packageName + " was not found");
         }
         return false;
     }
@@ -749,7 +748,8 @@ public class AppLauncherUtils {
 
         void onShortcutsShow(CarUiShortcutsPopup carUiShortcutsPopup);
 
-        void onShortcutsItemClick(String packageName, CharSequence displayName);
+        void onShortcutsItemClick(String packageName, CharSequence displayName,
+                boolean allowStopApp);
 
         void onStopAppSuccess(String message);
     }

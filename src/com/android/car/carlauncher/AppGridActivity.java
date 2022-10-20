@@ -444,14 +444,23 @@ public class AppGridActivity extends Activity implements InsetsChangedListener,
     }
 
     @Override
-    public void onShortcutsItemClick(String packageName, CharSequence displayName) {
-        mStopAppAlertDialog = new AlertDialogBuilder(this)
-                .setTitle(R.string.app_launcher_stop_app_dialog_title)
-                .setMessage(R.string.app_launcher_stop_app_dialog_text)
-                .setPositiveButton(android.R.string.ok,
-                        (d, w) -> AppLauncherUtils.forceStop(packageName, AppGridActivity.this,
-                                displayName, mCarMediaManager, mAppsInfo.getMediaServices(), this))
-                .setNegativeButton(android.R.string.cancel, /* onClickListener= */ null).show();
+    public void onShortcutsItemClick(String packageName, CharSequence displayName,
+            boolean allowStopApp) {
+        AlertDialogBuilder builder = new AlertDialogBuilder(this)
+                .setTitle(R.string.app_launcher_stop_app_dialog_title);
+
+        if (allowStopApp) {
+            builder.setMessage(R.string.app_launcher_stop_app_dialog_text)
+                    .setPositiveButton(android.R.string.ok,
+                            (d, w) -> AppLauncherUtils.forceStop(packageName, AppGridActivity.this,
+                                    displayName, mCarMediaManager, mAppsInfo.getMediaServices(),
+                                    this))
+                    .setNegativeButton(android.R.string.cancel, /* onClickListener= */ null);
+        } else {
+            builder.setMessage(R.string.app_launcher_stop_app_cant_stop_text)
+                    .setNeutralButton(android.R.string.ok, /* onClickListener= */ null);
+        }
+        mStopAppAlertDialog = builder.show();
     }
 
     @Override

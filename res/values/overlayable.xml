@@ -153,6 +153,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="tap_for_more_text"/>
       <item type="layout" name="text_block"/>
       <item type="string" name="app_launcher_stop_app_action"/>
+      <item type="string" name="app_launcher_stop_app_cant_stop_text"/>
       <item type="string" name="app_launcher_stop_app_dialog_text"/>
       <item type="string" name="app_launcher_stop_app_dialog_title"/>
       <item type="string" name="app_launcher_stop_app_success_toast_text"/>
