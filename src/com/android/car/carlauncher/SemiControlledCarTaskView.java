@@ -19,6 +19,7 @@ package com.android.car.carlauncher;
 import android.app.Activity;
 
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
 
 import java.util.concurrent.Executor;
@@ -40,10 +41,11 @@ final class SemiControlledCarTaskView extends CarTaskView {
 
     public SemiControlledCarTaskView(Activity context,
             ShellTaskOrganizer organizer,
+            TaskViewTransitions taskViewTransitions,
             SyncTransactionQueue syncQueue,
             Executor callbackExecutor,
             SemiControlledCarTaskViewCallbacks callbacks) {
-        super(context, organizer, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue);
         mCallbacks = callbacks;
         mCallbackExecutor = callbackExecutor;
         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewCreated(this));

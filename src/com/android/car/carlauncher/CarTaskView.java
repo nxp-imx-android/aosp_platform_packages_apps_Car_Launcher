@@ -32,6 +32,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.TaskView;
+import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
 
 /**
@@ -50,8 +51,8 @@ public class CarTaskView extends TaskView {
     private boolean mTaskViewReadySent;
 
     public CarTaskView(Context context, ShellTaskOrganizer organizer,
-            SyncTransactionQueue syncQueue) {
-        super(context, organizer, /* taskViewTransitions= */ null, syncQueue);
+            TaskViewTransitions taskViewTransitions, SyncTransactionQueue syncQueue) {
+        super(context, organizer, taskViewTransitions, syncQueue);
         mSyncQueue = syncQueue;
     }
 
