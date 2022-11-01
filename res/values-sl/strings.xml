@@ -24,6 +24,8 @@
     <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je ustavljena."</string>
     <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"Želite ustaviti aplikacijo?"</string>
     <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"Če boste vsilili zaustavitev aplikacije, morda ne bo pravilno delovala."</string>
+    <!-- no translation found for app_launcher_stop_app_cant_stop_text (4766841417948746773) -->
+    <skip />
     <string name="default_media_song_title" msgid="2970305231647817808"></string>
     <string name="driving_toast_text" msgid="149483091947120092">"Med vožnjo ni mogoče uporabljati aplikacije <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
     <string name="tap_for_more_info_text" msgid="2043549383814415585">"Dotaknite se kartice za več informacij"</string>

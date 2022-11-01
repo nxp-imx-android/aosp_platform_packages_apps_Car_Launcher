@@ -24,6 +24,8 @@
     <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> leállítva."</string>
     <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"Leállítja az alkalmazást?"</string>
     <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"Ha egy alkalmazást leállásra kényszerít, lehetséges, hogy hibásan fog működni."</string>
+    <!-- no translation found for app_launcher_stop_app_cant_stop_text (4766841417948746773) -->
+    <skip />
     <string name="default_media_song_title" msgid="2970305231647817808"></string>
     <string name="driving_toast_text" msgid="149483091947120092">"A(z) <xliff:g id="APP_NAME">%1$s</xliff:g> nem használható vezetés közben."</string>
     <string name="tap_for_more_info_text" msgid="2043549383814415585">"További információkért koppintson a kártyára."</string>
