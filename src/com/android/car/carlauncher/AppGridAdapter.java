@@ -26,7 +26,6 @@ import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,8 +40,7 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final Context mContext;
     private final int mColumnNumber;
     private final LayoutInflater mInflater;
-
-    private List<AppMetaData> mApps;
+    private List<LauncherItem> mLauncherItems;
     private List<AppMetaData> mMostRecentApps;
     private boolean mIsDistractionOptimizationRequired;
 
@@ -57,7 +55,6 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     void setIsDistractionOptimizationRequired(boolean isDistractionOptimizationRequired) {
         mIsDistractionOptimizationRequired = isDistractionOptimizationRequired;
-        sortAllApps();
         notifyDataSetChanged();
     }
 
@@ -66,31 +63,32 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         notifyDataSetChanged();
     }
 
+    public void setLauncherItems(List<LauncherItem> launcherItems) {
+        mLauncherItems = launcherItems;
+        // TODO b/256682924: Replace notifyDataSetChanged with DiffUtils
+        notifyDataSetChanged();
+    }
+
     @Override
     public long getItemId(int position) {
         if (position == 0 && hasRecentlyUsedApps()) {
             return RECENT_APPS_ID;
         }
-        if (mApps == null) {
+        if (mLauncherItems == null) {
             Log.w(TAG, "apps list not set");
             return RecyclerView.NO_ID;
         }
         int index = hasRecentlyUsedApps() ? position - 1 : position;
-        if (index < 0 || index >= mApps.size()) {
+        if (index < 0 || index >= mLauncherItems.size()) {
             Log.w(TAG, "index out of range");
             return RecyclerView.NO_ID;
         }
-        ComponentName componentName = mApps.get(index).getComponentName();
+        AppItem item = (AppItem) mLauncherItems.get(index);
+        ComponentName componentName = item.getAppMetaData().getComponentName();
         long id = componentName.getPackageName().hashCode();
         id <<= Integer.SIZE;
         id |= componentName.getClassName().hashCode();
         return id;
-    }
-
-    void setAllApps(@Nullable List<AppMetaData> apps) {
-        mApps = apps;
-        sortAllApps();
-        notifyDataSetChanged();
     }
 
     public int getSpanSizeLookup(int position) {
@@ -129,7 +127,8 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 break;
             case APP_ITEM_TYPE:
                 int index = hasRecentlyUsedApps() ? position - 1 : position;
-                AppMetaData app = mApps.get(index);
+                AppItem item = (AppItem) mLauncherItems.get(index);
+                AppMetaData app = item.getAppMetaData();
                 ((AppItemViewHolder) holder).bind(app, mIsDistractionOptimizationRequired);
                 break;
             default:
@@ -139,16 +138,12 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public int getItemCount() {
         // If there are any most recently launched apps, add a "most recently used apps row item"
-        return (mApps == null ? 0 : mApps.size()) + (hasRecentlyUsedApps() ? 1 : 0);
+        return (mLauncherItems == null ? 0 :
+                mLauncherItems.size()) + (hasRecentlyUsedApps() ? 1 :
+                0);
     }
 
     private boolean hasRecentlyUsedApps() {
         return mMostRecentApps != null && mMostRecentApps.size() > 0;
-    }
-
-    private void sortAllApps() {
-        if (mApps != null) {
-            Collections.sort(mApps, AppLauncherUtils.ALPHABETICAL_COMPARATOR);
-        }
     }
 }
