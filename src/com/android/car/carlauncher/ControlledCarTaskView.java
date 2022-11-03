@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.Display;
 
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
 
 import java.util.Set;
@@ -56,13 +57,14 @@ final class ControlledCarTaskView extends CarTaskView {
 
     public ControlledCarTaskView(Activity context,
             ShellTaskOrganizer organizer,
+            TaskViewTransitions taskViewTransitions,
             SyncTransactionQueue syncQueue,
             Executor callbackExecutor,
             Intent activityIntent,
             Boolean autoRestartOnCrash,
             ControlledCarTaskViewCallbacks callbacks,
             UserManager userManager) {
-        super(context, organizer, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue);
         mCallbackExecutor = callbackExecutor;
         mActivityIntent = activityIntent;
         mAutoRestartOnCrash = autoRestartOnCrash;

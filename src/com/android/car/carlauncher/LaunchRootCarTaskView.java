@@ -31,6 +31,7 @@ import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
 
 import java.util.concurrent.Executor;
@@ -113,11 +114,12 @@ final class LaunchRootCarTaskView extends CarTaskView {
 
     public LaunchRootCarTaskView(Activity context,
             ShellTaskOrganizer organizer,
+            TaskViewTransitions taskViewTransitions,
             SyncTransactionQueue syncQueue,
             Executor callbackExecutor,
             LaunchRootCarTaskViewCallbacks callbacks,
             ShellTaskOrganizer.TaskListener rootTaskListener) {
-        super(context, organizer, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue);
         mCallbacks = callbacks;
         mCallbackExecutor = callbackExecutor;
         mShellTaskOrganizer = organizer;
