@@ -17,7 +17,6 @@
 package com.android.car.carlauncher.homescreen.audio;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Size;
@@ -45,6 +44,7 @@ public class AudioFragment extends HomeCardFragment {
     private Chronometer mChronometer;
     private View mChronometerSeparator;
     private float mBlurRadius;
+    private CardContent.CardBackgroundImage mDefaultCardBackgroundImage;
 
     // Views from card_content_media.xml, which is used only for the media card
     private View mMediaLayoutView;
@@ -61,6 +61,9 @@ public class AudioFragment extends HomeCardFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBlurRadius = getResources().getFloat(R.dimen.card_background_image_blur_radius);
+        mDefaultCardBackgroundImage = new CardContent.CardBackgroundImage(
+                getContext().getDrawable(R.drawable.default_audio_background),
+                getContext().getDrawable(R.drawable.control_bar_image_background));
     }
 
     @Override
@@ -113,10 +116,10 @@ public class AudioFragment extends HomeCardFragment {
         return mMediaLayoutView;
     }
 
-    private void updateBackgroundImage(Drawable image) {
+    private void updateBackgroundImage(CardContent.CardBackgroundImage cardBackgroundImage) {
         if (getCardSize() != null) {
-            if (image == null) {
-                image = getContext().getDrawable(R.drawable.default_audio_background);
+            if (cardBackgroundImage.getForeground() == null) {
+                cardBackgroundImage = mDefaultCardBackgroundImage;
             }
             int maxDimen = Math.max(getCardBackgroundImage().getWidth(),
                     getCardBackgroundImage().getHeight());
@@ -125,10 +128,15 @@ public class AudioFragment extends HomeCardFragment {
                 maxDimen = Math.max(getCardSize().getWidth(), getCardSize().getHeight());
             }
             Size scaledSize = new Size(maxDimen, maxDimen);
-            Bitmap imageBitmap = BitmapUtils.fromDrawable(image, scaledSize);
+            Bitmap imageBitmap = BitmapUtils.fromDrawable(cardBackgroundImage.getForeground(),
+                    scaledSize);
             Bitmap blurredBackground = ImageUtils.blur(getContext(), imageBitmap, scaledSize,
                     mBlurRadius);
 
+            if (cardBackgroundImage.getBackground() != null) {
+                getCardBackgroundImage().setBackground(cardBackgroundImage.getBackground());
+                getCardBackgroundImage().setClipToOutline(true);
+            }
             getCardBackgroundImage().setImageBitmap(blurredBackground, /* showAnimation= */ true);
             getCardBackground().setVisibility(View.VISIBLE);
         }
