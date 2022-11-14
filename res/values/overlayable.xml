@@ -27,8 +27,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="color" name="card_background_scrim"/>
       <item type="color" name="date_divider_bar_color"/>
       <item type="color" name="dialer_button_icon_color"/>
-      <item type="color" name="dialer_icon_tint_state_list"/>
       <item type="color" name="dialer_end_call_button_color"/>
+      <item type="color" name="dialer_icon_tint_state_list"/>
       <item type="color" name="icon_tint"/>
       <item type="color" name="launcher_home_icon_color"/>
       <item type="color" name="media_button_tint"/>
@@ -128,11 +128,11 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="media_layout"/>
       <item type="id" name="media_playback_controls_bar"/>
       <item type="id" name="optional_image"/>
-      <item type="id" name="optional_times"/>
       <item type="id" name="optional_seek_bar"/>
+      <item type="id" name="optional_seek_bar_with_times_container"/>
       <item type="id" name="optional_timer"/>
       <item type="id" name="optional_timer_separator"/>
-      <item type="id" name="optional_seek_bar_with_times_container"/>
+      <item type="id" name="optional_times"/>
       <item type="id" name="primary_text"/>
       <item type="id" name="recent_apps_row"/>
       <item type="id" name="secondary_text"/>
@@ -187,8 +187,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="show_debug_apps"/>
       <item type="string" name="tap_for_more_info_text"/>
       <item type="string" name="tap_to_launch_text"/>
-      <item type="string" name="weather_app_name"/>
       <item type="string" name="times_separator"/>
+      <item type="string" name="weather_app_name"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ContextualSpace"/>
       <item type="style" name="HorizontalLineDivider"/>

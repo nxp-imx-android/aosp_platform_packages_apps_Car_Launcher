@@ -377,16 +377,14 @@ public class AppLauncherUtils {
 
                         @Override
                         public boolean onClick() {
-                            if (isEnabled()) {
-                                shortcutsListener.onShortcutsItemClick(packageName, displayName,
-                                        shouldAllowStopApp(packageName, pair.first));
-                            }
+                            shortcutsListener.onShortcutsItemClick(packageName, displayName,
+                                    /* allowStopApp= */ true);
                             return true;
                         }
 
                         @Override
                         public boolean isEnabled() {
-                            return true;
+                            return shouldAllowStopApp(packageName, pair.first);
                         }
                     }).build(pair.first,
                             pair.second);
