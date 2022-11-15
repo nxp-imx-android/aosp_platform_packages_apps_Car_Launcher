@@ -42,6 +42,14 @@ public abstract class CardPresenter implements HomeCardInterface.Presenter {
         }
     }
 
+    @Override
+    public void onModelUpdated(HomeCardInterface.Model model, boolean showTimes) {
+        if (model == null || model.getCardContent() == null || model.getCardHeader() == null) {
+            return;
+        }
+        mView.updateContentView(model.getCardContent(), showTimes);
+    }
+
     public Fragment getFragment() {
         return mView.getFragment();
     }
