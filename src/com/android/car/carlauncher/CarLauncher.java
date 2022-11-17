@@ -111,16 +111,6 @@ public class CarLauncher extends FragmentActivity {
             Log.d(TAG, "onCreate(" + getUserId() + ")");
         }
 
-        if (CarLauncherUtils.isCustomDisplayPolicyDefined(this)) {
-            Intent controlBarIntent = new Intent(this, ControlBarActivity.class);
-            controlBarIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(controlBarIntent);
-            startActivity(
-                    CarLauncherUtils.getMapsIntent(this).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            setContentView(R.layout.car_launcher);
-            return;
-        }
-
         mUseSmallCanvasOptimizedMap =
                 CarLauncherUtils.isSmallCanvasOptimizedMapIntentConfigured(this);
 
@@ -194,9 +184,6 @@ public class CarLauncher extends FragmentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (CarLauncherUtils.isCustomDisplayPolicyDefined(this)) {
-            return;
-        }
         TaskStackChangeListeners.getInstance().unregisterTaskStackListener(mTaskStackListener);
         release();
     }
@@ -208,9 +195,6 @@ public class CarLauncher extends FragmentActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (CarLauncherUtils.isCustomDisplayPolicyDefined(this)) {
-            return;
-        }
         initializeCards();
     }
 

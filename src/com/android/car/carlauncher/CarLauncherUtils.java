@@ -20,7 +20,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.util.Log;
 
 import java.net.URISyntaxException;
@@ -104,19 +103,5 @@ public class CarLauncherUtils {
                     + intentString + "\". Falling back to fullscreen map.");
             return getMapsIntent(context);
         }
-    }
-
-    static boolean isCustomDisplayPolicyDefined(Context context) {
-        Resources resources = context.getResources();
-        String customPolicyName = null;
-        try {
-            customPolicyName = resources
-                    .getString(
-                            com.android.internal
-                                    .R.string.config_deviceSpecificDisplayAreaPolicyProvider);
-        } catch (Resources.NotFoundException ex) {
-            Log.w(TAG, "custom policy provider not defined");
-        }
-        return customPolicyName != null && !customPolicyName.isEmpty();
     }
 }
