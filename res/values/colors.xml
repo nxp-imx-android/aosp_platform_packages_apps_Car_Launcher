@@ -25,4 +25,5 @@
     <color name="minimized_progress_bar_background">#5CFFFFFF</color>
     <color name="stop_caution_icon_color">@*android:color/white</color>
     <color name="launcher_home_icon_color">#66B5FF</color>
+    <color name="seek_bar_color">@*android:color/car_accent</color>
 </resources>

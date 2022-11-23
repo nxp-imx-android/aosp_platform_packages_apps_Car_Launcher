@@ -24,6 +24,7 @@ import android.app.Application;
 import android.car.media.CarMediaIntents;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.Size;
@@ -42,8 +43,10 @@ import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.R;
+import com.android.car.media.common.playback.PlaybackProgress;
 import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
+import com.android.car.media.common.source.MediaSourceColors;
 import com.android.car.media.common.source.MediaSourceViewModel;
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -61,6 +64,7 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
     private MediaSourceViewModel mSourceViewModel;
     // PlaybackViewModel has the media's metadata
     private PlaybackViewModel mPlaybackViewModel;
+    private PlaybackViewModel.PlaybackController mPlaybackController;
     private Context mContext;
 
     private CardHeader mCardHeader;
@@ -68,12 +72,42 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
     private Drawable mAppIcon;
     private CharSequence mSongTitle;
     private CharSequence mArtistName;
+    private CharSequence mTimes;
+    private CharSequence mTimesSeparator;
+
+    private boolean mIsTimesAvailable;
+    private boolean mUseMediaSourceColor;
+    private int mDefaultSeekBarColor;
+    private int mSeekBarColor;
+
+    /**
+     * Use int value for progress and seekbar max value from config since {@link
+     * android.widget.SeekBar} only works with int. Handling the long & int conversion in {@link
+     * MediaViewModel}
+     */
+    private int mProgress;
+    private int mSeekBarMax;
+    private long mRealMaxProgress;
+
     private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private Drawable mAlbumImageBitmap;
     private Drawable mMediaBackground;
-
-    private Observer<Object> mMediaSourceObserver = x -> updateModel();
+    private Observer<Object> mMediaSourceColorObserver = x -> updateMediaSourceColor();
     private Observer<Object> mMetadataObserver = x -> updateModelMetadata();
+    private Observer<Object> mPlaybackControllerObserver = controller -> updatePlaybackController();
+    private PlaybackCallback mPlaybackCallback = new PlaybackCallback() {
+        @Override
+        public void seekTo(int pos) {
+            if (mPlaybackController != null) {
+                double fraction = (double) pos / (double) mSeekBarMax;
+                Double realPos = mRealMaxProgress * fraction;
+                mPlaybackController.seekTo(realPos.longValue());
+            }
+        }
+    };
+    private Observer<Object> mMediaSourceObserver = x -> updateModel();
+    private Observer<Object> mProgressObserver = x -> updateProgress();
+
 
     public MediaViewModel(Application application) {
         super(application);
@@ -99,18 +133,29 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
         }
 
         mContext = context;
-        int max = context.getResources().getInteger(R.integer.media_items_bitmap_max_size_px);
-        mMediaBackground =  context.getResources()
+        Resources resources = mContext.getResources();
+        int max = resources.getInteger(R.integer.media_items_bitmap_max_size_px);
+        mMediaBackground = resources
                 .getDrawable(R.drawable.control_bar_image_background);
         Size maxArtSize = new Size(max, max);
         mAlbumArtBinder = new ImageBinder<>(ImageBinder.PlaceholderType.FOREGROUND, maxArtSize,
                 drawable -> {
                     mAlbumImageBitmap = drawable;
-                    mAudioPresenter.onModelUpdated(this);
+                    mAudioPresenter.onModelUpdated(/* model = */ this);
                 });
         mSourceViewModel.getPrimaryMediaSource().observeForever(mMediaSourceObserver);
         mPlaybackViewModel.getMetadata().observeForever(mMetadataObserver);
-        mAudioPresenter.onModelUpdated(this);
+        mPlaybackViewModel.getMediaSourceColors().observeForever(mMediaSourceColorObserver);
+        mPlaybackViewModel.getProgress().observeForever(mProgressObserver);
+        mPlaybackViewModel.getPlaybackController().observeForever(mPlaybackControllerObserver);
+        mAudioPresenter.onModelUpdated(/* model = */ this);
+
+        mDefaultSeekBarColor = resources.getColor(
+                com.android.car.carlauncher.R.color.seek_bar_color, null);
+        mSeekBarMax = resources.getInteger(
+                com.android.car.carlauncher.R.integer.optional_seekbar_max);
+        mUseMediaSourceColor = resources.getBoolean(R.bool.use_media_source_color_for_seek_bar);
+        mTimesSeparator = resources.getString(com.android.car.carlauncher.R.string.times_separator);
     }
 
     @Override
@@ -154,7 +199,15 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
     public CardContent getCardContent() {
         return new DescriptiveTextWithControlsView(
                 new CardContent.CardBackgroundImage(mAlbumImageBitmap, mMediaBackground),
-                mSongTitle, mArtistName);
+                mSongTitle,
+                mArtistName,
+                mTimes,
+                mIsTimesAvailable,
+                mSeekBarColor,
+                mProgress,
+                mPlaybackCallback
+        );
+
     }
 
     /**
@@ -177,7 +230,7 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
             // will switch to showing "no media playing" case.
             if (mediaSource != null
                     && !AppLauncherUtils.isVideoApp(mContext.getPackageManager(),
-                          mediaSource.getPackageName())) {
+                    mediaSource.getPackageName())) {
                 if (Log.isLoggable(TAG, Log.INFO)) {
                     Log.i(TAG, "Setting Media view to source " + mediaSource.getDisplayName());
                 }
@@ -185,13 +238,15 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
                 mAppIcon = mediaSource.getIcon();
                 mCardHeader = new CardHeader(mAppName, mAppIcon);
                 updateMetadata();
+                updateProgress();
+                updateMediaSourceColor();
             } else {
                 if (Log.isLoggable(TAG, Log.INFO)) {
                     Log.i(TAG, "Not resetting media widget for video apps or apps "
                             + "that do not support media browse");
                 }
             }
-            mAudioPresenter.onModelUpdated(this);
+            mAudioPresenter.onModelUpdated(/* model = */ this);
         }
     }
 
@@ -202,9 +257,30 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
         if (metadataChanged()) {
             updateMetadata();
             if (mCardHeader != null) {
-                mAudioPresenter.onModelUpdated(this);
+                mAudioPresenter.onModelUpdated(/* model = */ this);
             }
         }
+    }
+
+    private void updateMediaSourceColor() {
+        MediaSourceColors mediaSourceColors = mPlaybackViewModel.getMediaSourceColors().getValue();
+        mSeekBarColor = (mediaSourceColors == null || !mUseMediaSourceColor)
+                ? mDefaultSeekBarColor
+                : mediaSourceColors.getAccentColor(mDefaultSeekBarColor);
+        mAudioPresenter.onModelUpdated(/* model = */ this, mIsTimesAvailable);
+    }
+
+    private void updateProgress() {
+        PlaybackProgress playbackProgress = mPlaybackViewModel.getProgress().getValue();
+        if (playbackProgress == null) {
+            return;
+        }
+        mTimes = new StringBuilder(playbackProgress.getCurrentTimeText()).append(
+                mTimesSeparator).append(playbackProgress.getMaxTimeText()).toString();
+        mIsTimesAvailable = playbackProgress.hasTime();
+        mRealMaxProgress = playbackProgress.getMaxProgress();
+        mProgress = (int) (mSeekBarMax * playbackProgress.getProgressFraction());
+        mAudioPresenter.onModelUpdated(/* model = */ this, mIsTimesAvailable);
     }
 
     private void updateMetadata() {
@@ -216,6 +292,10 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
             mArtistName = metadata.getArtist();
             mAlbumArtBinder.setImage(mContext, metadata.getArtworkKey());
         }
+    }
+
+    private void updatePlaybackController() {
+        mPlaybackController = mPlaybackViewModel.getPlaybackController().getValue();
     }
 
     private void clearMetadata() {
@@ -258,5 +338,16 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
             return true;
         }
         return false;
+    }
+
+    /**
+     * Callback for {@link com.android.car.carlauncher.homescreen.HomeCardFragment} pass the seekbar
+     * info back.
+     */
+    public interface PlaybackCallback {
+        /**
+         * Moves to a new location in the media stream
+         */
+        void seekTo(int pos);
     }
 }

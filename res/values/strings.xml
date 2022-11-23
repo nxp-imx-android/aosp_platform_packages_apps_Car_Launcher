@@ -66,6 +66,9 @@
     <!-- Toolbar MenuItem text for showing debug apps, only visible on debug builds [CHAR_LIMIT=50] -->
     <string name="show_debug_apps">Show debug apps</string>
 
+    <!-- Separator between current time and max time in control bar, optional times [CHAR_LIMIT=5] -->
+    <string name="times_separator"> / </string>
+
     <!--
         A list of package names to exclude from the app selector when filtering is active.
         DO NOT TRANSLATE.

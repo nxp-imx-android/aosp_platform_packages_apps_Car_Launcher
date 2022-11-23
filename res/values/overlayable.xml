@@ -21,6 +21,9 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="array" name="config_taskViewPackages"/>
       <item type="array" name="hidden_apps"/>
       <item type="attr" name="cardCornerRadius"/>
+      <item type="bool" name="car_app_show_recent_apps"/>
+      <item type="bool" name="car_app_show_toolbar"/>
+      <item type="bool" name="use_media_source_color_for_seek_bar"/>
       <item type="color" name="card_background_scrim"/>
       <item type="color" name="date_divider_bar_color"/>
       <item type="color" name="dialer_button_icon_color"/>
@@ -30,6 +33,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="color" name="media_button_tint"/>
       <item type="color" name="minimized_progress_bar_background"/>
       <item type="color" name="recent_apps_line_divider_color"/>
+      <item type="color" name="seek_bar_color"/>
       <item type="color" name="stop_caution_icon_color"/>
       <item type="color" name="tap_for_more_text_color"/>
       <item type="dimen" name="app_bar_height"/>
@@ -123,8 +127,11 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="media_layout"/>
       <item type="id" name="media_playback_controls_bar"/>
       <item type="id" name="optional_image"/>
+      <item type="id" name="optional_times"/>
+      <item type="id" name="optional_seek_bar"/>
       <item type="id" name="optional_timer"/>
       <item type="id" name="optional_timer_separator"/>
+      <item type="id" name="optional_seek_bar_with_times_container"/>
       <item type="id" name="primary_text"/>
       <item type="id" name="recent_apps_row"/>
       <item type="id" name="secondary_text"/>
@@ -138,6 +145,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="vertical_barrier"/>
       <item type="integer" name="car_app_selector_column_number"/>
       <item type="integer" name="card_content_text_block_max_lines"/>
+      <item type="integer" name="optional_seekbar_max"/>
       <item type="integer" name="playback_controls_bar_columns"/>
       <item type="layout" name="app_grid_activity"/>
       <item type="layout" name="app_item"/>
@@ -151,6 +159,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="card_fragment"/>
       <item type="layout" name="control_bar_container"/>
       <item type="layout" name="descriptive_text"/>
+      <item type="layout" name="optional_seek_bar_with_times"/>
       <item type="layout" name="recent_apps_row"/>
       <item type="layout" name="tap_for_more_text"/>
       <item type="layout" name="text_block"/>
@@ -178,6 +187,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="tap_for_more_info_text"/>
       <item type="string" name="tap_to_launch_text"/>
       <item type="string" name="weather_app_name"/>
+      <item type="string" name="times_separator"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ContextualSpace"/>
       <item type="style" name="HorizontalLineDivider"/>
@@ -185,8 +195,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="style" name="Theme.Launcher.AppGridActivity"/>
       <item type="style" name="Theme.Launcher.AppGridActivity.NoToolbar"/>
       <item type="style" name="TitleText"/>
-      <item type="bool" name="car_app_show_recent_apps" />
-      <item type="bool" name="car_app_show_toolbar" />
     </policy>
   </overlayable>
 </resources>
