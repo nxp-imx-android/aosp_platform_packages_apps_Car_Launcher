@@ -40,4 +40,6 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"山景城 • 高：--° 低：--°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"隱藏偵錯應用程式"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"顯示偵錯應用程式"</string>
+    <!-- no translation found for times_separator (6180368193321715816) -->
+    <skip />
 </resources>

@@ -40,4 +40,6 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"مانتین ویو • بیشینه: --° کمینه: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"پنهان کردن برنامه‌های اشکال‌زدایی"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"نمایش برنامه‌های اشکال‌زدایی"</string>
+    <!-- no translation found for times_separator (6180368193321715816) -->
+    <skip />
 </resources>

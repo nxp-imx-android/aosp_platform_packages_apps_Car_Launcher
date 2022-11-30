@@ -40,4 +40,6 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"Маунтін-В\'ю • Макс. --°, мін. --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"Сховати додатки для налагодження"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Показати додатки для налагодження"</string>
+    <!-- no translation found for times_separator (6180368193321715816) -->
+    <skip />
 </resources>

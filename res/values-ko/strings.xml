@@ -40,4 +40,6 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"마운틴 뷰 • 최고: --° 최저: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"디버그 앱 숨기기"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"디버그 앱 표시"</string>
+    <!-- no translation found for times_separator (6180368193321715816) -->
+    <skip />
 </resources>
