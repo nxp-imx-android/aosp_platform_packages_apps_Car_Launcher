@@ -336,6 +336,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         getTextBlockLayoutView().setVisibility(View.GONE);
         getDescriptiveTextOnlyLayoutView().setVisibility(View.GONE);
         getDescriptiveTextWithControlsLayoutView().setVisibility(View.GONE);
+        getOptionalSeekbarWithTimesContainer().setVisibility(View.GONE);
     }
 
     protected final View getRootView() {
