@@ -27,6 +27,7 @@ import android.graphics.Rect;
 import android.os.UserManager;
 import android.util.Log;
 import android.view.Display;
+import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.TaskViewTransitions;
@@ -54,8 +55,9 @@ final class ControlledCarTaskView extends CarTaskView {
     // a lot of sense. Consider removing it when there is more confidence with mAutoRestartOnCrash.
     private final ControlledCarTaskViewCallbacks mCallbacks;
     private final UserManager mUserManager;
+    private final TaskViewManager mTaskViewManager;
 
-    public ControlledCarTaskView(Activity context,
+    ControlledCarTaskView(Activity context,
             ShellTaskOrganizer organizer,
             TaskViewTransitions taskViewTransitions,
             SyncTransactionQueue syncQueue,
@@ -63,13 +65,15 @@ final class ControlledCarTaskView extends CarTaskView {
             Intent activityIntent,
             Boolean autoRestartOnCrash,
             ControlledCarTaskViewCallbacks callbacks,
-            UserManager userManager) {
+            UserManager userManager,
+            TaskViewManager taskViewManager) {
         super(context, organizer, taskViewTransitions, syncQueue);
         mCallbackExecutor = callbackExecutor;
         mActivityIntent = activityIntent;
         mAutoRestartOnCrash = autoRestartOnCrash;
         mCallbacks = callbacks;
         mUserManager = userManager;
+        mTaskViewManager = taskViewManager;
 
         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewCreated(this));
     }
@@ -127,10 +131,24 @@ final class ControlledCarTaskView extends CarTaskView {
     @Override
     public void onTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
         super.onTaskVanished(taskInfo);
-        if (mAutoRestartOnCrash) {
+        if (mAutoRestartOnCrash && mTaskViewManager.isHostVisible()) {
+            // onTaskVanished can be called when the host is in the background. In this case
+            // embedded activity should not be started.
             Log.i(TAG, "Restarting task " + taskInfo.baseActivity
                     + " in ControlledCarTaskView");
             startActivity();
         }
+    }
+
+    @Override
+    void showEmbeddedTask(WindowContainerTransaction wct) {
+        if (mTaskInfo == null) {
+            if (DBG) {
+                Log.d(TAG, "mTaskInfo is null, discarding showEmbeddedTask()");
+            }
+            startActivity();
+            return;
+        }
+        super.showEmbeddedTask(wct);
     }
 }
