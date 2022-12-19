@@ -144,7 +144,7 @@ final class ControlledCarTaskView extends CarTaskView {
     void showEmbeddedTask(WindowContainerTransaction wct) {
         if (mTaskInfo == null) {
             if (DBG) {
-                Log.d(TAG, "mTaskInfo is null, discarding showEmbeddedTask()");
+                Log.d(TAG, "Embedded task not available, starting it now.");
             }
             startActivity();
             return;
