@@ -273,22 +273,43 @@ public final class TaskViewManager {
     };
 
     public TaskViewManager(Activity context, Handler mainHandler) {
-        if (DBG) Slog.d(TAG, "TaskViewManager(): " + context);
-        mContext = context;
-        mShellExecutor = new HandlerExecutor(mainHandler);
-        mTaskOrganizer = new ShellTaskOrganizer(mShellExecutor);
-        mHostTaskId = mContext.getTaskId();
-        TransactionPool txPool = new TransactionPool();
-        mSyncQueue = new SyncTransactionQueue(txPool, mShellExecutor);
+        this(context, mainHandler, new HandlerExecutor(mainHandler));
+    }
 
-        initCar();
-        ShellInit shellInit = new ShellInit(mShellExecutor);
-        ShellController shellController = initShellController(shellInit, txPool);
-        mTransitions = initTransitions(shellInit, txPool, shellController, mainHandler);
-        mTaskViewTransitions = new TaskViewTransitions(mTransitions);
-        shellInit.init();
-        initTaskOrganizer(mCarActivityManagerRef);
-        mContext.registerActivityLifecycleCallbacks(mActivityLifecycleCallbacks);
+    private TaskViewManager(Activity context, Handler mainHandler,
+            HandlerExecutor handlerExecutor) {
+        this(context, mainHandler, handlerExecutor, new ShellTaskOrganizer(handlerExecutor),
+                new TransactionPool(), new ShellCommandHandler(), new ShellInit(handlerExecutor));
+    }
+
+    private TaskViewManager(Activity context, Handler mainHandler, HandlerExecutor handlerExecutor,
+            ShellTaskOrganizer taskOrganizer, TransactionPool transactionPool,
+            ShellCommandHandler shellCommandHandler, ShellInit shellinit) {
+        this(context, mainHandler, handlerExecutor, taskOrganizer,
+                transactionPool,
+                shellinit,
+                new ShellController(shellinit, shellCommandHandler, handlerExecutor),
+                new DisplayController(context,
+                        WindowManagerGlobal.getWindowManagerService(), shellinit, handlerExecutor)
+        );
+    }
+
+    private TaskViewManager(Activity context, Handler mainHandler, HandlerExecutor handlerExecutor,
+            ShellTaskOrganizer taskOrganizer, TransactionPool transactionPool, ShellInit shellinit,
+            ShellController shellController, DisplayController dc) {
+        this(context, handlerExecutor, taskOrganizer,
+                new SyncTransactionQueue(transactionPool, handlerExecutor),
+                new Transitions(context, shellinit, shellController, taskOrganizer,
+                        transactionPool, dc, handlerExecutor, mainHandler, handlerExecutor),
+                shellinit,
+                shellController,
+                new StartingWindowController(context, shellinit,
+                        shellController,
+                        taskOrganizer,
+                        handlerExecutor,
+                        new PhoneStartingWindowTypeAlgorithm(),
+                        new IconProvider(context),
+                        transactionPool));
     }
 
     @VisibleForTesting
