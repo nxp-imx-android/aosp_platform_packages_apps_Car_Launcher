@@ -20,9 +20,17 @@
     <bool name="car_app_show_recent_apps">true</bool>
 
     <!-- If the app grid should show a toolbar -->
-    <bool name="car_app_show_toolbar">true</bool>
+    <bool name="car_app_show_toolbar">false</bool>
 
     <!-- If the control bar's seekbar uses the color from media source -->
     <bool name="use_media_source_color_for_seek_bar">true</bool>
+
+    <!-- If the app grid should support user drag and drop to reorder app items -->
+    <bool name="config_allow_reordering">true</bool>
+
+    <!-- Whether the app grid should use @dimen/app_grid_width and @dimen/app_grid_height.
+    If this is set to true, app grid will fill the available space, If this is set to false, exact
+    defined dimensions will be used instead.-->
+    <bool name="use_defined_app_grid_dimensions">false</bool>
 </resources>
 

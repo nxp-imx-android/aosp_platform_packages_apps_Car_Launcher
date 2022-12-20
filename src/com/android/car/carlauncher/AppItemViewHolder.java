@@ -16,10 +16,23 @@
 
 package com.android.car.carlauncher;
 
+import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Pair;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,17 +43,64 @@ import androidx.recyclerview.widget.RecyclerView;
  * App item view holder that contains the app icon and name.
  */
 public class AppItemViewHolder extends RecyclerView.ViewHolder {
+    private static final String APP_ITEM_DRAG_TAG = "com.android.car.launcher.APP_ITEM_DRAG_TAG";
+    private final long mReleaseAnimationDurationMs;
+    private final long mLongPressAnimationDurationMs;
+    private final long mDropAnimationDelayMs;
+    private final int mHighlightTransitionDurationMs;
+    private final int mIconSize;
+    private final int mIconScaledSize;
     private final Context mContext;
-    private View mAppItem;
-    private ImageView mAppIconView;
-    private TextView mAppNameView;
+    private final LinearLayout mAppItemView;
+    private final ImageView mAppIcon;
+    private final TextView mAppName;
+    private final AppItemDragCallback mDragCallback;
+    private final AppGridPageSnapper.AppGridPageSnapCallback mSnapCallback;
+    private final Rect mPageBound;
+    private final boolean mConfigReorderAllowed;
+    private final int mThresholdToStartDragDrop;
 
-    AppItemViewHolder(View view, Context context) {
+    private boolean mHasAppMetadata;
+    private ComponentName mComponentName;
+    private Point mAppIconCenter;
+    private TransitionDrawable mBackgroundHighlight;
+    private int mAppItemWidth;
+    private int mAppItemHeight;
+    private boolean mIsTargeted;
+    private boolean mIsSelected;
+    private boolean mCanStartDragAction;
+
+    AppItemViewHolder(View view, Context context, AppItemDragCallback dragCallback,
+            AppGridPageSnapper.AppGridPageSnapCallback snapCallback, Rect pageBound) {
         super(view);
         mContext = context;
-        mAppItem = view.findViewById(R.id.app_item);
-        mAppIconView = mAppItem.findViewById(R.id.app_icon);
-        mAppNameView = mAppItem.findViewById(R.id.app_name);
+        mAppItemView = view.findViewById(R.id.app_item);
+        mAppIcon = mAppItemView.findViewById(R.id.app_icon);
+        mAppName = mAppItemView.findViewById(R.id.app_name);
+        mDragCallback = dragCallback;
+        mSnapCallback = snapCallback;
+        mPageBound = pageBound;
+
+        mIconSize = view.getResources().getDimensionPixelSize(R.dimen.app_icon_size);
+        mConfigReorderAllowed = view.getResources().getBoolean(R.bool.config_allow_reordering);
+        // distance that users must drag (hold and attempt to move the app icon) to initiate
+        // reordering, measured in pixels on screen.
+        mThresholdToStartDragDrop = view.getResources().getDimensionPixelSize(
+                R.dimen.threshold_to_start_drag_drop);
+
+        mIconScaledSize = view.getResources().getDimensionPixelSize(
+                R.dimen.app_icon_scaled_size);
+        // duration for animating the resizing of app icon on long press
+        mLongPressAnimationDurationMs = view.getResources().getInteger(
+                R.integer.ms_long_press_animation_duration);
+        // duration for animating the resizing after long press is released
+        mReleaseAnimationDurationMs = view.getResources().getInteger(
+                R.integer.ms_release_animation_duration);
+        // duration to animate the highlighting of view holder when it is targeted during drag drop
+        mHighlightTransitionDurationMs = view.getResources().getInteger(
+                R.integer.ms_background_highlight_duration);
+        // delay before animating the drop animation when a valid drop event has been received
+        mDropAnimationDelayMs = view.getResources().getInteger(R.integer.ms_drop_animation_delay);
     }
 
     /**
@@ -49,37 +109,429 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
      * @param app Pass {@code null} will empty out the view.
      */
     public void bind(@Nullable AppMetaData app, boolean isDistractionOptimizationRequired) {
-        // Empty out the view
-        mAppIconView.setImageDrawable(null);
-        mAppNameView.setText(null);
-
+        resetViewHolder();
         if (app == null) {
             return;
         }
 
-        mAppNameView.setText(app.getDisplayName());
-        mAppIconView.setImageDrawable(app.getIcon());
+        mHasAppMetadata = true;
+        mAppItemView.setFocusable(true);
+        mAppName.setText(app.getDisplayName());
+        mAppIcon.setImageDrawable(app.getIcon());
+        mComponentName = app.getComponentName();
+
+        Drawable highlightedLayer = mContext.getDrawable(R.drawable.app_item_highlight);
+        Drawable emptyLayer = mContext.getDrawable(R.drawable.app_item_highlight);
+        emptyLayer.setAlpha(0);
+        mBackgroundHighlight = new TransitionDrawable(new Drawable[]{emptyLayer, highlightedLayer});
+        mBackgroundHighlight.resetTransition();
+        mAppItemView.setBackground(mBackgroundHighlight);
+
+        // app icon's relative location within view holders are only measurable after it is drawn
+        mAppIcon.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        mAppIcon.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        Rect appIconBound = new Rect();
+                        mAppIcon.getDrawingRect(appIconBound);
+                        mAppItemView.offsetDescendantRectToMyCoords(mAppIcon, appIconBound);
+                        mAppIconCenter = new Point(
+                                /* x */ (appIconBound.right + appIconBound.left) / 2,
+                                /* y */ (appIconBound.bottom + appIconBound.top) / 2);
+                        mAppItemWidth = mAppItemView.getWidth();
+                        mAppItemHeight = mAppItemView.getHeight();
+                    }
+                });
+
+        // during a drag and drop operation, the user could scroll to another page and return to the
+        // previous page, so we need to rebind the app with the correct visibility.
+        setStateSelected(mComponentName.equals(mDragCallback.mSelectedComponent));
+
         boolean isLaunchable =
                 !isDistractionOptimizationRequired || app.getIsDistractionOptimized();
-        mAppIconView.setAlpha(mContext.getResources().getFloat(
+        mAppIcon.setAlpha(mContext.getResources().getFloat(
                 isLaunchable ? R.dimen.app_icon_opacity : R.dimen.app_icon_opacity_unavailable));
+        if (mConfigReorderAllowed && !isDistractionOptimizationRequired) {
+            mAppItemView.setOnDragListener(new AppItemOnDragListener());
+        }
 
         if (isLaunchable) {
-            mAppItem.setOnClickListener(v -> app.getLaunchCallback().accept(mContext));
-            boolean hasLongClickCallback = (app.getAlternateLaunchCallback() != null);
-            mAppItem.setLongClickable(hasLongClickCallback);
-            if (hasLongClickCallback) {
-                // Note setOnLongClickListener implicitly sets view to be long clickable
-                mAppItem.setOnLongClickListener(v -> {
-                    app.getAlternateLaunchCallback().accept(Pair.create(mContext, v));
-                    return true;
+            View.OnClickListener appLaunchListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    app.getLaunchCallback().accept(mContext);
+                    mSnapCallback.notifySnapToPosition(getAbsoluteAdapterPosition());
+                }
+            };
+            mAppItemView.setOnClickListener(appLaunchListener);
+            mAppIcon.setOnClickListener(appLaunchListener);
+            // long click actions should not be enabled when driving
+            if (!isDistractionOptimizationRequired) {
+                View.OnLongClickListener longPressListener = new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        // display set shortcut pop-up for force stop
+                        app.getAlternateLaunchCallback().accept(Pair.create(mContext, v));
+                        // drag and drop should only start after long click animation is complete
+                        mDragCallback.notifyItemLongPressed(true);
+                        mDragCallback.scheduleDragTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                mCanStartDragAction = true;
+                            }
+                        }, mLongPressAnimationDurationMs);
+                        animateIconResize(/* scale */ ((float) mIconScaledSize / mIconSize),
+                                /* duration */ mLongPressAnimationDurationMs);
+                        return true;
+                    }
+                };
+                mAppIcon.setLongClickable(true);
+                mAppIcon.setOnLongClickListener(longPressListener);
+                mAppIcon.setOnTouchListener(new View.OnTouchListener() {
+                    private float mActionDownX;
+                    private float mActionDownY;
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        int action = event.getAction();
+                        if (action == MotionEvent.ACTION_DOWN) {
+                            mActionDownX = event.getX();
+                            mActionDownY = event.getY();
+                            mCanStartDragAction = false;
+                        } else if (action == MotionEvent.ACTION_MOVE
+                                && shouldStartDragAndDrop(event, mActionDownX, mActionDownY)) {
+                            startDragAndDrop(event.getX(), event.getY());
+                            mCanStartDragAction = false;
+                        } else if (action == MotionEvent.ACTION_UP
+                                || action == MotionEvent.ACTION_CANCEL) {
+                            animateIconResize(/* scale */ 1.f,
+                                    /* duration */ mReleaseAnimationDurationMs);
+                            mDragCallback.cancelDragTasks();
+                            mDragCallback.notifyItemLongPressed(false);
+                            mCanStartDragAction = false;
+                        }
+                        return false;
+                    }
                 });
             }
         } else {
             String warningText = mContext.getResources()
                     .getString(R.string.driving_toast_text, app.getDisplayName());
-            mAppItem.setOnClickListener(
-                    v -> Toast.makeText(mContext, warningText, Toast.LENGTH_LONG).show());
+            View.OnClickListener appLaunchListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(mContext, warningText, Toast.LENGTH_LONG).show();
+                }
+            };
+            mAppItemView.setOnClickListener(appLaunchListener);
+            mAppIcon.setOnClickListener(appLaunchListener);
+
+            mAppIcon.setLongClickable(false);
+            mAppIcon.setOnLongClickListener(null);
+            mAppIcon.setOnTouchListener(null);
         }
+    }
+
+    void animateIconResize(float scale, long duration) {
+        mAppIcon.animate().setDuration(duration).scaleX(scale);
+        mAppIcon.animate().setDuration(duration).scaleY(scale);
+    }
+
+    /**
+     * Transforms the app icon into the drop shadow's drop location in preparation for animateDrop,
+     * which should be dispatched by AppGridItemAnimator shortly after prepareForDropAnimation.
+     */
+    void prepareForDropAnimation() {
+        // dragOffset is the offset between dragged icon center and users finger touch point
+        int dragOffsetX = mDragCallback.mDragPoint.x - mIconScaledSize / 2;
+        int dragOffsetY = mDragCallback.mDragPoint.y - mIconScaledSize / 2;
+        // draggedIconCenter is the center of the dropped app icon, after the user finger touch
+        // point offset is subtracted to another
+        int draggedIconCenterX = mDragCallback.mDropPoint.x - dragOffsetX;
+        int draggedIconCenterY = mDragCallback.mDropPoint.y - dragOffsetY;
+        // dx and dx are the offset to translate between the dragged icon and dropped location
+        int dx = draggedIconCenterX - mDragCallback.mDropDestination.x;
+        int dy = draggedIconCenterY - mDragCallback.mDropDestination.y;
+        mAppIcon.setScaleX((float) mIconScaledSize / mIconSize);
+        mAppIcon.setScaleY((float) mIconScaledSize / mIconSize);
+        mAppIcon.setAlpha(1.f);
+        mAppIcon.setTranslationX(dx);
+        mAppIcon.setTranslationY(dy);
+        mAppItemView.setTranslationZ(.5f);
+        mAppName.setTranslationZ(.5f);
+        mAppIcon.setTranslationZ(1.f);
+    }
+
+
+    void prepareForMoveAnimation() {
+        mAppItemView.setTranslationZ(0.f);
+        mAppIcon.setTranslationZ(0.f);
+        mAppName.setTranslationZ(0.f);
+    }
+
+    /**
+     * Animates the drop transition back to the original app icon location.
+     */
+    ViewPropertyAnimator getDropAnimation() {
+        return mAppIcon.animate()
+                .translationX(0).translationY(0)
+                .scaleX(1.f).scaleY(1.f)
+                .setStartDelay(mDropAnimationDelayMs);
+    }
+
+    private void resetViewHolder() {
+        mHasAppMetadata = false;
+
+        mAppItemView.setOnDragListener(null);
+        mAppItemView.setFocusable(false);
+        mAppItemView.setOnClickListener(null);
+        mAppIcon.setLongClickable(false);
+        mAppIcon.setOnLongClickListener(null);
+        mAppIcon.setOnTouchListener(null);
+
+        mAppItemView.setBackground(null);
+        mAppIcon.setImageDrawable(null);
+        mAppName.setText(null);
+    }
+
+    private void setStateTargeted(boolean targeted) {
+        if (mIsTargeted == targeted) return;
+        mIsTargeted = targeted;
+        if (targeted) {
+            mDragCallback.notifyItemTargeted(AppItemViewHolder.this);
+            mBackgroundHighlight.startTransition(mHighlightTransitionDurationMs);
+            return;
+        }
+        mDragCallback.notifyItemTargeted(null);
+        mBackgroundHighlight.resetTransition();
+    }
+
+    private void setStateSelected(boolean selected) {
+        if (mIsSelected == selected) return;
+        mIsSelected = selected;
+        if (selected) {
+            mAppIcon.setAlpha(0.f);
+            return;
+        }
+        mAppIcon.setAlpha(1.f);
+    }
+
+
+    private boolean shouldStartDragAndDrop(MotionEvent event, float actionDownX,
+            float actionDownY) {
+        // the move event should be with in the bounds of the app icon
+        boolean isEventWithinIcon = event.getX() >= 0 && event.getY() >= 0
+                && event.getX() < mIconScaledSize && event.getY() < mIconScaledSize;
+        // the move event should be further by more than mThresholdToStartDragDrop pixels
+        // away from the initial touch input.
+        boolean isDistancePastThreshold = Math.hypot(/* dx */ Math.abs(event.getX() - actionDownX),
+                /* dy */ event.getY() - actionDownY) > mThresholdToStartDragDrop;
+        return mConfigReorderAllowed && mCanStartDragAction && isEventWithinIcon
+                && isDistancePastThreshold;
+    }
+
+    private void startDragAndDrop(float eventX, float eventY) {
+        ClipData clipData = new ClipData(/* label */ APP_ITEM_DRAG_TAG,
+                /* mimeTypes */ new String[]{ "" },
+                /* item */ new ClipData.Item(APP_ITEM_DRAG_TAG));
+
+        // since the app icon is scaled, the touch point that users should be holding when drag
+        // shadow is deployed should also be scaled
+        Point dragPoint = new Point(/* x */ (int) (eventX / mIconSize * mIconScaledSize),
+                /* y */ (int) (eventY / mIconSize * mIconScaledSize));
+
+        AppItemDragShadowBuilder dragShadowBuilder = new AppItemDragShadowBuilder(mAppIcon,
+                /* touchPointX */ dragPoint.x, /* touchPointX */ dragPoint.y,
+                /* size */ mIconSize, /* scaledSize */ mIconScaledSize);
+        mAppIcon.startDragAndDrop(clipData, /* dragShadowBuilder */ dragShadowBuilder,
+                /* myLocalState */ null, /* flags */ View.DRAG_FLAG_OPAQUE);
+
+        mDragCallback.notifyItemSelected(AppItemViewHolder.this, dragPoint);
+    }
+
+    class AppItemOnDragListener implements View.OnDragListener{
+        @Override
+        public boolean onDrag(View view, DragEvent event) {
+            if (AppItemViewHolder.isAppItemDragEvent(event) && mHasAppMetadata
+                    && mSnapCallback.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+                int action = event.getAction();
+                if (action == DragEvent.ACTION_DRAG_STARTED) {
+                    if (mComponentName.equals(mDragCallback.mSelectedComponent)) {
+                        setStateSelected(true);
+                    }
+                } else if (action == DragEvent.ACTION_DRAG_LOCATION) {
+                    if (isTargetIconVisible() && isDraggedIconInBound(event)
+                            && mDragCallback.mSelectedComponent != null) {
+                        setStateTargeted(true);
+                    } else {
+                        setStateTargeted(false);
+                    }
+                } else if (action == DragEvent.ACTION_DRAG_EXITED) {
+                    setStateTargeted(false);
+                } else if (action == DragEvent.ACTION_DROP) {
+                    if (mComponentName.equals(mDragCallback.mTargetedComponent)) {
+                        Point dropPoint = new Point(/* x */ (int) event.getX(),
+                                /* y */ (int) event.getY());
+                        mDragCallback.notifyItemDropped(dropPoint);
+                    }
+                    setStateTargeted(false);
+                }
+            }
+
+            if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                setStateSelected(false);
+            }
+            return true;
+        }
+    }
+
+    private boolean isTargetIconVisible() {
+        if (mAppIcon == null || mAppIcon.getMeasuredWidth() == 0) {
+            return false;
+        }
+        final Rect bound = new Rect();
+        mAppIcon.getGlobalVisibleRect(bound);
+        return bound.intersect(mPageBound);
+    }
+
+    private boolean isDraggedIconInBound(DragEvent event) {
+        int iconLeft = (int) event.getX() - mDragCallback.mDragPoint.x;
+        int iconTop = (int) event.getY() - mDragCallback.mDragPoint.y;
+        return iconLeft >= 0 && iconTop >= 0 && (iconLeft + mIconScaledSize) < mAppItemWidth
+                && (iconTop + mIconScaledSize) < mAppItemHeight;
+    }
+
+    boolean isMostRecentlySelected() {
+        return mComponentName != null
+                && mComponentName.equals(mDragCallback.getPreviousSelectedComponent());
+    }
+
+    /**
+     * Static method for determining if a DragEvent corresponds to an AppItemIconView's DragShadow.
+     */
+    public static boolean isAppItemDragEvent(DragEvent event) {
+        return event != null && event.getClipDescription() != null
+                && event.getClipDescription().getLabel().equals(APP_ITEM_DRAG_TAG);
+    }
+
+    /**
+     * A Callback contract between AppItemViewHolders and its listener. There are multiple view
+     * holders updating the callback but there should only be one listener.
+     *
+     * Drag drop operations will be started and listened to by each AppItemViewHolder, so all
+     * visual elements should be handled directly by the AppItemViewHolder. This class should only
+     * be used to communicate adapter data position changes.
+     */
+    public static class AppItemDragCallback {
+        private static final int NONE = -1;
+        private final AppItemDragListener mDragListener;
+        private final Handler mHandler;
+        private ComponentName mPreviousSelectedComponent;
+        private ComponentName mSelectedComponent;
+        private ComponentName mTargetedComponent;
+        private AppItemViewHolder mTargetedViewHolder;
+        private int mSelectedGridIndex = NONE;
+        private int mTargetedGridIndex = NONE;
+        // x y coordinate within the source app icon that the user finger is holding
+        private Point mDragPoint;
+        // x y coordinate within the viewHolder the drop event was registered
+        private Point mDropPoint;
+        // x y coordinate within the viewHolder which the drop animation should translate to
+        private Point mDropDestination;
+
+        public AppItemDragCallback(AppItemDragListener listener) {
+            mDragListener = listener;
+            mHandler = new Handler(Looper.getMainLooper());
+        }
+
+        /**
+         * The preparation step of drag drop process. Called when a long press gesture has been
+         * inputted or cancelled by the user.
+         */
+        public void notifyItemLongPressed(boolean isLongPressed) {
+            mDragListener.onItemLongPressed(isLongPressed);
+        }
+
+        /**
+         * The initial step of the drag drop process. Called when the drag shadow of an app icon has
+         * been created, and should be immediately set as the drag source.
+         */
+        public void notifyItemSelected(AppItemViewHolder viewHolder, Point dragPoint) {
+            mDragPoint = new Point(dragPoint);
+            mDropDestination = new Point(viewHolder.mAppIconCenter);
+            mSelectedComponent = viewHolder.mComponentName;
+            mSelectedGridIndex = viewHolder.getAbsoluteAdapterPosition();
+            mDragListener.onItemSelected(mSelectedGridIndex);
+        }
+
+        /**
+         * The second step of the drag drop process. Called when a drag shadow enters the bounds of
+         * a view holder (including the view holder containing the dragged icon itself).
+         */
+        public void notifyItemTargeted(@Nullable AppItemViewHolder viewHolder) {
+            if (mTargetedViewHolder != null && !mTargetedViewHolder.equals(viewHolder)) {
+                mTargetedViewHolder.setStateTargeted(false);
+            }
+            if (viewHolder == null) {
+                mTargetedComponent = null;
+                mTargetedViewHolder = null;
+                mTargetedGridIndex = NONE;
+                return;
+            }
+            mTargetedComponent = viewHolder.mComponentName;
+            mTargetedViewHolder = viewHolder;
+            mTargetedGridIndex = viewHolder.getAbsoluteAdapterPosition();
+        }
+
+        /**
+         * The last step of drag and drop. Called when a ACTION_DROP event has been received by a
+         * view holder.
+         *
+         * Note that this event may never be called if the ACTION_DROP event was consumed by
+         * another onDragListener.
+         */
+        public void notifyItemDropped(Point dropPoint) {
+            mDropPoint = new Point(dropPoint);
+            if (mSelectedGridIndex != NONE && mTargetedGridIndex != NONE) {
+                mDragListener.onItemDropped(mSelectedGridIndex, mTargetedGridIndex);
+                resetCallbackState();
+            }
+        }
+
+        /** Returns the previously selected component. */
+        public ComponentName getPreviousSelectedComponent() {
+            return mPreviousSelectedComponent;
+        }
+
+        /** Reset component and callback state after a drag drop event has concluded */
+        public void resetCallbackState() {
+            if (mSelectedComponent != null) {
+                mPreviousSelectedComponent = mSelectedComponent;
+            }
+            mSelectedComponent = mTargetedComponent = null;
+            mSelectedGridIndex = mTargetedGridIndex = NONE;
+        }
+
+        /** Schedules a delayed task that enables drag and drop to start */
+        public void scheduleDragTask(Runnable runnable, long delay) {
+            mHandler.postDelayed(runnable, delay);
+        }
+
+        /** Cancels all schedules tasks (i.e cancels intent to start drag drop) */
+        public void cancelDragTasks() {
+            mHandler.removeCallbacksAndMessages(null);
+        }
+    }
+
+    /**
+     * Listener class that should be implemented by AppGridActivity.
+     */
+    public interface AppItemDragListener {
+        /** Listener method called during AppItemDragCallback.notifyLongPressed */
+        void onItemLongPressed(boolean longPressed);
+        /** Listener method called during AppItemDragCallback.notifyItemSelected */
+        void onItemSelected(int gridPositionFrom);
+        /** Listener method called during AppItemDragCallback.notifyItemDropped */
+        void onItemDropped(int gridPositionFrom, int gridPositionTo);
     }
 }

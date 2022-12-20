@@ -18,14 +18,17 @@ package com.android.car.carlauncher;
 
 import android.os.Parcel;
 
+import androidx.annotation.Nullable;
+
 /**
  * AppItem of an app including the package name, the display name and the app's metadata.
  */
 public class AppItem extends LauncherItem {
     private AppMetaData mAppMetaData;
 
-    public AppItem(String packageName, String displayName, AppMetaData appMetaData) {
-        super(packageName, displayName);
+    public AppItem(String packageName, String className, String displayName,
+            @Nullable AppMetaData appMetaData) {
+        super(packageName, className, displayName);
         mAppMetaData = appMetaData;
     }
 
@@ -52,5 +55,31 @@ public class AppItem extends LauncherItem {
 
     public AppMetaData getAppMetaData() {
         return mAppMetaData;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof LauncherItem)) {
+            return false;
+        } else {
+            return areContentsTheSame((AppItem) o);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return mAppMetaData == null ? 0 : mAppMetaData.getComponentName().hashCode();
+    }
+
+    @Override
+    public boolean areContentsTheSame(LauncherItem launcherItem) {
+        if (launcherItem instanceof AppItem) {
+            AppItem appItem = (AppItem) launcherItem;
+            if (mAppMetaData == null) {
+                return appItem.mAppMetaData == null;
+            }
+            return mAppMetaData.equals(appItem.mAppMetaData);
+        }
+        return false;
     }
 }
