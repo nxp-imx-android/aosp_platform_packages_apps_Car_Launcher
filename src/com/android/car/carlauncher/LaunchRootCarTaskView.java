@@ -133,10 +133,11 @@ final class LaunchRootCarTaskView extends CarTaskView {
     protected void onCarTaskViewInitialized() {
         super.onCarTaskViewInitialized();
         mShellTaskOrganizer.getExecutor().execute(() -> {
-            // Should run on shell's executor
+            // removeWithTaskOrganizer should be true to signal the system that this root task is
+            // inside a TaskView and should not be animated by the core.
             mShellTaskOrganizer.createRootTask(DEFAULT_DISPLAY,
                     WINDOWING_MODE_MULTI_WINDOW,
-                    mRootTaskListenerWrapper);
+                    mRootTaskListenerWrapper, /* removeWithTaskOrganizer= */ true);
         });
     }
 
