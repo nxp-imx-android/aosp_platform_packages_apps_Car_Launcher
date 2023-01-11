@@ -114,7 +114,7 @@ public final class TaskViewManager {
                     for (SemiControlledCarTaskView taskView : mSemiControlledTaskViews) {
                         if (taskView.getCallbacks().shouldStartInTaskView(taskInfo)) {
                             if (taskView.isInitialized()) {
-                                taskView.onTaskAppeared(taskInfo, leash);
+                                taskView.dispatchTaskAppeared(taskInfo, leash);
                             }
                             return;
                         }
@@ -144,7 +144,7 @@ public final class TaskViewManager {
                                 // the correct size.
                                 // TODO(b/234879199): Explore more for a better solution.
                                 taskView.onLocationChanged();
-                                taskView.onTaskInfoChanged(taskInfo);
+                                taskView.dispatchTaskInfoChanged(taskInfo);
                             }
                             // Semi-controlled apps are assumed to be Distraction optimised and
                             // hence not reported to CarActivityManager.
@@ -168,7 +168,7 @@ public final class TaskViewManager {
                     for (SemiControlledCarTaskView taskView : mSemiControlledTaskViews) {
                         if (taskView.getCallbacks().shouldStartInTaskView(taskInfo)) {
                             if (taskView.isInitialized()) {
-                                taskView.onTaskVanished(taskInfo);
+                                taskView.dispatchTaskVanished(taskInfo);
                             }
                             return;
                         }

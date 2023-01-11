@@ -27,11 +27,13 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
+import android.view.SurfaceHolder;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.TaskView;
+import com.android.wm.shell.TaskViewTaskController;
 import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
 
@@ -49,11 +51,42 @@ public class CarTaskView extends TaskView {
     private final SyncTransactionQueue mSyncQueue;
     private final SparseArray<Rect> mInsets = new SparseArray<>();
     private boolean mTaskViewReadySent;
+    private TaskViewTaskController mTaskViewTaskController;
 
     public CarTaskView(Context context, ShellTaskOrganizer organizer,
             TaskViewTransitions taskViewTransitions, SyncTransactionQueue syncQueue) {
-        super(context, organizer, taskViewTransitions, syncQueue);
+        this(context, syncQueue,
+                new TaskViewTaskController(context, organizer, taskViewTransitions, syncQueue));
+    }
+
+    public CarTaskView(Context context, SyncTransactionQueue syncQueue,
+            TaskViewTaskController taskViewTaskController) {
+        super(context, taskViewTaskController);
+        mTaskViewTaskController = taskViewTaskController;
         mSyncQueue = syncQueue;
+    }
+
+    /**
+     * Calls {@link TaskViewTaskController#onTaskAppeared(ActivityManager.RunningTaskInfo,
+     * SurfaceControl)}.
+     */
+    public void dispatchTaskAppeared(ActivityManager.RunningTaskInfo taskInfo,
+            SurfaceControl leash) {
+        mTaskViewTaskController.onTaskAppeared(taskInfo, leash);
+    }
+
+    /**
+     * Calls {@link TaskViewTaskController#onTaskVanished(ActivityManager.RunningTaskInfo)}.
+     */
+    public void dispatchTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
+        mTaskViewTaskController.onTaskVanished(taskInfo);
+    }
+
+    /**
+     * Calls {@link TaskViewTaskController#onTaskInfoChanged(ActivityManager.RunningTaskInfo)}.
+     */
+    public void dispatchTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
+        mTaskViewTaskController.onTaskInfoChanged(taskInfo);
     }
 
     @Override
@@ -65,8 +98,8 @@ public class CarTaskView extends TaskView {
     }
 
     @Override
-    protected void notifyInitialized() {
-        super.notifyInitialized();
+    public void surfaceCreated(SurfaceHolder holder) {
+        super.surfaceCreated(holder);
         if (mTaskViewReadySent) {
             if (DBG) Log.i(TAG, "car task view ready already sent");
             return;
@@ -125,9 +158,9 @@ public class CarTaskView extends TaskView {
      * @return the taskId of the currently running task.
      */
     public int getTaskId() {
-        if (mTaskInfo == null) {
+        if (mTaskViewTaskController.getTaskInfo() == null) {
             return INVALID_TASK_ID;
         }
-        return mTaskInfo.taskId;
+        return mTaskViewTaskController.getTaskInfo().taskId;
     }
 }
