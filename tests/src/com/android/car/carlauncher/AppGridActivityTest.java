@@ -16,6 +16,72 @@
 
 package com.android.car.carlauncher;
 
-public class AppGridActivityTest {
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import android.car.drivingstate.CarUxRestrictionsManager;
+
+import androidx.lifecycle.Lifecycle;
+import androidx.test.core.app.ActivityScenario;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+
+/**
+ * Programmatic tests for AppGridActivity and AppGridScrollBar
+ */
+@RunWith(AndroidJUnit4.class)
+public class AppGridActivityTest {
+    private ActivityScenario<AppGridActivity> mActivityScenario;
+    private CarUxRestrictionsManager mCarUxRestrictionsManager;
+    private AppGridPositionIndicator mPositionIndicator;
+
+    @After
+    public void tearDown() {
+        if (mActivityScenario != null) {
+            mActivityScenario.close();
+        }
+    }
+
+    @Test
+    public void onCreate_appGridRecyclerView_isVisible() {
+        mActivityScenario = ActivityScenario.launch(AppGridActivity.class);
+        onView(withId(R.id.apps_grid)).check(matches(isDisplayed()));
+        onView(withId(R.id.position_indicator_container)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void onResume_ScrollStateIsUpdated() {
+        mActivityScenario = ActivityScenario.launch(AppGridActivity.class);
+        mActivityScenario.onActivity(activity -> {
+            mPositionIndicator = mock(AppGridPositionIndicator.class);
+            activity.setPositionIndicator(mPositionIndicator);
+        });
+        mActivityScenario.moveToState(Lifecycle.State.RESUMED);
+        onView(withId(R.id.apps_grid)).check(matches(isDisplayed()));
+        onView(withId(R.id.position_indicator_container)).check(matches(isDisplayed()));
+        verify(mPositionIndicator, times(1)).updateDimensions(anyInt());
+
+    }
+
+    @Test
+    public void onStop_CarUxRestrictionsManager_unregisterListener() {
+        mActivityScenario = ActivityScenario.launch(AppGridActivity.class);
+        mActivityScenario.onActivity(activity -> {
+            mCarUxRestrictionsManager = mock(CarUxRestrictionsManager.class);
+            activity.setCarUxRestrictionsManager(mCarUxRestrictionsManager);
+        });
+        mActivityScenario.moveToState(Lifecycle.State.DESTROYED);
+        verify(mCarUxRestrictionsManager, times(1)).unregisterListener();
+    }
 }

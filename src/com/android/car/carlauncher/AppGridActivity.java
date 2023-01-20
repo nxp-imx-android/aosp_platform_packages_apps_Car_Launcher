@@ -56,6 +56,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -91,7 +92,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class AppGridActivity extends AppCompatActivity implements InsetsChangedListener,
         AppGridPageSnapper.PageSnapListener, AppItemViewHolder.AppItemDragListener,
-        AppLauncherUtils.ShortcutsListener{
+        AppLauncherUtils.ShortcutsListener {
     private static final String TAG = "AppGridActivity";
     private static final String MODE_INTENT_EXTRA = "com.android.car.carlauncher.mode";
     private static CarUiShortcutsPopup sCarUiShortcutsPopup;
@@ -447,15 +448,15 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                         mPositionIndicatorContainer.setLayoutParams(containerParams);
                         mPositionIndicator.setAppGridDimensions(mAppGridWidth, mAppGridMargin);
 
-                        // reattach the adapter to recreated view holders with new dimen
-                        Rect pageBound = new Rect();
-                        mRecyclerView.getGlobalVisibleRect(pageBound);
-                        mAdapter.updateAppGridDimensions(pageBound, mAppGridWidth / mNumOfCols,
-                                mAppGridHeight / mNumOfRows);
-                        mRecyclerView.setAdapter(mAdapter);
+                            // reattach the adapter to recreated view holders with new dimen
+                            Rect pageBound = new Rect();
+                            mRecyclerView.getGlobalVisibleRect(pageBound);
+                            mAdapter.updateAppGridDimensions(pageBound, mAppGridWidth / mNumOfCols,
+                                    mAppGridHeight / mNumOfRows);
+                            mRecyclerView.setAdapter(mAdapter);
+                        }
                     }
-                }
-            });
+                });
     }
 
     @Override
@@ -815,4 +816,15 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
             mOffPageScrollState.set(PAGE_SCROLL_STATE_DISPATCHED);
         }
     }
+
+    @VisibleForTesting
+    void setCarUxRestrictionsManager(CarUxRestrictionsManager carUxRestrictionsManager) {
+        mCarUxRestrictionsManager = carUxRestrictionsManager;
+    }
+
+    @VisibleForTesting
+    void setPositionIndicator(AppGridPositionIndicator positionIndicator) {
+        mPositionIndicator = positionIndicator;
+    }
+
 }

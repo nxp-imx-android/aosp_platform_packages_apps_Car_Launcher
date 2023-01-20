@@ -51,7 +51,6 @@ public class AppGridPageSnapper extends LinearSnapHelper {
     @Nullable
     private OrientationHelper mHorizontalHelper;
 
-
     /**
      * Finds the view to snap to. The view to snap can be either the current, next or previous page.
      * The RecyclerView is scrolling horizontally and the start is defined as the left
@@ -59,7 +58,7 @@ public class AppGridPageSnapper extends LinearSnapHelper {
     @Override
     @Nullable
     public View findSnapView(@Nullable RecyclerView.LayoutManager layoutManager) {
-        if (layoutManager == null) {
+        if (layoutManager == null || layoutManager.getChildCount() == 0) {
             return null;
         }
 
@@ -78,7 +77,6 @@ public class AppGridPageSnapper extends LinearSnapHelper {
             mBlockSize = numOfColumns
                     * ((GridLayoutManager) mRecyclerView.getLayoutManager()).getSpanCount();
         }
-
         View currentPosView = getFirstMostVisibleChild(orientationHelper);
         RecyclerView.ViewHolder holder = mRecyclerView.findContainingViewHolder(currentPosView);
         int adapterPos = holder.getAbsoluteAdapterPosition();
@@ -101,7 +99,7 @@ public class AppGridPageSnapper extends LinearSnapHelper {
 
         mSnapCallback.notifySnapToPosition(posToReturn);
 
-        //If there is a gap between the start of the first fully visible child and the start of
+        // If there is a gap between the start of the first fully visible child and the start of
         // the recycler view (this can happen after the swipe or when the swipe offset is too small
         // such that the first fully visible item doesn't change), smooth scroll to make sure the
         // gap no longer exists.
@@ -175,7 +173,6 @@ public class AppGridPageSnapper extends LinearSnapHelper {
     private View getFirstMostVisibleChild(@NonNull OrientationHelper helper) {
         float mostVisiblePercent = 0;
         View mostVisibleView = null;
-
         for (int i = 0; i < mRecyclerView.getLayoutManager().getChildCount(); i++) {
             View child = mRecyclerView.getLayoutManager().getChildAt(i);
             float visiblePercentage = getPercentageVisible(child, helper);
