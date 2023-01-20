@@ -92,6 +92,7 @@ public final class TaskViewManager {
     private final ShellTaskOrganizer mTaskOrganizer;
     private TaskViewInputInterceptor mTaskViewInputInterceptor;
     private final int mHostTaskId;
+    private int mRootTaskCount;
 
     // All TaskView are bound to the Host Activity if it exists.
     @ShellMainThread
@@ -128,6 +129,7 @@ public final class TaskViewManager {
                     CarActivityManager carAm = mCarActivityManagerRef.get();
                     if (carAm != null) {
                         carAm.onTaskAppeared(taskInfo);
+                        mRootTaskCount++;
                     } else {
                         Log.w(TAG, "CarActivityManager is null, skip onTaskAppeared: TaskInfo"
                                 + " = " + taskInfo);
@@ -177,6 +179,7 @@ public final class TaskViewManager {
                     CarActivityManager carAm = mCarActivityManagerRef.get();
                     if (carAm != null) {
                         carAm.onTaskVanished(taskInfo);
+                        mRootTaskCount--;
                     } else {
                         Log.w(TAG, "CarActivityManager is null, skip onTaskAppeared: TaskInfo"
                                 + " = " + taskInfo);
@@ -327,6 +330,7 @@ public final class TaskViewManager {
         mTransitions = transitions;
         mTaskViewTransitions = new TaskViewTransitions(mTransitions);
         mTaskViewInputInterceptor = new TaskViewInputInterceptor(context, this);
+        mRootTaskCount = 0;
 
         initCar();
         shellInit.init();
@@ -606,5 +610,11 @@ public final class TaskViewManager {
     /** Only meant for testing, should not be used by real code. */
     void setTaskViewInputInterceptor(TaskViewInputInterceptor taskViewInputInterceptor) {
         mTaskViewInputInterceptor = taskViewInputInterceptor;
+    }
+
+    //TODO(b/266154272): find a better way to check what is in rootTaskView
+    //TODO(b/266742500): Adding test for this test case after b/266742500 is fixed
+    public int getRootTaskCount() {
+        return mRootTaskCount;
     }
 }
