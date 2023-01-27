@@ -59,7 +59,7 @@ final class LaunchRootCarTaskView extends CarTaskView {
                     // The first call to onTaskAppeared() is always for the root-task.
                     if (mLaunchRootTask == null && !taskInfo.hasParentTask()) {
                         setRootTaskAsLaunchRoot(taskInfo);
-                        LaunchRootCarTaskView.this.onTaskAppeared(taskInfo, leash);
+                        LaunchRootCarTaskView.this.dispatchTaskAppeared(taskInfo, leash);
                         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewReady());
                         return;
                     }
@@ -77,7 +77,7 @@ final class LaunchRootCarTaskView extends CarTaskView {
                 public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
                     if (mLaunchRootTask != null
                             && mLaunchRootTask.taskId == taskInfo.taskId) {
-                        LaunchRootCarTaskView.this.onTaskInfoChanged(taskInfo);
+                        LaunchRootCarTaskView.this.dispatchTaskInfoChanged(taskInfo);
                         if (DBG) {
                             Log.d(TAG, "got onTaskInfoChanged for the launch root task. Not "
                                     + "forwarding this to root task listener");
@@ -100,7 +100,7 @@ final class LaunchRootCarTaskView extends CarTaskView {
                     }
                     if (mLaunchRootTask != null
                             && mLaunchRootTask.taskId == taskInfo.taskId) {
-                        LaunchRootCarTaskView.this.onTaskVanished(taskInfo);
+                        LaunchRootCarTaskView.this.dispatchTaskVanished(taskInfo);
                         if (DBG) {
                             Log.d(TAG, "got onTaskVanished for the launch root task. Not "
                                     + "forwarding this to root task listener");
@@ -142,8 +142,8 @@ final class LaunchRootCarTaskView extends CarTaskView {
     }
 
     @Override
-    protected void notifyReleased() {
-        super.notifyReleased();
+    public void release() {
+        super.release();
         clearLaunchRootTask();
     }
 

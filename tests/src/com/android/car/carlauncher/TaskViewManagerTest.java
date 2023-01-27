@@ -315,7 +315,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         verify(taskViewCallbacks).onTaskViewCreated(any());
         verify(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
                 eq(WINDOWING_MODE_MULTI_WINDOW),
-                any(ShellTaskOrganizer.TaskListener.class));
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
     }
 
     @Test
@@ -330,7 +331,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
             return null;
         }).when(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
                 eq(WINDOWING_MODE_MULTI_WINDOW),
-                any(ShellTaskOrganizer.TaskListener.class));
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
 
         taskViewManager.createLaunchRootTaskView(
                 mActivity.getMainExecutor(),
@@ -483,7 +485,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
             return null;
         }).when(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
                 eq(WINDOWING_MODE_MULTI_WINDOW),
-                any(ShellTaskOrganizer.TaskListener.class));
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
         taskViewManager.createLaunchRootTaskView(
                 mActivity.getMainExecutor(),
                 mock(LaunchRootCarTaskViewCallbacks.class)
@@ -602,8 +605,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -630,7 +633,7 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
 
         // Stub the taskview with a spy to assert on startActivity.
         ControlledCarTaskView spiedTaskView = spy(controlledCarTaskView);
@@ -656,8 +659,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -686,8 +689,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -714,8 +717,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -744,8 +747,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.

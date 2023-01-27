@@ -143,7 +143,7 @@ final class ControlledCarTaskView extends CarTaskView {
 
     @Override
     void showEmbeddedTask(WindowContainerTransaction wct) {
-        if (mTaskInfo == null) {
+        if (getTaskInfo() == null) {
             if (DBG) {
                 Log.d(TAG, "Embedded task not available, starting it now.");
             }
