@@ -54,4 +54,10 @@
     -->
     <string-array name="config_taskViewPackages" translatable="false">
     </string-array>
+
+    <!--
+        Determines whether or not to use the RemoteCarTaskView from car-lib instead of the
+        CarTaskView that exists inside the CarLauncher.
+    -->
+    <bool name="config_useRemoteCarTaskView">false</bool>
 </resources>

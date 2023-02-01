@@ -21,6 +21,13 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERL
 
 import android.app.ActivityManager;
 import android.app.TaskStackListener;
+import android.car.Car;
+import android.car.app.CarActivityManager;
+import android.car.app.CarTaskViewController;
+import android.car.app.CarTaskViewControllerCallback;
+import android.car.app.ControlledRemoteCarTaskView;
+import android.car.app.ControlledRemoteCarTaskViewCallback;
+import android.car.app.ControlledRemoteCarTaskViewConfig;
 import android.car.user.CarUserManager;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -64,12 +71,14 @@ public class CarLauncher extends FragmentActivity {
     private TaskViewManager mTaskViewManager;
 
     private CarTaskView mTaskView;
+    private ControlledRemoteCarTaskView mRemoteCarTaskView;
     private int mCarLauncherTaskId = INVALID_TASK_ID;
     private Set<HomeCardModule> mHomeCardModules;
 
     /** Set to {@code true} once we've logged that the Activity is fully drawn. */
     private boolean mIsReadyLogged;
     private boolean mUseSmallCanvasOptimizedMap;
+    private boolean mUseRemoteCarTaskView;
 
     private final TaskStackListener mTaskStackListener = new TaskStackListener() {
         @Override
@@ -84,8 +93,7 @@ public class CarLauncher extends FragmentActivity {
             }
             if (!mUseSmallCanvasOptimizedMap
                     && !homeTaskVisible
-                    && mTaskView != null
-                    && mTaskView.getTaskId() == task.taskId) {
+                    && getTaskViewTaskId() == task.taskId) {
                 // The embedded map component received an intent, therefore forcibly bringing the
                 // launcher to the foreground.
                 bringToForeground();
@@ -113,6 +121,7 @@ public class CarLauncher extends FragmentActivity {
 
         mUseSmallCanvasOptimizedMap =
                 CarLauncherUtils.isSmallCanvasOptimizedMapIntentConfigured(this);
+        mUseRemoteCarTaskView = getResources().getBoolean(R.bool.config_useRemoteCarTaskView);
 
         mActivityManager = getSystemService(ActivityManager.class);
         mCarLauncherTaskId = getTaskId();
@@ -134,12 +143,68 @@ public class CarLauncher extends FragmentActivity {
             if (!UserHelperLite.isHeadlessSystemUser(getUserId())) {
                 ViewGroup mapsCard = findViewById(R.id.maps_card);
                 if (mapsCard != null) {
-                    setUpTaskView(mapsCard);
+                    if (mUseRemoteCarTaskView) {
+                        setupRemoteCarTaskView(mapsCard);
+                    } else {
+                        setUpTaskView(mapsCard);
+                    }
                 }
             }
         }
         initializeCards();
+    }
 
+    private void setupRemoteCarTaskView(ViewGroup parent) {
+        Intent mapIntent = mUseSmallCanvasOptimizedMap
+                ? CarLauncherUtils.getSmallCanvasOptimizedMapIntent(this)
+                : CarLauncherUtils.getMapsIntent(this);
+
+        Car.createCar(/* context= */ this, /* handler= */ null,
+                Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
+                (car, ready) -> {
+                    if (!ready) {
+                        Log.w(TAG, "CarService is not ready.");
+                        return;
+                    }
+                    CarActivityManager carAM = (CarActivityManager) car.getCarManager(
+                            Car.CAR_ACTIVITY_SERVICE);
+
+                    carAM.getCarTaskViewController(
+                            this,
+                            getMainExecutor(),
+                            new CarTaskViewControllerCallback() {
+                                @Override
+                                public void onConnected(
+                                        CarTaskViewController carTaskViewController) {
+                                    carTaskViewController.createControlledRemoteCarTaskView(
+                                            new ControlledRemoteCarTaskViewConfig.Builder()
+                                                    .setActivityIntent(mapIntent)
+                                                    .setShouldAutoRestartOnCrash(true)
+                                                    .build(),
+                                            getMainExecutor(),
+                                            new ControlledRemoteCarTaskViewCallback() {
+                                                @Override
+                                                public void onTaskViewCreated(
+                                                        ControlledRemoteCarTaskView taskView) {
+                                                    mRemoteCarTaskView = taskView;
+                                                    parent.addView(taskView);
+                                                }
+
+                                                @Override
+                                                public void onTaskViewInitialized() {
+                                                    maybeLogReady();
+                                                }
+                                            });
+                                }
+
+                                @Override
+                                public void onDisconnected(
+                                        CarTaskViewController carTaskViewController) {
+                                    Log.d(TAG, "onDisconnected");
+                                    parent.removeAllViews();
+                                }
+                            });
+                });
     }
 
     private void setUpTaskView(ViewGroup parent) {
@@ -191,8 +256,25 @@ public class CarLauncher extends FragmentActivity {
         release();
     }
 
+    private boolean isTaskViewInitialized() {
+        return (mTaskView != null && mTaskView.isInitialized())
+                || (mRemoteCarTaskView != null && mRemoteCarTaskView.isInitialized());
+    }
+
+    private int getTaskViewTaskId() {
+        if (mTaskView != null) {
+            return mTaskView.getTaskId();
+        }
+        if (mRemoteCarTaskView != null) {
+            return mRemoteCarTaskView.getTaskInfo() == null
+                    ? INVALID_TASK_ID : mRemoteCarTaskView.getTaskInfo().taskId;
+        }
+        return INVALID_TASK_ID;
+    }
+
     private void release() {
         mTaskView = null;
+        mRemoteCarTaskView = null;
     }
 
     @Override
@@ -233,7 +315,7 @@ public class CarLauncher extends FragmentActivity {
     /** Logs that the Activity is ready. Used for startup time diagnostics. */
     private void maybeLogReady() {
         boolean isResumed = isResumed();
-        boolean taskViewInitialized = mTaskView != null && mTaskView.isInitialized();
+        boolean taskViewInitialized = isTaskViewInitialized();
         if (DEBUG) {
             Log.d(TAG, "maybeLogReady(" + getUserId() + "): mapsReady="
                     + taskViewInitialized + ", started=" + isResumed + ", alreadyLogged: "
