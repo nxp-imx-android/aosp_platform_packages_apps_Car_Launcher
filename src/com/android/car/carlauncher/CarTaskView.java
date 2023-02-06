@@ -97,6 +97,16 @@ public class CarTaskView extends TaskView {
         applyInsets();
     }
 
+    /**
+     * Triggers the change in the WM bounds as per the {@code newBounds} received.
+     *
+     * Should be called when the surface has changed. Can also be called before an animation if
+     * the final bounds are already known.
+     */
+    public void setWindowBounds(Rect newBounds) {
+        mTaskViewTaskController.setWindowBounds(newBounds);
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         super.surfaceCreated(holder);
