@@ -45,6 +45,7 @@ android_library {
         "car-ui-lib",
         "WindowManager-Shell",
         "launcher_item",
+        "SystemUISharedLib"
     ],
 
     libs: ["android.car"],

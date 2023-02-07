@@ -114,4 +114,17 @@
     <!-- distance that users must drag (hold and attempt to move the app icon) to initiate
     drag and drop for reordering app icons. -->
     <dimen name="threshold_to_start_drag_drop">8dp</dimen>
+
+    <!-- Recent task -->
+    <dimen name="recent_task_icon_size">48dp</dimen>
+    <dimen name="recent_task_thumbnail_radius">8dp</dimen>
+    <dimen name="recent_task_col_space">64dp</dimen>
+    <dimen name="recent_task_row_space">12dp</dimen>
+    <!-- The fraction that a recent task should move(from its original position) to
+         be considered as swiped -->
+    <item name="recent_task_swiped_threshold" type="dimen" format="float">0.3</item>
+    <!-- Pixel value by with a recent task should move(from its original position) to
+         start a swipe gesture. If the gesture has a smaller change, the gesture is forwarded to
+         other handlers. -->
+    <item name="recent_task_start_swipe_threshold" type="dimen" format="float">5</item>
 </resources>

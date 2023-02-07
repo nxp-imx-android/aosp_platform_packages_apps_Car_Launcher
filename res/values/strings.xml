@@ -104,4 +104,13 @@
         <item>org.chromium.webview_shell</item>
     </string-array>
 
+    <string name="recents_empty_state_text">No recent items</string>
+    <string name="recents_clear_all_text">Clear All</string>
+    <string name="failure_opening_recent_task_message">App isn\'t available</string>
+    <!--
+        A list of package names that are excluded from recents.
+        DO NOT TRANSLATE.
+    -->
+    <string-array name="packages_hidden_from_recents" translatable="false">
+    </string-array>
 </resources>
