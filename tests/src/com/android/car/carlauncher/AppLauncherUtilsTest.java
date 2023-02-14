@@ -89,6 +89,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     private static final String TEST_DISABLED_APP_2 = "com.android.car.test.disabled2";
     private static final String TEST_ENABLED_APP = "com.android.car.test.enabled";
     private static final String TEST_VIDEO_APP = "com.android.car.test.video";
+    private static final String TEST_MIRROR_APP_PKG = "com.android.car.test.mirroring";
 
     private static final Predicate<ResolveInfo> MATCH_NO_APP = (resolveInfo) -> false;
 
@@ -122,7 +123,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 /* customMediaComponents= */ new ArraySet<>(),
                 /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
-                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener);
+                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener,
+                TEST_MIRROR_APP_PKG,  /* mirroringAppRedirect= */ null);
 
         List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
 
@@ -153,7 +155,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 /* customMediaComponents= */ new ArraySet<>(),
                 /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
-                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener);
+                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener,
+                TEST_MIRROR_APP_PKG,  /* mirroringAppRedirect= */ null);
 
         List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
 
@@ -180,7 +183,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
                 mMockPackageManager, new TestVideoAppPredicate(), mCarMediaManager,
-                mMockShortcutsListener);
+                mMockShortcutsListener, TEST_MIRROR_APP_PKG,  /* mirroringAppRedirect= */ null);
+
 
         // mMockLauncherApps is never stubbed, only services & disabled activities are expected.
         List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
