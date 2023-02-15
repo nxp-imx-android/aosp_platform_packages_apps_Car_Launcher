@@ -29,10 +29,20 @@
     <dimen name="main_screen_widget_margin">16dp</dimen>
 
     <!-- AppGridActivity -->
-    <dimen name="recent_apps_divider_margin">40dp</dimen>
+    <dimen name="app_grid_width">1440dp</dimen>
+    <dimen name="app_grid_height">628dp</dimen>
+    <dimen name="app_grid_margin_horizontal">70dp</dimen>
+    <dimen name="app_icon_size">84dp</dimen>
+    <dimen name="app_icon_scaled_size">100dp</dimen>
     <item name="app_icon_opacity_unavailable" type="dimen" format="float">0.5</item>
     <item name="app_icon_opacity" type="dimen" format="float">1.0</item>
+    <dimen name="app_name_margin_horizontal">6dp</dimen>
+    <dimen name="app_item_highlight_corner_radius">18dp</dimen>
+    <dimen name="app_item_highlight_edge_width">5dp</dimen>
+    <dimen name="position_indicator_edge_corner_radius">4dp</dimen>
+    <dimen name="position_indicator_height">4dp</dimen>
     <!-- Gap between top of screen (statusbar) and header content -->
+    <dimen name="recent_apps_divider_margin">40dp</dimen>
     <dimen name="app_grid_header_margin">@*android:dimen/car_padding_4</dimen>
     <dimen name="panel_margin">@*android:dimen/car_margin</dimen>
     <!-- Height of the text and exit button on the app selection screen -->
@@ -44,7 +54,7 @@
     <dimen name="app_touch_target_padding">@*android:dimen/car_padding_2</dimen>
     <dimen name="app_touch_target_margin">@*android:dimen/car_padding_1</dimen>
     <dimen name="app_grid_row_margin">@*android:dimen/car_padding_4</dimen>
-    <dimen name="app_icon_description_margin">@*android:dimen/car_padding_4</dimen>
+    <dimen name="app_icon_description_margin">@*android:dimen/car_padding_2</dimen>
     <dimen name="app_icon_ripple_radius">@*android:dimen/car_radius_2</dimen>
 
     <!-- AppSearchActivity -->
@@ -95,4 +105,12 @@
     <dimen name="tap_text_margin">24dp</dimen>
 
     <dimen name="control_bar_padding">0dp</dimen>
+
+    <!-- percentage of view holders on the next page that must be fully visible to the user to
+    trigger page snap to the next page -->
+    <item name="page_snap_threshold" format="float" type="dimen">0.3</item>
+
+    <!-- distance that users must drag (hold and attempt to move the app icon) to initiate
+    drag and drop for reordering app icons. -->
+    <dimen name="threshold_to_start_drag_drop">8dp</dimen>
 </resources>

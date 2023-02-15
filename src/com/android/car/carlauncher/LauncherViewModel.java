@@ -16,15 +16,16 @@
 
 package com.android.car.carlauncher;
 
+import android.content.ComponentName;
 import android.util.Log;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.android.car.carlauncher.LauncherItemProto.LauncherItemListMessage;
 import com.android.car.carlauncher.LauncherItemProto.LauncherItemMessage;
-import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
- * A launcher model decides how the apps are display
+ * A launcher model decides how the apps are displayed.
  */
 public class LauncherViewModel extends ViewModel {
     private static final String TAG = "LauncherModel";
@@ -53,13 +54,12 @@ public class LauncherViewModel extends ViewModel {
     private boolean mIsAlphabetized;
     private boolean mAppOrderRead;
     private String mFileName = "order.data";
-    private Map<String, LauncherItem> mLauncherItemMap = new HashMap<>();
+    private Map<ComponentName, LauncherItem> mLauncherItemMap = new HashMap<>();
     private final MutableLiveData<List<LauncherItem>> mCurrentLauncher =
             new MutableLiveData<>(new ArrayList<>());
     private List<LauncherItemMessage> mItemsFromProto = new ArrayList<>();
     private List<LauncherItem> mItemsFromPlatform = new ArrayList<>();
     private List<LauncherItem> mFinalItems = new ArrayList<>();
-    int mUserID;
     private OutputStream mOutputStream;
     private InputStream mInputStream;
     private LauncherItemHelper mLauncherItemHelper;
@@ -81,7 +81,7 @@ public class LauncherViewModel extends ViewModel {
         return mCurrentLauncher;
     }
 
-    public Map<String, LauncherItem> getLauncherItemMap() {
+    public Map<ComponentName, LauncherItem> getLauncherItemMap() {
         return mLauncherItemMap;
     }
 
@@ -114,10 +114,10 @@ public class LauncherViewModel extends ViewModel {
         mItemsFromPlatform.clear();
         List<AppMetaData> apps = launcherAppsInfo.getLaunchableComponentsList();
         for (AppMetaData app : apps) {
-            LauncherItem launcherItem = new AppItem(app.getPackageName(), app.getDisplayName(),
-                    app);
+            LauncherItem launcherItem = new AppItem(app.getPackageName(), app.getClassName(),
+                    app.getDisplayName(), app);
             mItemsFromPlatform.add(launcherItem);
-            mLauncherItemMap.put(launcherItem.getPackageName(), launcherItem);
+            mLauncherItemMap.put(app.getComponentName(), launcherItem);
         }
         Collections.sort(mItemsFromPlatform, LauncherViewModel.ALPHABETICAL_COMPARATOR);
         mIsAlphabetized = true;
@@ -163,30 +163,32 @@ public class LauncherViewModel extends ViewModel {
     }
 
     private void createAppList() {
-        Set<String> pkgNameList = new HashSet<>();
+        Set<ComponentName> componentNames = new HashSet<>();
         if (mIsAlphabetized && mAppOrderRead) {
             mFinalItems.clear();
             if (!mItemsFromProto.isEmpty()) {
                 for (LauncherItemMessage item : mItemsFromProto) {
-                    LauncherItem itemFromMap =
-                            mLauncherItemMap.get(item.getPackageName());
+                    LauncherItem itemFromMap = mLauncherItemMap.get(
+                            new ComponentName(item.getPackageName(), item.getClassName()));
                     // If item exists in proto but not in map, (e.g, when app
                     // is disabled from Settings), it can be ignored
                     if (itemFromMap != null) {
                         mFinalItems.add(itemFromMap);
-                        pkgNameList.add(itemFromMap.getPackageName());
+                        componentNames.add(new
+                                ComponentName(itemFromMap.getPackageName(),
+                                itemFromMap.getClassName()));
                     }
                 }
                 // If item exists in map but not in proto (e.g, when app
                 // is enabled from Settings), app must be added to the current list
-                List<String> pkgNameNotInProto = mLauncherItemMap.keySet()
+                List<ComponentName> componentNamesNotInProto = mLauncherItemMap.keySet()
                         .stream()
-                        .filter(element -> !pkgNameList.contains(element))
+                        .filter(element -> !componentNames.contains(element))
                         .collect(Collectors.toList());
-                if (!pkgNameNotInProto.isEmpty()) {
-                    Collections.sort(pkgNameNotInProto);
-                    for (String pkgName: pkgNameNotInProto) {
-                        mFinalItems.add(mLauncherItemMap.get(pkgName));
+                if (!componentNamesNotInProto.isEmpty()) {
+                    Collections.sort(componentNamesNotInProto);
+                    for (ComponentName componentName: componentNamesNotInProto) {
+                        mFinalItems.add(mLauncherItemMap.get(componentName));
                     }
                 }
                 mCurrentLauncher.postValue(mFinalItems);
@@ -238,7 +240,7 @@ public class LauncherViewModel extends ViewModel {
      */
     public void movePackage(int index, AppMetaData app) {
         List<LauncherItem> current = mCurrentLauncher.getValue();
-        LauncherItem item = mLauncherItemMap.get(app.getPackageName());
+        LauncherItem item = mLauncherItemMap.get(app.getComponentName());
         if (current != null && current.size() != 0 && index < current.size() && item != null) {
             current.remove(item);
             current.add(index, item);
@@ -251,12 +253,12 @@ public class LauncherViewModel extends ViewModel {
      * Add a new app to the current list
      */
     public void addPackage(AppMetaData app) {
-        if (app != null && !mLauncherItemMap.containsKey(app.getPackageName())) {
+        if (app != null && !mLauncherItemMap.containsKey(app.getComponentName())) {
             List<LauncherItem> current = mCurrentLauncher.getValue();
-            LauncherItem launcherItem = new AppItem(app.getPackageName(), app.getDisplayName(),
-                    app);
+            LauncherItem launcherItem = new AppItem(app.getPackageName(), app.getClassName(),
+                    app.getDisplayName(), app);
             current.add(launcherItem);
-            mLauncherItemMap.put(app.getPackageName(), launcherItem);
+            mLauncherItemMap.put(app.getComponentName(), launcherItem);
             if (!mIsCustomized) {
                 Collections.sort(current, LauncherViewModel.ALPHABETICAL_COMPARATOR);
             }
@@ -268,14 +270,28 @@ public class LauncherViewModel extends ViewModel {
      * Remove an app from the current launcher
      */
     public void removePackage(AppMetaData app) {
-        if (app != null && mLauncherItemMap.containsKey(app.getPackageName())) {
+        if (app != null && mLauncherItemMap.containsKey(app.getComponentName())) {
             List<LauncherItem> current = mCurrentLauncher.getValue();
-            LauncherItem launcherItem = mLauncherItemMap.get(app.getPackageName());
+            LauncherItem launcherItem = mLauncherItemMap.get(app.getComponentName());
             if (current != null && current.size() != 0) {
                 current.remove(launcherItem);
                 mCurrentLauncher.postValue(current);
-                mLauncherItemMap.remove(app.getPackageName());
+                mLauncherItemMap.remove(app.getComponentName());
             }
+        }
+    }
+
+    /**
+     * Reset app order to alphabetized order
+     */
+    public void resetToAlphabetizedOrder() {
+        mCurrentLauncher.postValue(mItemsFromPlatform);
+        mItemsFromProto.clear();
+        File order = new File(mFileDir, mFileName);
+        if (order.delete()) {
+            mIsCustomized = false;
+            mAppOrderRead = false;
+            mIsAlphabetized = true;
         }
     }
 }

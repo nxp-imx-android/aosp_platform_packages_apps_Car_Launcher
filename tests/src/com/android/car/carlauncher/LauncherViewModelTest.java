@@ -93,14 +93,17 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
         mApps.add(app3);
         LauncherItem launcherItem1 = new AppItem(
                 app1.getPackageName(),
+                app1.getClassName(),
                 app1.getDisplayName(),
                 app1);
         LauncherItem launcherItem2 = new AppItem(
                 app2.getPackageName(),
+                app2.getClassName(),
                 app2.getDisplayName(),
                 app2);
         LauncherItem launcherItem3 = new AppItem(
                 app3.getPackageName(),
+                app3.getClassName(),
                 app3.getDisplayName(),
                 app3);
         mAlphabetizedApps.add(launcherItem1);

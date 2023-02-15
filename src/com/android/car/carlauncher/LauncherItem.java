@@ -26,21 +26,25 @@ import com.android.car.carlauncher.LauncherItemProto.LauncherItemMessage;
  */
 public abstract class LauncherItem implements Parcelable {
     private String mPackageName;
+    private String mClassName;
     private String mDisplayName;
 
-    public LauncherItem(String packageName, String displayName) {
+    public LauncherItem(String packageName, String className, String displayName) {
         mPackageName = packageName;
+        mClassName = className;
         mDisplayName = displayName;
     }
 
     protected LauncherItem(Parcel in) {
         mPackageName = in.readString();
+        mClassName = in.readString();
         mDisplayName = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mPackageName);
+        dest.writeString(mClassName);
         dest.writeString(mDisplayName);
     }
 
@@ -52,13 +56,26 @@ public abstract class LauncherItem implements Parcelable {
         return mPackageName;
     }
 
+    public String getClassName() {
+        return mClassName;
+    }
+
+
     /**
      * This method is used to convert a LauncherItem to a protobuf class
      */
     public LauncherItemMessage launcherItem2Msg(int relativePosition, int containerID) {
-        LauncherItemMessage.Builder builder = LauncherItemMessage.newBuilder().setPackageName(
-                mPackageName).setDisplayName(mDisplayName).setRelativePosition(
-                relativePosition).setContainerID(containerID);
+        LauncherItemMessage.Builder builder = LauncherItemMessage.newBuilder()
+                .setPackageName(mPackageName)
+                .setClassName(mClassName)
+                .setDisplayName(mDisplayName)
+                .setRelativePosition(relativePosition)
+                .setContainerID(containerID);
         return builder.build();
     }
+
+    /**
+     * This method should return true if the two LauncherItems contain the same app and metadata.
+     */
+    abstract boolean areContentsTheSame(LauncherItem launcherItem);
 }

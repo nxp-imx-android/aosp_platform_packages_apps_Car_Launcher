@@ -10,6 +10,7 @@ message LauncherItemMessage {
   required string display_name = 2;
   required int32 relativePosition = 3;
   required int32 containerID = 4;
+  required string class_name = 5;
 }
 
 message LauncherItemListMessage {

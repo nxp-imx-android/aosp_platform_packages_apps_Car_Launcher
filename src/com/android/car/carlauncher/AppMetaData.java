@@ -72,6 +72,10 @@ final class AppMetaData {
         return mDisplayName;
     }
 
+    public String getClassName() {
+        return getComponentName().getClassName();
+    }
+
     public String getPackageName() {
         return getComponentName().getPackageName();
     }

@@ -16,16 +16,18 @@
 
 package com.android.car.carlauncher;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.util.Log;
+import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,68 +36,74 @@ import java.util.List;
 final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int RECENT_APPS_TYPE = 1;
     public static final int APP_ITEM_TYPE = 2;
-    private static final long RECENT_APPS_ID = 0;
+
     private static final String TAG = "AppGridAdapter";
-
     private final Context mContext;
-    private final int mColumnNumber;
     private final LayoutInflater mInflater;
-    private List<LauncherItem> mLauncherItems;
-    private List<AppMetaData> mMostRecentApps;
-    private boolean mIsDistractionOptimizationRequired;
+    private final AppGridPagingUtils mPagingUtil;
+    private final AppItemViewHolder.AppItemDragCallback mDragCallback;
+    private final AppGridPageSnapper.AppGridPageSnapCallback mSnapCallback;
+    private final int mNumOfCols;
+    private final int mNumOfRows;
+    private int mAppItemWidth;
+    private int mAppItemHeight;
+    private final LauncherViewModel mDataModel;
+    // grid order of the mLauncherItems used by DiffUtils in dispatchUpdates to animate UI updates
+    private final List<LauncherItem> mGridOrderedLauncherItems;
 
-    AppGridAdapter(Context context) {
+    private List<LauncherItem> mLauncherItems;
+    private boolean mIsDistractionOptimizationRequired;
+    private int mPageScrollDestination;
+    private Rect mPageBound;
+
+    AppGridAdapter(Context context, int numOfCols, int numOfRows, LauncherViewModel dataModel,
+            AppItemViewHolder.AppItemDragCallback dragCallback,
+            AppGridPageSnapper.AppGridPageSnapCallback snapCallback) {
+        this(context, numOfCols, numOfRows, LayoutInflater.from(context), dataModel,
+                dragCallback, snapCallback);
+    }
+
+    @VisibleForTesting
+    AppGridAdapter(Context context, int numOfCols, int numOfRows, LayoutInflater layoutInflater,
+            LauncherViewModel dataModel, AppItemViewHolder.AppItemDragCallback dragCallback,
+            AppGridPageSnapper.AppGridPageSnapCallback snapCallback) {
         mContext = context;
-        mInflater = LayoutInflater.from(context);
-        mColumnNumber =
-                mContext.getResources().getInteger(R.integer.car_app_selector_column_number);
-        // Stable IDs improve performance and make rotary work better.
-        setHasStableIds(true);
+        mInflater = layoutInflater;
+        mNumOfCols = numOfCols;
+        mNumOfRows = numOfRows;
+        mDragCallback = dragCallback;
+        mSnapCallback = snapCallback;
+
+        mPagingUtil = new AppGridPagingUtils(numOfCols, numOfRows);
+        mGridOrderedLauncherItems = new ArrayList<>();
+        mDataModel = dataModel;
+    }
+
+    void updateAppGridDimensions(Rect pageBound, int appItemWidth, int appItemHeight) {
+        mPageBound = pageBound;
+        mAppItemWidth = appItemWidth;
+        mAppItemHeight = appItemHeight;
     }
 
     void setIsDistractionOptimizationRequired(boolean isDistractionOptimizationRequired) {
         mIsDistractionOptimizationRequired = isDistractionOptimizationRequired;
+        // notifyDataSetChanged will rebind distraction optimization to all app items
         notifyDataSetChanged();
     }
-
-    void setMostRecentApps(@Nullable List<AppMetaData> mostRecentApps) {
-        mMostRecentApps = mostRecentApps;
-        notifyDataSetChanged();
-    }
-
+    /**
+     * Sets a new list of launcher items to be displayed in the app grid.
+     * This should only be called by onChanged() in the observer as a response to data change in the
+     * adapter's LauncherViewModel.
+     */
     public void setLauncherItems(List<LauncherItem> launcherItems) {
         mLauncherItems = launcherItems;
-        // TODO b/256682924: Replace notifyDataSetChanged with DiffUtils
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        if (position == 0 && hasRecentlyUsedApps()) {
-            return RECENT_APPS_ID;
+        int newSnapPosition = mSnapCallback.getSnapPosition();
+        if (newSnapPosition != 0 && newSnapPosition >= getItemCount()) {
+            // in case user deletes the only app item on the last page, the page should snap to the
+            // last icon on the second last page.
+            mSnapCallback.notifySnapToPosition(getItemCount() - 1);
         }
-        if (mLauncherItems == null) {
-            Log.w(TAG, "apps list not set");
-            return RecyclerView.NO_ID;
-        }
-        int index = hasRecentlyUsedApps() ? position - 1 : position;
-        if (index < 0 || index >= mLauncherItems.size()) {
-            Log.w(TAG, "index out of range");
-            return RecyclerView.NO_ID;
-        }
-        AppItem item = (AppItem) mLauncherItems.get(index);
-        ComponentName componentName = item.getAppMetaData().getComponentName();
-        long id = componentName.getPackageName().hashCode();
-        id <<= Integer.SIZE;
-        id |= componentName.getClassName().hashCode();
-        return id;
-    }
-
-    public int getSpanSizeLookup(int position) {
-        if (position == 0 && hasRecentlyUsedApps()) {
-            return mColumnNumber;
-        }
-        return 1;
+        dispatchUpdates();
     }
 
     @Override
@@ -114,36 +122,155 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             return new RecentAppsRowViewHolder(view, mContext);
         } else {
             View view = mInflater.inflate(R.layout.app_item, parent, /* attachToRoot= */ false);
-            return new AppItemViewHolder(view, mContext);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    mAppItemWidth, mAppItemHeight);
+            view.setLayoutParams(layoutParams);
+            return new AppItemViewHolder(view, mContext, mDragCallback, mSnapCallback, mPageBound);
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        switch (holder.getItemViewType()) {
-            case RECENT_APPS_TYPE:
-                ((RecentAppsRowViewHolder) holder).bind(
-                        mMostRecentApps, mIsDistractionOptimizationRequired);
-                break;
-            case APP_ITEM_TYPE:
-                int index = hasRecentlyUsedApps() ? position - 1 : position;
-                AppItem item = (AppItem) mLauncherItems.get(index);
-                AppMetaData app = item.getAppMetaData();
-                ((AppItemViewHolder) holder).bind(app, mIsDistractionOptimizationRequired);
-                break;
-            default:
+        AppItemViewHolder viewHolder = (AppItemViewHolder) holder;
+        int adapterIndex = mPagingUtil.gridPositionToAdaptorIndex(position);
+        if (adapterIndex >= mLauncherItems.size()) {
+            // the current view holder is an empty item used to pad the last page.
+            viewHolder.bind(null, mIsDistractionOptimizationRequired);
+            return;
         }
+        AppItem item = (AppItem) mLauncherItems.get(adapterIndex);
+        viewHolder.bind(item.getAppMetaData(), mIsDistractionOptimizationRequired);
     }
+
+    void setLayoutDirection(int layoutDirection) {
+        mPagingUtil.setLayoutDirection(layoutDirection);
+    }
+
 
     @Override
     public int getItemCount() {
-        // If there are any most recently launched apps, add a "most recently used apps row item"
-        return (mLauncherItems == null ? 0 :
-                mLauncherItems.size()) + (hasRecentlyUsedApps() ? 1 :
-                0);
+        return getItemCountInternal();
+    }
+
+    /** Returns the item count including padded spaces on the last page */
+    private int getItemCountInternal() {
+        // item count should always be a multiple of block size to ensure pagination
+        // is done properly. Extra spaces will have empty ViewHolders binded.
+        float pageFraction = (float) getLauncherItemsCount() / (mNumOfCols * mNumOfRows);
+        int pageCount = (int) Math.ceil(pageFraction);
+        return pageCount * mNumOfCols * mNumOfRows;
+    }
+
+    @VisibleForTesting
+    int getLauncherItemsCount() {
+        return mLauncherItems == null ? 0 : mLauncherItems.size();
+    }
+
+    /**
+     * Calculates the number of pages required to fit the all app items in the recycler view, with
+     * minimum of 1 page when no items have been added to data model.
+     */
+    public int getPageCount() {
+        int pageCount = getItemCount() / (mNumOfRows * mNumOfCols);
+        return Math.max(pageCount, 1);
+    }
+
+    /** Returns the column id of the position, with 0 being leftmost column. */
+    int getColumnId(int gridPosition) {
+        return (gridPosition / mNumOfRows) % mNumOfCols;
     }
 
     private boolean hasRecentlyUsedApps() {
-        return mMostRecentApps != null && mMostRecentApps.size() > 0;
+        // TODO (b/266988404): deprecate ui logic associated with recently used apps
+        return false;
+    }
+
+    public void setDragStartPoint(int gridPosition) {
+        mPageScrollDestination = mPagingUtil.roundToLeftmostIndexOnPage(gridPosition);
+        mSnapCallback.notifySnapToPosition(mPageScrollDestination);
+    }
+
+    /**
+     * The magical function that writes the new order to proto datastore.
+     *
+     * There should not be any calls to update RecyclerView, such as via notifyDatasetChanged in
+     * this method since UI changes relating to data model should be handled by data observer.
+     */
+    public void moveAppItem(int gridPositionFrom, int gridPositionTo) {
+        int adaptorIndexFrom = mPagingUtil.gridPositionToAdaptorIndex(gridPositionFrom);
+        int adaptorIndexTo = mPagingUtil.gridPositionToAdaptorIndex(gridPositionTo);
+        mPageScrollDestination = mPagingUtil.roundToLeftmostIndexOnPage(gridPositionTo);
+        mSnapCallback.notifySnapToPosition(mPageScrollDestination);
+
+        // we need to move package to target index even if the from and to index are the same to
+        // ensure dispatchLayout gets called to re-anchor the recyclerview to current page.
+        AppItem selectedApp = (AppItem) mLauncherItems.get(adaptorIndexFrom);
+        mDataModel.movePackage(adaptorIndexTo, selectedApp.getAppMetaData());
+    }
+
+
+    /**
+     * Updates page scroll destination after user has held the app item at the end of page for
+     * longer than the scroll dispatch threshold.
+     */
+    void updatePageScrollDestination(boolean scrollToRightPage) {
+        int newDestination;
+        int blockSize = mNumOfCols * mNumOfRows;
+        if (scrollToRightPage) {
+            newDestination = mPageScrollDestination + blockSize;
+            mPageScrollDestination = (newDestination >= getItemCount()) ? mPageScrollDestination :
+                    mPagingUtil.roundToRightmostIndexOnPage(newDestination);
+        } else {
+            newDestination = mPageScrollDestination - blockSize;
+            mPageScrollDestination = (newDestination < 0) ? mPageScrollDestination :
+                    mPagingUtil.roundToLeftmostIndexOnPage(newDestination);
+        }
+        mSnapCallback.notifySnapToPosition(mPageScrollDestination);
+    }
+
+    @VisibleForTesting
+    int getPageScrollDestination() {
+        return mPageScrollDestination;
+    }
+
+    /**
+     * Dispatches the paged reordering animation using async list differ, based on
+     * the current adapter order when the method is called.
+     */
+    private void dispatchUpdates() {
+        List<LauncherItem> newAppsList = new ArrayList<>();
+        // we first need to pad the empty items on the last page
+        for (int i = 0; i < getItemCount(); i++) {
+            newAppsList.add(getEmptyLauncherItem());
+        }
+
+        for (int i = 0; i < mLauncherItems.size(); i++) {
+            newAppsList.set(mPagingUtil.adaptorIndexToGridPosition(i), mLauncherItems.get(i));
+        }
+        LauncherItemDiffCallback callback = new LauncherItemDiffCallback(
+                /* oldList */ mGridOrderedLauncherItems, /* newList */ newAppsList);
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(callback);
+
+        mGridOrderedLauncherItems.clear();
+        mGridOrderedLauncherItems.addAll(newAppsList);
+        result.dispatchUpdatesTo(this);
+    }
+
+    private LauncherItem getEmptyLauncherItem() {
+        return new AppItem(/* packageName*/ "", /* className */ "", /* displayName */ "",
+                /* appMetaData */ null);
+    }
+
+    /**
+     * Returns the grid position of the next intended rotary focus view. This should follow the
+     * same logical order as the adapter indexes.
+     */
+    public int getNextRotaryFocus(int focusedGridPosition, int direction) {
+        int targetAdapterIndex = mPagingUtil.gridPositionToAdaptorIndex(focusedGridPosition)
+                + (direction == View.FOCUS_FORWARD ? 1 : -1);
+        if (targetAdapterIndex < 0 || targetAdapterIndex >= getLauncherItemsCount()) {
+            return focusedGridPosition;
+        }
+        return mPagingUtil.adaptorIndexToGridPosition(targetAdapterIndex);
     }
 }

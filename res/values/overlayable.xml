@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Copyright (C) 2022 The Android Open Source Project
+<!-- Copyright (C) 2023 The Android Open Source Project
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -23,7 +23,12 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="attr" name="cardCornerRadius"/>
       <item type="bool" name="car_app_show_recent_apps"/>
       <item type="bool" name="car_app_show_toolbar"/>
+      <item type="bool" name="config_allow_reordering"/>
+      <item type="bool" name="use_defined_app_grid_dimensions"/>
       <item type="bool" name="use_media_source_color_for_seek_bar"/>
+      <item type="color" name="app_item_on_hover_background_color"/>
+      <item type="color" name="app_item_on_hover_border_color"/>
+      <item type="color" name="app_name_color"/>
       <item type="color" name="card_background_scrim"/>
       <item type="color" name="date_divider_bar_color"/>
       <item type="color" name="dialer_button_icon_color"/>
@@ -33,18 +38,27 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="color" name="launcher_home_icon_color"/>
       <item type="color" name="media_button_tint"/>
       <item type="color" name="minimized_progress_bar_background"/>
+      <item type="color" name="position_indicator_bar_color"/>
       <item type="color" name="recent_apps_line_divider_color"/>
       <item type="color" name="seek_bar_color"/>
       <item type="color" name="stop_caution_icon_color"/>
       <item type="color" name="tap_for_more_text_color"/>
       <item type="dimen" name="app_bar_height"/>
       <item type="dimen" name="app_grid_header_margin"/>
+      <item type="dimen" name="app_grid_height"/>
+      <item type="dimen" name="app_grid_margin_horizontal"/>
       <item type="dimen" name="app_grid_row_margin"/>
       <item type="dimen" name="app_grid_touch_target_size"/>
+      <item type="dimen" name="app_grid_width"/>
       <item type="dimen" name="app_icon_description_margin"/>
       <item type="dimen" name="app_icon_opacity"/>
       <item type="dimen" name="app_icon_opacity_unavailable"/>
       <item type="dimen" name="app_icon_ripple_radius"/>
+      <item type="dimen" name="app_icon_scaled_size"/>
+      <item type="dimen" name="app_icon_size"/>
+      <item type="dimen" name="app_item_highlight_corner_radius"/>
+      <item type="dimen" name="app_item_highlight_edge_width"/>
+      <item type="dimen" name="app_name_margin_horizontal"/>
       <item type="dimen" name="app_touch_target_margin"/>
       <item type="dimen" name="app_touch_target_padding"/>
       <item type="dimen" name="button_outline_thickness"/>
@@ -70,8 +84,11 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="launcher_card_corner_radius"/>
       <item type="dimen" name="main_screen_widget_margin"/>
       <item type="dimen" name="media_top_margin"/>
+      <item type="dimen" name="page_snap_threshold"/>
       <item type="dimen" name="panel_margin"/>
       <item type="dimen" name="playback_controls_margin"/>
+      <item type="dimen" name="position_indicator_edge_corner_radius"/>
+      <item type="dimen" name="position_indicator_height"/>
       <item type="dimen" name="recent_apps_divider_margin"/>
       <item type="dimen" name="recent_apps_row_height"/>
       <item type="dimen" name="search_bar_drawable_text_padding"/>
@@ -83,7 +100,9 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="secondary_text_margin_top"/>
       <item type="dimen" name="tap_text_margin"/>
       <item type="dimen" name="text_block_top_margin"/>
+      <item type="dimen" name="threshold_to_start_drag_drop"/>
       <item type="dimen" name="vertical_border_size"/>
+      <item type="drawable" name="app_item_highlight"/>
       <item type="drawable" name="car_button_background"/>
       <item type="drawable" name="control_bar_contact_image_background"/>
       <item type="drawable" name="control_bar_image_background"/>
@@ -100,10 +119,12 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="ic_mic_on"/>
       <item type="drawable" name="ic_mute_activatable"/>
       <item type="drawable" name="ic_search_black"/>
+      <item type="drawable" name="position_indicator_bar"/>
       <item type="id" name="app_icon"/>
       <item type="id" name="app_item"/>
       <item type="id" name="app_name"/>
       <item type="id" name="apps_grid"/>
+      <item type="id" name="apps_grid_background"/>
       <item type="id" name="bottom_card"/>
       <item type="id" name="bottom_edge"/>
       <item type="id" name="bottom_line"/>
@@ -133,6 +154,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="optional_timer"/>
       <item type="id" name="optional_timer_separator"/>
       <item type="id" name="optional_times"/>
+      <item type="id" name="position_indicator"/>
+      <item type="id" name="position_indicator_container"/>
       <item type="id" name="primary_text"/>
       <item type="id" name="recent_apps_row"/>
       <item type="id" name="secondary_text"/>
@@ -145,7 +168,17 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="top_line"/>
       <item type="id" name="vertical_barrier"/>
       <item type="integer" name="car_app_selector_column_number"/>
+      <item type="integer" name="car_app_selector_row_number"/>
       <item type="integer" name="card_content_text_block_max_lines"/>
+      <item type="integer" name="ms_background_highlight_duration"/>
+      <item type="integer" name="ms_drop_animation_delay"/>
+      <item type="integer" name="ms_long_press_animation_duration"/>
+      <item type="integer" name="ms_off_page_hover_before_scroll"/>
+      <item type="integer" name="ms_release_animation_duration"/>
+      <item type="integer" name="ms_scrollbar_appear_animation_delay"/>
+      <item type="integer" name="ms_scrollbar_appear_animation_duration"/>
+      <item type="integer" name="ms_scrollbar_fade_animation_delay"/>
+      <item type="integer" name="ms_scrollbar_fade_animation_duration"/>
       <item type="integer" name="optional_seekbar_max"/>
       <item type="integer" name="playback_controls_bar_columns"/>
       <item type="layout" name="app_grid_activity"/>
@@ -189,6 +222,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="tap_to_launch_text"/>
       <item type="string" name="times_separator"/>
       <item type="string" name="weather_app_name"/>
+      <item type="style" name="AppDisplayNameStyle"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ContextualSpace"/>
       <item type="style" name="HorizontalLineDivider"/>
