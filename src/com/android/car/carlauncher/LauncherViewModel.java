@@ -110,16 +110,17 @@ public class LauncherViewModel extends ViewModel {
      * LauncherItem. Each item in the current launcher is AppItem.
      */
     public void generateAlphabetizedAppOrder(AppLauncherUtils.LauncherAppsInfo launcherAppsInfo) {
+        List<LauncherItem> tempList = new ArrayList<>();
         mLauncherItemMap.clear();
-        mItemsFromPlatform.clear();
         List<AppMetaData> apps = launcherAppsInfo.getLaunchableComponentsList();
         for (AppMetaData app : apps) {
             LauncherItem launcherItem = new AppItem(app.getPackageName(), app.getClassName(),
                     app.getDisplayName(), app);
-            mItemsFromPlatform.add(launcherItem);
+            tempList.add(launcherItem);
             mLauncherItemMap.put(app.getComponentName(), launcherItem);
         }
-        Collections.sort(mItemsFromPlatform, LauncherViewModel.ALPHABETICAL_COMPARATOR);
+        Collections.sort(tempList, LauncherViewModel.ALPHABETICAL_COMPARATOR);
+        mItemsFromPlatform = tempList;
         mIsAlphabetized = true;
         createAppList();
     }
