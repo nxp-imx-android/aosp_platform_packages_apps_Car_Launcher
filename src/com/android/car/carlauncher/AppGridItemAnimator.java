@@ -107,7 +107,10 @@ public class AppGridItemAnimator extends DefaultItemAnimator {
     private void animateDropImpl(AppItemViewHolder viewHolder) {
         mDropAnimations.add(viewHolder);
         final ViewPropertyAnimator dropAnimation = viewHolder.getDropAnimation();
-        dropAnimation.setDuration(getDropDuration()).setListener(new AnimatorListenerAdapter() {
+        dropAnimation.setDuration(getDropDuration())
+                .setStartDelay(viewHolder.itemView.getResources().getInteger(
+                        R.integer.ms_drop_animation_delay))
+                .setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animator) {
                 dispatchDropStarting(viewHolder);
