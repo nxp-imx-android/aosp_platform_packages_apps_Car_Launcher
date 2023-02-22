@@ -26,6 +26,8 @@
     <uses-permission android:name="android.permission.ACTIVITY_EMBEDDING"/>
     <!-- Needed to change component enabled state when user opens disabled apps. -->
     <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE"/>
+    <!-- Needed to allow drag surface control to be transferred from DragEvent. -->
+    <uses-permission android:name="android.permission.START_TASKS_FROM_RECENTS" />
     <!-- Permission for the InCallController to bind the InCallService -->
     <uses-permission android:name="android.permission.CONTROL_INCALL_EXPERIENCE"/>
     <!-- System permission to send events to hosted maps activity -->

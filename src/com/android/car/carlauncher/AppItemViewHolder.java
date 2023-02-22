@@ -281,6 +281,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
 
     private void resetViewHolder() {
         mHasAppMetadata = false;
+        mIsSelected = false;
 
         mAppItemView.setOnDragListener(null);
         mAppItemView.setFocusable(false);
@@ -307,7 +308,6 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void setStateSelected(boolean selected) {
-        if (mIsSelected == selected) return;
         mIsSelected = selected;
         if (selected) {
             mAppIcon.setAlpha(0.f);
@@ -344,7 +344,8 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                 /* touchPointX */ dragPoint.x, /* touchPointX */ dragPoint.y,
                 /* size */ mIconSize, /* scaledSize */ mIconScaledSize);
         mAppIcon.startDragAndDrop(clipData, /* dragShadowBuilder */ dragShadowBuilder,
-                /* myLocalState */ null, /* flags */ View.DRAG_FLAG_OPAQUE);
+                /* myLocalState */ null, /* flags */ View.DRAG_FLAG_OPAQUE
+                        | View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION);
 
         mDragCallback.notifyItemSelected(AppItemViewHolder.this, dragPoint);
     }
@@ -352,8 +353,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     class AppItemOnDragListener implements View.OnDragListener{
         @Override
         public boolean onDrag(View view, DragEvent event) {
-            if (AppItemViewHolder.isAppItemDragEvent(event) && mHasAppMetadata
-                    && mSnapCallback.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+            if (AppItemViewHolder.isAppItemDragEvent(event) && mHasAppMetadata) {
                 int action = event.getAction();
                 if (action == DragEvent.ACTION_DRAG_STARTED) {
                     if (mComponentName.equals(mDragCallback.mSelectedComponent)) {
@@ -361,7 +361,8 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                     }
                 } else if (action == DragEvent.ACTION_DRAG_LOCATION) {
                     if (isTargetIconVisible() && isDraggedIconInBound(event)
-                            && mDragCallback.mSelectedComponent != null) {
+                            && mDragCallback.mSelectedComponent != null
+                            && mSnapCallback.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
                         setStateTargeted(true);
                     } else {
                         setStateTargeted(false);
@@ -375,6 +376,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                         mDragCallback.notifyItemDropped(dropPoint);
                     }
                     setStateTargeted(false);
+                    return false;
                 }
             }
 
