@@ -19,6 +19,7 @@ package com.android.car.carlauncher;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_LAUNCHABLES;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_MEDIA_SERVICES;
 
+import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
@@ -46,6 +47,7 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.DragEvent;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -182,16 +184,12 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                     isDistractionOptimizationRequired = carUxRestrictions
                             .isRequiresDistractionOptimization();
                 }
-                mAdapter
-                        .setIsDistractionOptimizationRequired(isDistractionOptimizationRequired);
+                mAdapter.setIsDistractionOptimizationRequired(isDistractionOptimizationRequired);
+                // set listener to update the app grid components and apply interaction restrictions
+                // when driving state changes
                 mCarUxRestrictionsManager.registerListener(restrictionInfo -> {
-                    boolean requiresDistractionOptimization =
-                            restrictionInfo.isRequiresDistractionOptimization();
-                    mAdapter.setIsDistractionOptimizationRequired(
-                            requiresDistractionOptimization);
-                    if (requiresDistractionOptimization) {
-                        dismissForceStopMenus();
-                    }
+                    handleDistractionOptimization(/* requiresDistractionOptimization */
+                            restrictionInfo.isRequiresDistractionOptimization());
                 });
                 mCarPackageManager = (CarPackageManager) mCar.getCarManager(Car.PACKAGE_SERVICE);
                 mCarMediaManager = (CarMediaManager) mCar.getCarManager(Car.CAR_MEDIA_SERVICE);
@@ -207,6 +205,22 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
             mCarPackageManager = null;
         }
     };
+
+    /**
+     * Updates the state of the app grid components depending on the driving state.
+     */
+    private void handleDistractionOptimization(boolean requiresDistractionOptimization) {
+        mAdapter.setIsDistractionOptimizationRequired(requiresDistractionOptimization);
+        if (requiresDistractionOptimization) {
+            // if the user start driving while drag is in action, we cancel existing drag operations
+            if (mIsCurrentlyDragging) {
+                mIsCurrentlyDragging = false;
+                mLayoutManager.setShouldLayoutChildren(true);
+                mRecyclerView.cancelDragAndDrop();
+            }
+            dismissForceStopMenus();
+        }
+    }
 
     private void initializeLauncherModel() {
         ExecutorService fetchOrderExecutorService = Executors.newSingleThreadExecutor();
@@ -787,6 +801,28 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 mDragCallback.resetCallbackState();
                 mLayoutManager.setShouldLayoutChildren(true);
                 resetPageScrollState();
+                if (action == DragEvent.ACTION_DROP) {
+                    return false;
+                } else {
+                    // update default animation for the drag shadow after user lifts their finger
+                    SurfaceControl dragSurface = event.getDragSurface();
+                    SurfaceControl.Transaction txn = new SurfaceControl.Transaction();
+                    // set an animator to animate a delay before clearing the dragSurface
+                    ValueAnimator delayedDismissAnimator = ValueAnimator.ofFloat(0f, 1f);
+                    delayedDismissAnimator.setStartDelay(
+                            getResources().getInteger(R.integer.ms_drop_animation_delay));
+                    delayedDismissAnimator.addUpdateListener(
+                            new ValueAnimator.AnimatorUpdateListener() {
+                                @Override
+                                public void onAnimationUpdate(ValueAnimator animation) {
+                                    if (dragSurface != null) {
+                                        txn.setAlpha(dragSurface, 0);
+                                        txn.apply();
+                                    }
+                                }
+                            });
+                    delayedDismissAnimator.start();
+                }
             }
             return true;
         }
