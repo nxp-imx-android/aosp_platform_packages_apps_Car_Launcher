@@ -25,6 +25,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="bool" name="car_app_show_toolbar"/>
       <item type="bool" name="config_allow_reordering"/>
       <item type="bool" name="use_defined_app_grid_dimensions"/>
+      <item type="bool" name="config_useRemoteCarTaskView"/>
       <item type="bool" name="use_media_source_color_for_seek_bar"/>
       <item type="color" name="app_item_on_hover_background_color"/>
       <item type="color" name="app_item_on_hover_border_color"/>
