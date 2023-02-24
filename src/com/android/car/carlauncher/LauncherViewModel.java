@@ -53,7 +53,7 @@ public class LauncherViewModel extends ViewModel {
     private boolean mIsCustomized;
     private boolean mIsAlphabetized;
     private boolean mAppOrderRead;
-    private String mFileName = "order.data";
+    public static final String ORDER_FILE_NAME = "order.data";
     private Map<ComponentName, LauncherItem> mLauncherItemMap = new HashMap<>();
     private final MutableLiveData<List<LauncherItem>> mCurrentLauncher =
             new MutableLiveData<>(new ArrayList<>());
@@ -133,7 +133,7 @@ public class LauncherViewModel extends ViewModel {
     public void updateAppsOrder() {
         mItemsFromProto.clear();
         try {
-            File order = new File(mFileDir, mFileName);
+            File order = new File(mFileDir, ORDER_FILE_NAME);
             if (order.exists()) {
                 if (mInputStream == null) {
                     mInputStream = new FileInputStream(order);
@@ -219,7 +219,7 @@ public class LauncherViewModel extends ViewModel {
                 mCurrentLauncher.getValue());
         try {
             if (mOutputStream == null) {
-                mOutputStream = new FileOutputStream(new File(mFileDir, mFileName), false);
+                mOutputStream = new FileOutputStream(new File(mFileDir, ORDER_FILE_NAME), false);
             }
             launcherItemListMessage.writeDelimitedTo(mOutputStream);
         } catch (IOException e) {
@@ -283,16 +283,18 @@ public class LauncherViewModel extends ViewModel {
     }
 
     /**
-     * Reset app order to alphabetized order
+     * Check if the order file exists
      */
-    public void resetToAlphabetizedOrder() {
-        mCurrentLauncher.postValue(mItemsFromPlatform);
-        mItemsFromProto.clear();
-        File order = new File(mFileDir, mFileName);
-        if (order.delete()) {
-            mIsCustomized = false;
-            mAppOrderRead = false;
-            mIsAlphabetized = true;
-        }
+    public boolean doesFileExist() {
+        File order = new File(mFileDir, ORDER_FILE_NAME);
+        return order.exists();
+    }
+
+    public void setCustomized(boolean customized) {
+        mIsCustomized = customized;
+    }
+
+    public void setAppOrderRead(boolean appOrderRead) {
+        mAppOrderRead = appOrderRead;
     }
 }
