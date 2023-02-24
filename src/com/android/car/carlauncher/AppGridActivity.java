@@ -225,6 +225,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private void initializeLauncherModel() {
         ExecutorService fetchOrderExecutorService = Executors.newSingleThreadExecutor();
         fetchOrderExecutorService.execute(() -> {
+            //If the order file is deleted, we need to reset the flag
+            if (!mLauncherModel.doesFileExist() && mLauncherModel.isCustomized()) {
+                mLauncherModel.setCustomized(false);
+                mLauncherModel.setAppOrderRead(false);
+            }
             mLauncherModel.updateAppsOrder();
             fetchOrderExecutorService.shutdown();
         });

@@ -217,11 +217,14 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="projected_launch_text"/>
       <item type="string" name="projected_onclick_launch_error_toast_text"/>
       <item type="string" name="projection_devices"/>
+      <item type="string" name="reset_appgrid_dialogue_message"/>
+      <item type="string" name="reset_appgrid_title"/>
       <item type="string" name="show_debug_apps"/>
       <item type="string" name="tap_for_more_info_text"/>
       <item type="string" name="tap_to_launch_text"/>
       <item type="string" name="times_separator"/>
       <item type="string" name="weather_app_name"/>
+      <item type="style" name="ActionDialogTheme"/>
       <item type="style" name="AppDisplayNameStyle"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ContextualSpace"/>
