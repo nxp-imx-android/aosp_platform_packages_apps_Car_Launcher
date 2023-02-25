@@ -16,6 +16,9 @@
 
 package com.android.car.carlauncher;
 
+import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
+import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -28,14 +31,17 @@ import androidx.recyclerview.widget.RecyclerView;
 public class AppGridRecyclerView extends RecyclerView {
     /* the previous rotary focus direction */
     private int mPrevRotaryPageScrollDirection = View.FOCUS_FORWARD;
-    private int mNumOfCols;
-    private int mNumOfRows;
-    private int mAppGridWidth;
+    private final int mNumOfCols;
+    private final int mNumOfRows;
+    @PageOrientation
+    private int mAppGridOrientation;
 
     public AppGridRecyclerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mNumOfCols = getResources().getInteger(R.integer.car_app_selector_column_number);
         mNumOfRows = getResources().getInteger(R.integer.car_app_selector_row_number);
+        mAppGridOrientation = getResources().getBoolean(R.bool.use_vertical_app_grid)
+                ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL;
     }
 
     /**
@@ -68,10 +74,17 @@ public class AppGridRecyclerView extends RecyclerView {
 
         // since the view is not on the screen and focusSearch cannot target a view that has not
         // been recycled yet, we need to dispatch a scroll event and postpone focusing.
-        mAppGridWidth = getMeasuredWidth();
-        int dx = (direction == View.FOCUS_FORWARD) ? mAppGridWidth : -mAppGridWidth;
+        if (isHorizontal(mAppGridOrientation)) {
+            // TODO: fix rounding issue on last page with rotary
+            int pageWidth = getMeasuredWidth();
+            int dx = (direction == View.FOCUS_FORWARD) ? pageWidth : -pageWidth;
+            smoothScrollBy(dx, 0);
+        } else {
+            int pageHeight = getMeasuredHeight();
+            int dy = (direction == View.FOCUS_FORWARD) ? pageHeight : -pageHeight;
+            smoothScrollBy(0, dy);
+        }
         mPrevRotaryPageScrollDirection = direction;
-        smoothScrollBy(dx, 0);
 
         // the focus should remain on current focused view until maybeHandleRotaryFocus is called
         return focused;
