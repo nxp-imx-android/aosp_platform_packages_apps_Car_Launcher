@@ -18,6 +18,10 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"მანქანის გამშვები"</string>
+    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
+    <skip />
+    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
+    <skip />
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"ყველა აპი"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"მედია აპები"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"აპის შეჩერება"</string>
