@@ -23,12 +23,23 @@
     android:visibility="gone"
     android:layout_gravity="bottom"
     android:orientation="horizontal">
-    <SeekBar
-        android:id="@+id/optional_seek_bar"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone">
-    </SeekBar>
+        <SeekBar
+            android:id="@+id/optional_seek_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+        </SeekBar>
+        <ProgressBar
+            android:id="@+id/optional_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+        </ProgressBar>
+    </LinearLayout>
     <TextView
         android:id="@+id/optional_times"
         android:layout_width="wrap_content"

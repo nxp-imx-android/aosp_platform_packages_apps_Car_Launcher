@@ -34,6 +34,7 @@ import com.android.car.apps.common.testutils.InstantTaskExecutorRule;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
+import com.android.car.carlauncher.homescreen.ui.SeekBarViewModel;
 import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.playback.PlaybackProgress;
 import com.android.car.media.common.playback.PlaybackViewModel;
@@ -70,6 +71,8 @@ public class MediaViewModelTest {
     private MutableLiveData<MediaItemMetadata> mLiveMetadata = new MutableLiveData<>();
     private MutableLiveData<MediaSourceColors> mLiveColors = new MutableLiveData<>();
     private MutableLiveData<PlaybackProgress> mLiveProgress = new MutableLiveData<>();
+    private MutableLiveData<PlaybackViewModel.PlaybackStateWrapper> mLivePlaybackState =
+            new MutableLiveData<>();
 
     @Mock
     private MediaSourceViewModel mSourceViewModel;
@@ -101,6 +104,7 @@ public class MediaViewModelTest {
         when(mPlaybackViewModel.getMetadata()).thenReturn(mLiveMetadata);
         when(mPlaybackViewModel.getMediaSourceColors()).thenReturn(mLiveColors);
         when(mPlaybackViewModel.getProgress()).thenReturn(mLiveProgress);
+        when(mPlaybackViewModel.getPlaybackStateWrapper()).thenReturn(mLivePlaybackState);
         mMediaViewModel.setPresenter(mPresenter);
         mMediaViewModel.onCreate(ApplicationProvider.getApplicationContext());
         mSeekBarMax = ApplicationProvider.getApplicationContext().getResources().getInteger(
@@ -190,9 +194,9 @@ public class MediaViewModelTest {
         verify(mPresenter).onModelUpdated(mMediaViewModel, IS_TIME_AVAILABLE);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
-        assertEquals(content.isTimesAvailable(), IS_TIME_AVAILABLE);
-        assertEquals(content.getTimes().toString(), CURRENT_TIME + "/" + MAX_TIME);
-        assertEquals(content.getProgress(), (int) (mSeekBarMax * PROGRESS_FRACTION));
+        SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
+        assertEquals(seekBarViewModel.getTimes().toString(), CURRENT_TIME + "/" + MAX_TIME);
+        assertEquals(seekBarViewModel.getProgress(), (int) (mSeekBarMax * PROGRESS_FRACTION));
     }
 
     @Test
@@ -208,8 +212,8 @@ public class MediaViewModelTest {
         verify(mPresenter, times(2)).onModelUpdated(mMediaViewModel, IS_TIME_AVAILABLE);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
-        assertEquals(content.isTimesAvailable(), IS_TIME_AVAILABLE);
-        assertEquals(content.getSeekBarColor(), COLORS);
+        SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
+        assertEquals(seekBarViewModel.getSeekBarColor(), COLORS);
     }
 }
 
