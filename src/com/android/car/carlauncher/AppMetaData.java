@@ -40,6 +40,7 @@ public final class AppMetaData {
     private final Drawable mIcon;
     private final boolean mIsDistractionOptimized;
     private final boolean mIsMirroring;
+    private final boolean mIsDisabledByTos;
     private final Consumer<Context> mLaunchCallback;
     private final Consumer<Pair<Context, View>> mAlternateLaunchCallback;
 
@@ -50,6 +51,7 @@ public final class AppMetaData {
      * @param componentName          the component name
      * @param icon                   the application's icon
      * @param isDistractionOptimized whether mainLaunchIntent is safe for driving
+     * @param isDisabledByTos        whether app is disabled by tos
      * @param launchCallback         action to execute to launch this app
      * @param alternateLaunchCallback  temporary alternative action to execute (e.g.: for media apps
      *                               this allows opening their own UI).
@@ -60,6 +62,7 @@ public final class AppMetaData {
             Drawable icon,
             boolean isDistractionOptimized,
             boolean isMirroring,
+            boolean isDisabledByTos,
             Consumer<Context> launchCallback,
             Consumer<Pair<Context, View>> alternateLaunchCallback) {
         mDisplayName = displayName == null ? "" : displayName.toString();
@@ -67,6 +70,7 @@ public final class AppMetaData {
         mIcon = icon;
         mIsDistractionOptimized = isDistractionOptimized;
         mIsMirroring = isMirroring;
+        mIsDisabledByTos = isDisabledByTos;
         mLaunchCallback = launchCallback;
         mAlternateLaunchCallback = alternateLaunchCallback;
     }
@@ -101,6 +105,10 @@ public final class AppMetaData {
 
     public boolean getIsDistractionOptimized() {
         return mIsDistractionOptimized;
+    }
+
+    public boolean getIsDisabledByTos() {
+        return mIsDisabledByTos;
     }
 
     boolean getIsMirroring() {

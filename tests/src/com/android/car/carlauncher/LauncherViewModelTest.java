@@ -75,6 +75,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         AppMetaData app2 = new AppMetaData(
@@ -83,6 +84,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         AppMetaData app3 = new AppMetaData(
@@ -91,6 +93,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         mApps.add(app1);
@@ -235,6 +238,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
@@ -267,6 +271,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
@@ -289,6 +294,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
@@ -321,6 +327,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 mDrawable,
                 true,
                 false,
+                true,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);

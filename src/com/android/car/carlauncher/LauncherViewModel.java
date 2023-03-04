@@ -221,6 +221,7 @@ public class LauncherViewModel extends ViewModel {
                             item.getDisplayName(), new AppMetaData(metaData.getDisplayName(),
                             metaData.getComponentName(), metaData.getIcon(),
                             metaData.getIsDistractionOptimized(), /* isMirroring= */ true,
+                            metaData.getIsDisabledByTos(),
                             contextArg -> AppLauncherUtils.launchApp(contextArg, mirroringIntent),
                             metaData.getAlternateLaunchCallback())));
                 } else if (metaData.getIsMirroring()) {
@@ -232,6 +233,7 @@ public class LauncherViewModel extends ViewModel {
                             item.getDisplayName(), new AppMetaData(metaData.getDisplayName(),
                             metaData.getComponentName(), metaData.getIcon(),
                             metaData.getIsDistractionOptimized(), /* isMirroring= */ false,
+                            metaData.getIsDisabledByTos(),
                             contextArg -> AppLauncherUtils.launchApp(contextArg, intent),
                             metaData.getAlternateLaunchCallback())));
                 } else {

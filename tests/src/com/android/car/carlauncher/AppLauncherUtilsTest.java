@@ -17,12 +17,15 @@
 package com.android.car.carlauncher;
 
 import static android.car.settings.CarSettings.Secure.KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE;
+import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS;
 
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_LAUNCHABLES;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_MEDIA_SERVICES;
 import static com.android.car.carlauncher.AppLauncherUtils.PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR;
+import static com.android.car.carlauncher.AppLauncherUtils.TOS_DISABLED_APPS_SEPARATOR;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
 import static org.junit.Assert.assertEquals;
@@ -30,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
@@ -46,6 +50,7 @@ import android.car.test.mocks.AbstractExtendedMockitoTestCase;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -54,6 +59,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.media.MediaBrowserService;
@@ -66,8 +72,10 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -88,8 +96,11 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     private static final String TEST_DISABLED_APP_1 = "com.android.car.test.disabled1";
     private static final String TEST_DISABLED_APP_2 = "com.android.car.test.disabled2";
     private static final String TEST_ENABLED_APP = "com.android.car.test.enabled";
+    private static final String TEST_TOS_DISABLED_APP_1 = "com.android.car.test.tosdisabled1";
+    private static final String TEST_TOS_DISABLED_APP_2 = "com.android.car.test.tosdisabled2";
     private static final String TEST_VIDEO_APP = "com.android.car.test.video";
     private static final String TEST_MIRROR_APP_PKG = "com.android.car.test.mirroring";
+    private static final String TOS_INTENT_NAME = "com.android.car.test.SHOW_USER_TOS_ACTIVITY";
 
     private static final Predicate<ResolveInfo> MATCH_NO_APP = (resolveInfo) -> false;
 
@@ -106,6 +117,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     public void setUp() throws Exception {
         Car car = Car.createCar(mMockContext);
         mCarPackageManager = (CarPackageManager) car.getCarManager(Car.PACKAGE_SERVICE);
+        mCarPackageManager = Mockito.spy(mCarPackageManager);
         mCarMediaManager = (CarMediaManager) car.getCarManager(Car.CAR_MEDIA_SERVICE);
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
 
@@ -246,6 +258,94 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                     AppLauncherUtils.parseAutomotiveAppTypes(createPullParser(invalidXml));
             assertEquals(0, appTypes.size());
         }
+    }
+
+    @Test
+    public void testGetLauncherAppsWithEnableAndTosDisabledApps() {
+        mockTosSettingsStringCalls();
+        mockTosPackageManagerQueries();
+
+        AppLauncherUtils.LauncherAppsInfo launcherAppsInfo = AppLauncherUtils.getLauncherApps(
+                mMockContext, /* appsToHide= */ new ArraySet<>(),
+                /* customMediaComponents= */ new ArraySet<>(),
+                /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
+                /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
+                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener,
+                TEST_MIRROR_APP_PKG,  /* mirroringAppRedirect= */ null);
+
+        List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
+
+        // mMockLauncherApps is never stubbed, only services & disabled activities are expected.
+        assertEquals(3, appMetaData.size());
+
+        Resources resources = mock(Resources.class);
+        when(mMockContext.getResources()).thenReturn(resources);
+        when(resources.getString(anyInt())).thenReturn(TOS_INTENT_NAME);
+
+        launchAllApps(appMetaData);
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockContext, times(2)).startActivity(intentCaptor.capture(), any());
+
+        assertTrue(intentCaptor
+                .getAllValues()
+                .stream()
+                .map(Intent::getExtras)
+                // TODO (b/276975875): deprecate current key
+                .anyMatch(extra -> extra.getBoolean("firstRun")));
+
+        assertTrue(intentCaptor
+                .getAllValues()
+                .stream()
+                .map(Intent::getAction)
+                .anyMatch(action -> action.equals(TOS_INTENT_NAME)));
+    }
+
+    @Test
+    public void testGetLauncherAppsWithEnableAndTosDisabledDistractionOptimizedApps() {
+        mockTosSettingsStringCalls();
+        mockTosPackageManagerQueries();
+        doReturn(true)
+                .when(mCarPackageManager)
+                .isActivityDistractionOptimized(eq(TEST_TOS_DISABLED_APP_1), any());
+        doReturn(true)
+                .when(mCarPackageManager)
+                .isActivityDistractionOptimized(eq(TEST_TOS_DISABLED_APP_2), any());
+
+        AppLauncherUtils.LauncherAppsInfo launcherAppsInfo = AppLauncherUtils.getLauncherApps(
+                mMockContext, /* appsToHide= */ new ArraySet<>(),
+                /* customMediaComponents= */ new ArraySet<>(),
+                /* appTypes= */ APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
+                /* openMediaCenter= */ false, mMockLauncherApps, mCarPackageManager,
+                mMockPackageManager, MATCH_NO_APP, mCarMediaManager, mMockShortcutsListener,
+                TEST_MIRROR_APP_PKG,  /* mirroringAppRedirect= */ null);
+
+        List<AppMetaData> appMetaData = launcherAppsInfo.getLaunchableComponentsList();
+
+        // mMockLauncherApps is never stubbed, only services & disabled activities are expected.
+        assertEquals(3, appMetaData.size());
+
+        Resources resources = mock(Resources.class);
+        when(mMockContext.getResources()).thenReturn(resources);
+        when(resources.getString(anyInt())).thenReturn(TOS_INTENT_NAME);
+
+        launchAllApps(appMetaData);
+
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockContext, times(2)).startActivity(intentCaptor.capture(), any());
+
+        assertTrue(intentCaptor
+                .getAllValues()
+                .stream()
+                .map(Intent::getExtras)
+                // TODO (b/276975875): deprecate current key
+                .anyMatch(extra -> extra.getBoolean("firstRun")));
+
+        assertTrue(intentCaptor
+                .getAllValues()
+                .stream()
+                .map(Intent::getAction)
+                .anyMatch(action -> action.equals(TOS_INTENT_NAME)));
     }
 
     private void forceStopInit(ActivityManager activityManager, CarMediaManager carMediaManager,
@@ -416,6 +516,29 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         });
     }
 
+    private void mockTosPackageManagerQueries() {
+        when(mMockPackageManager.queryIntentServices(any(), anyInt())).thenAnswer(args -> {
+            Intent intent = args.getArgument(0);
+            if (intent.getAction().equals(MediaBrowserService.SERVICE_INTERFACE)) {
+                return Collections.singletonList(constructServiceResolveInfo(TEST_ENABLED_APP));
+            }
+            return new ArrayList<>();
+        });
+        when(mMockPackageManager.queryIntentActivities(any(), any())).thenAnswer(args -> {
+            Intent intent = args.getArgument(0);
+            PackageManager.ResolveInfoFlags flags = args.getArgument(1);
+            List<ResolveInfo> resolveInfoList = new ArrayList<>();
+            if (intent.getAction().equals(Intent.ACTION_MAIN)) {
+                if ((flags.getValue() & MATCH_DISABLED_COMPONENTS) != 0) {
+                    resolveInfoList.add(constructActivityResolveInfo(TEST_TOS_DISABLED_APP_1));
+                    resolveInfoList.add(constructActivityResolveInfo(TEST_TOS_DISABLED_APP_2));
+                }
+                resolveInfoList.add(constructActivityResolveInfo(TEST_ENABLED_APP));
+            }
+            return resolveInfoList;
+        });
+    }
+
     private void mockPmGetApplicationEnabledSetting(int enabledState, String... packages) {
         for (String pkg : packages) {
             when(mMockPackageManager.getApplicationEnabledSetting(pkg)).thenReturn(enabledState);
@@ -435,6 +558,25 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
                 + TEST_DISABLED_APP_2)
                 .when(() -> Settings.Secure.getString(any(ContentResolver.class),
                 eq(KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE)));
+    }
+
+    private void mockTosSettingsStringCalls() {
+        when(mMockContext.createContextAsUser(any(UserHandle.class), anyInt()))
+                .thenAnswer(args -> {
+                    Context context = mock(Context.class);
+                    IContentProvider cp = mock(IContentProvider.class);
+                    Bundle bundle = mock(Bundle.class);
+                    ContentResolver contentResolver = mock(ContentResolver.class);
+                    when(context.getContentResolver()).thenReturn(contentResolver);
+                    when(contentResolver.acquireProvider(anyString())).thenReturn(cp);
+                    when(cp.call(any(), any(), any(),
+                            eq(KEY_UNACCEPTED_TOS_DISABLED_APPS),
+                            any())).thenReturn(bundle);
+                    String value = TEST_TOS_DISABLED_APP_1 + TOS_DISABLED_APPS_SEPARATOR
+                            + TEST_TOS_DISABLED_APP_2;
+                    when(bundle.getString(anyString())).thenReturn(value);
+                    return context;
+                });
     }
 
     private void launchAllApps(List<AppMetaData> appMetaData) {
