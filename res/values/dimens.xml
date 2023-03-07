@@ -32,6 +32,7 @@
     <dimen name="app_grid_width">1440dp</dimen>
     <dimen name="app_grid_height">628dp</dimen>
     <dimen name="app_grid_margin_horizontal">70dp</dimen>
+    <dimen name="app_grid_margin_vertical">0dp</dimen>
     <dimen name="app_icon_size">84dp</dimen>
     <dimen name="app_icon_scaled_size">100dp</dimen>
     <item name="app_icon_opacity_unavailable" type="dimen" format="float">0.5</item>
