@@ -16,6 +16,10 @@
 
 package com.android.car.carlauncher;
 
+import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
+import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
+import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
+
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,14 +34,17 @@ import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
-import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.car.carlauncher.AppGridPageSnapper.AppGridPageSnapCallback;
 
 /**
  * App item view holder that contains the app icon and name.
@@ -55,10 +62,15 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView mAppIcon;
     private final TextView mAppName;
     private final AppItemDragCallback mDragCallback;
-    private final AppGridPageSnapper.AppGridPageSnapCallback mSnapCallback;
+    private final AppGridPageSnapCallback mSnapCallback;
     private final Rect mPageBound;
     private final boolean mConfigReorderAllowed;
     private final int mThresholdToStartDragDrop;
+
+    @PageOrientation
+    private int mAppGridOrientation;
+    @AppItemBoundDirection
+    private int mDragExitDirection;
 
     private boolean mHasAppMetadata;
     private ComponentName mComponentName;
@@ -67,11 +79,10 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     private int mAppItemWidth;
     private int mAppItemHeight;
     private boolean mIsTargeted;
-    private boolean mIsSelected;
     private boolean mCanStartDragAction;
 
     AppItemViewHolder(View view, Context context, AppItemDragCallback dragCallback,
-            AppGridPageSnapper.AppGridPageSnapCallback snapCallback, Rect pageBound) {
+            AppGridPageSnapCallback snapCallback, Rect pageBound) {
         super(view);
         mContext = context;
         mAppItemView = view.findViewById(R.id.app_item);
@@ -81,32 +92,35 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         mSnapCallback = snapCallback;
         mPageBound = pageBound;
 
-        mIconSize = view.getResources().getDimensionPixelSize(R.dimen.app_icon_size);
-        mConfigReorderAllowed = view.getResources().getBoolean(R.bool.config_allow_reordering);
+        mIconSize = context.getResources().getDimensionPixelSize(R.dimen.app_icon_size);
+        mConfigReorderAllowed = context.getResources().getBoolean(R.bool.config_allow_reordering);
         // distance that users must drag (hold and attempt to move the app icon) to initiate
         // reordering, measured in pixels on screen.
-        mThresholdToStartDragDrop = view.getResources().getDimensionPixelSize(
+        mThresholdToStartDragDrop = context.getResources().getDimensionPixelSize(
                 R.dimen.threshold_to_start_drag_drop);
+        mAppGridOrientation = context.getResources().getBoolean(R.bool.use_vertical_app_grid)
+                ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL;
 
-        mIconScaledSize = view.getResources().getDimensionPixelSize(
+        mIconScaledSize = context.getResources().getDimensionPixelSize(
                 R.dimen.app_icon_scaled_size);
         // duration for animating the resizing of app icon on long press
-        mLongPressAnimationDurationMs = view.getResources().getInteger(
+        mLongPressAnimationDurationMs = context.getResources().getInteger(
                 R.integer.ms_long_press_animation_duration);
         // duration for animating the resizing after long press is released
-        mReleaseAnimationDurationMs = view.getResources().getInteger(
+        mReleaseAnimationDurationMs = context.getResources().getInteger(
                 R.integer.ms_release_animation_duration);
         // duration to animate the highlighting of view holder when it is targeted during drag drop
-        mHighlightTransitionDurationMs = view.getResources().getInteger(
+        mHighlightTransitionDurationMs = context.getResources().getInteger(
                 R.integer.ms_background_highlight_duration);
         // delay before animating the drop animation when a valid drop event has been received
-        mDropAnimationDelayMs = view.getResources().getInteger(R.integer.ms_drop_animation_delay);
+        mDropAnimationDelayMs = context.getResources().getInteger(
+                R.integer.ms_drop_animation_delay);
     }
 
     /**
-     * Binds the grid app item view with the app meta data.
+     * Binds the grid app item view with the app metadata.
      *
-     * @param app Pass {@code null} will empty out the view.
+     * @param app AppMetaData to be displayed. Pass {@code null} will empty out the viewHolder.
      */
     public void bind(@Nullable AppMetaData app, boolean isDistractionOptimizationRequired) {
         resetViewHolder();
@@ -128,21 +142,6 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         mAppItemView.setBackground(mBackgroundHighlight);
 
         // app icon's relative location within view holders are only measurable after it is drawn
-        mAppIcon.getViewTreeObserver().addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        mAppIcon.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        Rect appIconBound = new Rect();
-                        mAppIcon.getDrawingRect(appIconBound);
-                        mAppItemView.offsetDescendantRectToMyCoords(mAppIcon, appIconBound);
-                        mAppIconCenter = new Point(
-                                /* x */ (appIconBound.right + appIconBound.left) / 2,
-                                /* y */ (appIconBound.bottom + appIconBound.top) / 2);
-                        mAppItemWidth = mAppItemView.getWidth();
-                        mAppItemHeight = mAppItemView.getHeight();
-                    }
-                });
 
         // during a drag and drop operation, the user could scroll to another page and return to the
         // previous page, so we need to rebind the app with the correct visibility.
@@ -152,9 +151,6 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                 !isDistractionOptimizationRequired || app.getIsDistractionOptimized();
         mAppIcon.setAlpha(mContext.getResources().getFloat(
                 isLaunchable ? R.dimen.app_icon_opacity : R.dimen.app_icon_opacity_unavailable));
-        if (mConfigReorderAllowed && !isDistractionOptimizationRequired) {
-            mAppItemView.setOnDragListener(new AppItemOnDragListener());
-        }
 
         if (isLaunchable) {
             View.OnClickListener appLaunchListener = new View.OnClickListener() {
@@ -280,19 +276,37 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void resetViewHolder() {
+        // TODO: Create a different item for empty app item.
         mHasAppMetadata = false;
-        mIsSelected = false;
 
-        mAppItemView.setOnDragListener(null);
+        mAppItemView.setOnDragListener(new AppItemOnDragListener());
         mAppItemView.setFocusable(false);
         mAppItemView.setOnClickListener(null);
+
         mAppIcon.setLongClickable(false);
         mAppIcon.setOnLongClickListener(null);
         mAppIcon.setOnTouchListener(null);
 
+        mAppIcon.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                // remove listener since icon only need to be measured once
+                mAppIcon.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                Rect appIconBound = new Rect();
+                mAppIcon.getDrawingRect(appIconBound);
+                mAppItemView.offsetDescendantRectToMyCoords(mAppIcon, appIconBound);
+                mAppIconCenter = new Point(/* x */ (appIconBound.right + appIconBound.left) / 2,
+                        /* y */ (appIconBound.bottom + appIconBound.top) / 2);
+                mAppItemWidth = mAppItemView.getWidth();
+                mAppItemHeight = mAppItemView.getHeight();
+            }
+        });
+
         mAppItemView.setBackground(null);
         mAppIcon.setImageDrawable(null);
         mAppName.setText(null);
+
+        mDragExitDirection = AppItemBoundDirection.NONE;
     }
 
     private void setStateTargeted(boolean targeted) {
@@ -308,7 +322,6 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     }
 
     private void setStateSelected(boolean selected) {
-        mIsSelected = selected;
         if (selected) {
             mAppIcon.setAlpha(0.f);
             return;
@@ -353,38 +366,60 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     class AppItemOnDragListener implements View.OnDragListener{
         @Override
         public boolean onDrag(View view, DragEvent event) {
-            if (AppItemViewHolder.isAppItemDragEvent(event) && mHasAppMetadata) {
-                int action = event.getAction();
+            int action = event.getAction();
+            if (mHasAppMetadata) {
                 if (action == DragEvent.ACTION_DRAG_STARTED) {
-                    if (mComponentName.equals(mDragCallback.mSelectedComponent)) {
+                    if (isSelectedViewHolder()) {
                         setStateSelected(true);
                     }
-                } else if (action == DragEvent.ACTION_DRAG_LOCATION) {
-                    if (isTargetIconVisible() && isDraggedIconInBound(event)
-                            && mDragCallback.mSelectedComponent != null
-                            && mSnapCallback.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
-                        setStateTargeted(true);
-                    } else {
-                        setStateTargeted(false);
-                    }
-                } else if (action == DragEvent.ACTION_DRAG_EXITED) {
+                } else if (action == DragEvent.ACTION_DRAG_LOCATION && inScrollStateIdle()) {
+                    boolean shouldTargetViewHolder = isTargetIconVisible()
+                            && isDraggedIconInBound(event)
+                            && mDragCallback.mSelectedComponent != null;
+                    setStateTargeted(shouldTargetViewHolder);
+                } else if (action == DragEvent.ACTION_DRAG_EXITED && inScrollStateIdle()) {
                     setStateTargeted(false);
                 } else if (action == DragEvent.ACTION_DROP) {
-                    if (mComponentName.equals(mDragCallback.mTargetedComponent)) {
+                    if (isTargetedViewHolder()) {
                         Point dropPoint = new Point(/* x */ (int) event.getX(),
                                 /* y */ (int) event.getY());
                         mDragCallback.notifyItemDropped(dropPoint);
                     }
                     setStateTargeted(false);
-                    return false;
                 }
             }
-
+            if (action == DragEvent.ACTION_DRAG_ENTERED && inScrollStateIdle()) {
+                mDragCallback.notifyItemDragged();
+            }
+            if (action == DragEvent.ACTION_DRAG_LOCATION && inScrollStateIdle()) {
+                mDragExitDirection = getClosestBoundDirection(event.getX(), event.getY());
+                mDragCallback.notifyItemDragged();
+            }
+            if (action == DragEvent.ACTION_DRAG_EXITED && inScrollStateIdle()) {
+                mDragCallback.notifyDragExited(AppItemViewHolder.this, mDragExitDirection);
+                mDragExitDirection = AppItemBoundDirection.NONE;
+            }
             if (event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                mDragExitDirection = AppItemBoundDirection.NONE;
                 setStateSelected(false);
+            }
+            if (action == DragEvent.ACTION_DROP) {
+                return false;
             }
             return true;
         }
+    }
+
+    private boolean isSelectedViewHolder() {
+        return mComponentName != null && mComponentName.equals(mDragCallback.mSelectedComponent);
+    }
+
+    private boolean isTargetedViewHolder() {
+        return mComponentName != null && mComponentName.equals(mDragCallback.mTargetedComponent);
+    }
+
+    private boolean inScrollStateIdle() {
+        return mSnapCallback.getScrollState() == RecyclerView.SCROLL_STATE_IDLE;
     }
 
     private boolean isTargetIconVisible() {
@@ -403,17 +438,30 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                 && (iconTop + mIconScaledSize) < mAppItemHeight;
     }
 
+    @AppItemBoundDirection
+    int getClosestBoundDirection(float eventX, float eventY) {
+        float cutoffThreshold = .25f;
+        if (isHorizontal(mAppGridOrientation)) {
+            float horizontalPosition = eventX / mAppItemWidth;
+            if (horizontalPosition < cutoffThreshold) {
+                return AppItemBoundDirection.LEFT;
+            } else if (horizontalPosition > (1 - cutoffThreshold)) {
+                return AppItemBoundDirection.RIGHT;
+            }
+            return AppItemBoundDirection.NONE;
+        }
+        float verticalPosition = eventY / mAppItemHeight;
+        if (verticalPosition < .5f) {
+            return AppItemBoundDirection.TOP;
+        } else if (verticalPosition > (1 - cutoffThreshold)) {
+            return AppItemBoundDirection.BOTTOM;
+        }
+        return AppItemBoundDirection.NONE;
+    }
+
     boolean isMostRecentlySelected() {
         return mComponentName != null
                 && mComponentName.equals(mDragCallback.getPreviousSelectedComponent());
-    }
-
-    /**
-     * Static method for determining if a DragEvent corresponds to an AppItemIconView's DragShadow.
-     */
-    public static boolean isAppItemDragEvent(DragEvent event) {
-        return event != null && event.getClipDescription() != null
-                && event.getClipDescription().getLabel().equals(APP_ITEM_DRAG_TAG);
     }
 
     /**
@@ -486,6 +534,24 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         }
 
         /**
+         * An intermediary step of the drag drop process. Called the drag shadow enters the
+         * view holder.
+         */
+        public void notifyItemDragged() {
+            mDragListener.onItemDragged();
+        }
+
+        /**
+         * An intermediary step of the drag drop process. Called the drag shadow is dragged outside
+         * the view holder.
+         */
+        public void notifyDragExited(@NonNull AppItemViewHolder viewHolder,
+                @AppItemBoundDirection int exitDirection) {
+            int gridPosition = viewHolder.getAbsoluteAdapterPosition();
+            mDragListener.onDragExited(gridPosition, exitDirection);
+        }
+
+        /**
          * The last step of drag and drop. Called when a ACTION_DROP event has been received by a
          * view holder.
          *
@@ -533,6 +599,10 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         void onItemLongPressed(boolean longPressed);
         /** Listener method called during AppItemDragCallback.notifyItemSelected */
         void onItemSelected(int gridPositionFrom);
+        /** Listener method called during AppItemDragCallback.notifyDragEntered */
+        void onItemDragged();
+        /** Listener method called during AppItemDragCallback.notifyDragExited */
+        void onDragExited(int gridPosition, @AppItemBoundDirection int exitDirection);
         /** Listener method called during AppItemDragCallback.notifyItemDropped */
         void onItemDropped(int gridPositionFrom, int gridPositionTo);
     }

@@ -22,6 +22,8 @@ import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -177,11 +179,11 @@ public class AppGridPagingUtilsTest {
         };
         for (int i = 0; i < gridPositions.length; i++) {
             // round to left most index on page
-            assertEquals(testUtilsLTR.roundToLeftmostIndexOnPage(gridPositions[i]), 0);
-            assertEquals(testUtilsRTL.roundToLeftmostIndexOnPage(gridPositions[i]), 0);
+            assertEquals(testUtilsLTR.roundToFirstIndexOnPage(gridPositions[i]), 0);
+            assertEquals(testUtilsRTL.roundToFirstIndexOnPage(gridPositions[i]), 0);
             // round to right most index
-            assertEquals(testUtilsLTR.roundToRightmostIndexOnPage(gridPositions[i]), 7);
-            assertEquals(testUtilsRTL.roundToRightmostIndexOnPage(gridPositions[i]), 7);
+            assertEquals(testUtilsLTR.roundToLastIndexOnPage(gridPositions[i]), 7);
+            assertEquals(testUtilsRTL.roundToLastIndexOnPage(gridPositions[i]), 7);
         }
     }
 
@@ -202,19 +204,19 @@ public class AppGridPagingUtilsTest {
         };
         for (int i = 0; i < 15; i++) {
             // round to left most index on page
-            assertEquals(testUtilsLTR.roundToLeftmostIndexOnPage(gridPositions[i]), 0);
-            assertEquals(testUtilsRTL.roundToLeftmostIndexOnPage(gridPositions[i]), 0);
+            assertEquals(testUtilsLTR.roundToFirstIndexOnPage(gridPositions[i]), 0);
+            assertEquals(testUtilsRTL.roundToFirstIndexOnPage(gridPositions[i]), 0);
             // round to right most index
-            assertEquals(testUtilsLTR.roundToRightmostIndexOnPage(gridPositions[i]), 14);
-            assertEquals(testUtilsRTL.roundToRightmostIndexOnPage(gridPositions[i]), 14);
+            assertEquals(testUtilsLTR.roundToLastIndexOnPage(gridPositions[i]), 14);
+            assertEquals(testUtilsRTL.roundToLastIndexOnPage(gridPositions[i]), 14);
         }
         for (int i = 15; i < gridPositions.length; i++) {
             // round to left most index on page
-            assertEquals(testUtilsLTR.roundToLeftmostIndexOnPage(gridPositions[i]), 15);
-            assertEquals(testUtilsRTL.roundToLeftmostIndexOnPage(gridPositions[i]), 15);
+            assertEquals(testUtilsLTR.roundToFirstIndexOnPage(gridPositions[i]), 15);
+            assertEquals(testUtilsRTL.roundToFirstIndexOnPage(gridPositions[i]), 15);
             // round to right most index
-            assertEquals(testUtilsLTR.roundToRightmostIndexOnPage(gridPositions[i]), 29);
-            assertEquals(testUtilsRTL.roundToRightmostIndexOnPage(gridPositions[i]), 29);
+            assertEquals(testUtilsLTR.roundToLastIndexOnPage(gridPositions[i]), 29);
+            assertEquals(testUtilsRTL.roundToLastIndexOnPage(gridPositions[i]), 29);
         }
     }
 
@@ -233,33 +235,34 @@ public class AppGridPagingUtilsTest {
         };
         for (int i = 0; i < 6; i++) {
             // round to left most index on page
-            assertEquals(testUtilsLTR.roundToLeftmostIndexOnPage(gridPositions[i]), 0);
-            assertEquals(testUtilsRTL.roundToLeftmostIndexOnPage(gridPositions[i]), 0);
+            assertEquals(testUtilsLTR.roundToFirstIndexOnPage(gridPositions[i]), 0);
+            assertEquals(testUtilsRTL.roundToFirstIndexOnPage(gridPositions[i]), 0);
             // round to right most index
-            assertEquals(testUtilsLTR.roundToRightmostIndexOnPage(gridPositions[i]), 5);
-            assertEquals(testUtilsRTL.roundToRightmostIndexOnPage(gridPositions[i]), 5);
+            assertEquals(testUtilsLTR.roundToLastIndexOnPage(gridPositions[i]), 5);
+            assertEquals(testUtilsRTL.roundToLastIndexOnPage(gridPositions[i]), 5);
         }
         for (int i = 6; i < 11; i++) {
             // round to left most index on page
-            assertEquals(testUtilsLTR.roundToLeftmostIndexOnPage(gridPositions[i]), 6);
-            assertEquals(testUtilsRTL.roundToLeftmostIndexOnPage(gridPositions[i]), 6);
+            assertEquals(testUtilsLTR.roundToFirstIndexOnPage(gridPositions[i]), 6);
+            assertEquals(testUtilsRTL.roundToFirstIndexOnPage(gridPositions[i]), 6);
             // round to right most index
-            assertEquals(testUtilsLTR.roundToRightmostIndexOnPage(gridPositions[i]), 11);
-            assertEquals(testUtilsRTL.roundToRightmostIndexOnPage(gridPositions[i]), 11);
+            assertEquals(testUtilsLTR.roundToLastIndexOnPage(gridPositions[i]), 11);
+            assertEquals(testUtilsRTL.roundToLastIndexOnPage(gridPositions[i]), 11);
         }
         for (int i = 12; i < 17; i++) {
             // round to left most index on page
-            assertEquals(testUtilsLTR.roundToLeftmostIndexOnPage(gridPositions[i]), 12);
-            assertEquals(testUtilsRTL.roundToLeftmostIndexOnPage(gridPositions[i]), 12);
+            assertEquals(testUtilsLTR.roundToFirstIndexOnPage(gridPositions[i]), 12);
+            assertEquals(testUtilsRTL.roundToFirstIndexOnPage(gridPositions[i]), 12);
             // round to right most index
-            assertEquals(testUtilsLTR.roundToRightmostIndexOnPage(gridPositions[i]), 17);
-            assertEquals(testUtilsRTL.roundToRightmostIndexOnPage(gridPositions[i]), 17);
+            assertEquals(testUtilsLTR.roundToLastIndexOnPage(gridPositions[i]), 17);
+            assertEquals(testUtilsRTL.roundToLastIndexOnPage(gridPositions[i]), 17);
         }
     }
 
     private AppGridPagingUtils createTestAppGridPagingUtils(int numOfCols, int numOfRows,
             int layoutDirection) {
-        AppGridPagingUtils utils = new AppGridPagingUtils(numOfCols, numOfRows);
+        AppGridPagingUtils utils = new AppGridPagingUtils(numOfCols, numOfRows,
+                PageOrientation.HORIZONTAL);
         utils.setLayoutDirection(layoutDirection);
         return utils;
     }

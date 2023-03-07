@@ -65,12 +65,12 @@ public class AppGridActivityTest {
         mActivityScenario = ActivityScenario.launch(AppGridActivity.class);
         mActivityScenario.onActivity(activity -> {
             mPositionIndicator = mock(AppGridPositionIndicator.class);
-            activity.setPositionIndicator(mPositionIndicator);
+            activity.setPosIndicator(mPositionIndicator);
         });
         mActivityScenario.moveToState(Lifecycle.State.RESUMED);
         onView(withId(R.id.apps_grid)).check(matches(isDisplayed()));
         onView(withId(R.id.position_indicator_container)).check(matches(isDisplayed()));
-        verify(mPositionIndicator, times(1)).updateDimensions(anyInt());
+        verify(mPositionIndicator, times(1)).updatePageCount(anyInt());
 
     }
 
