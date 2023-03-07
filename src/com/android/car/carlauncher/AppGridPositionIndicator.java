@@ -16,6 +16,9 @@
 
 package com.android.car.carlauncher;
 
+import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
+import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -34,9 +37,13 @@ public class AppGridPositionIndicator extends View {
     final long mFadeAnimationDelayMs;
 
     private int mAppGridWidth;
-    private float mOffsetRatio;
-    private int mXOffset;
+    private int mAppGridHeight;
+    private int mAppGridOffset;
     private int mPageCount = 1;
+
+    @PageOrientation
+    private int mAppGridOrientation;
+    private float mOffsetScaleFactor = 1.f;
 
     public AppGridPositionIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -48,36 +55,50 @@ public class AppGridPositionIndicator extends View {
                 R.integer.ms_scrollbar_appear_animation_duration);
         mAppearAnimationDelayMs = getResources().getInteger(
                 R.integer.ms_scrollbar_appear_animation_delay);
+        mAppGridOrientation = getResources().getBoolean(R.bool.use_vertical_app_grid)
+                ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL;
         setBackground(ContextCompat.getDrawable(context, R.drawable.position_indicator_bar));
         setLayoutParams(new LayoutParams(/* width */ mAppGridWidth,
                 /* height */ LayoutParams.MATCH_PARENT));
         setAlpha(0.f);
     }
 
-    void setAppGridDimensions(int appGridWidth, int appGridMargin) {
+    void updateAppGridDimensions(int windowWidth, int windowHeight, int appGridWidth,
+            int appGridHeight) {
         mAppGridWidth = appGridWidth;
-        mOffsetRatio = (float) appGridWidth / (appGridWidth + 2 * appGridMargin);
-        updateDimensions(mPageCount);
+        mAppGridHeight = appGridHeight;
+        mOffsetScaleFactor = isHorizontal(mAppGridOrientation)
+                ? (float) mAppGridWidth / windowWidth : (float) mAppGridHeight / windowHeight;
+        updatePageCount(mPageCount);
     }
 
     /**
      * Updates the dimensions of the scroll bar when number of pages in app grid changes.
      */
-    public void updateDimensions(int pageCount) {
+    void updatePageCount(int pageCount) {
         mPageCount = pageCount;
         LayoutParams params = (LayoutParams) getLayoutParams();
-        params.width = mAppGridWidth / mPageCount;
-        params.leftMargin = (int) (mXOffset / mPageCount * mOffsetRatio);
+        if (isHorizontal(mAppGridOrientation)) {
+            params.width = mAppGridWidth / mPageCount;
+        } else {
+            params.height = mAppGridHeight / mPageCount;
+        }
         setLayoutParams(params);
+        updateOffset(mAppGridOffset);
     }
 
     /**
      * Updates the offset when recyclerview has been scrolled to xOffset.
      */
-    public void updateXOffset(int xOffset) {
-        mXOffset = xOffset;
+    void updateOffset(int appGridOffset) {
+        mAppGridOffset = appGridOffset;
         LayoutParams params = (LayoutParams) getLayoutParams();
-        params.leftMargin = (int) (mXOffset / mPageCount * mOffsetRatio);
+        int offset = (int) (mAppGridOffset * mOffsetScaleFactor / mPageCount);
+        if (isHorizontal(mAppGridOrientation)) {
+            params.leftMargin = offset;
+        } else {
+            params.topMargin = offset;
+        }
         setLayoutParams(params);
     }
 
