@@ -16,6 +16,9 @@
 
 package com.android.car.carlauncher;
 
+import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
+import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
+
 import android.content.Context;
 
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -27,9 +30,11 @@ import androidx.recyclerview.widget.RecyclerView;
 public class AppGridLayoutManager extends GridLayoutManager {
     boolean mShouldLayoutChildren = true;
 
-    public AppGridLayoutManager(Context context, int spanCount,
-            int orientation, boolean reverseLayout) {
-        super(context, spanCount, orientation, reverseLayout);
+    public AppGridLayoutManager(Context context, int numOfCols, int numOfRows,
+            @PageOrientation int appGridOrientation) {
+        super(context, isHorizontal(appGridOrientation) ? numOfRows : numOfCols,
+                isHorizontal(appGridOrientation)
+                        ? GridLayoutManager.HORIZONTAL : GridLayoutManager.VERTICAL, false);
     }
 
     /**
