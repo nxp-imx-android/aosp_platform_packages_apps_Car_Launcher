@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  * intent to either open the app or the media center (for media services).
  */
 
-final class AppMetaData {
+public final class AppMetaData {
     // The display name of the app
     @Nullable
     private final String mDisplayName;
@@ -87,11 +87,11 @@ final class AppMetaData {
         return mComponentName;
     }
 
-    Consumer<Context> getLaunchCallback() {
+    public Consumer<Context> getLaunchCallback() {
         return mLaunchCallback;
     }
 
-    Consumer<Pair<Context, View>> getAlternateLaunchCallback() {
+    public Consumer<Pair<Context, View>> getAlternateLaunchCallback() {
         return mAlternateLaunchCallback;
     }
 
@@ -99,7 +99,7 @@ final class AppMetaData {
         return mIcon;
     }
 
-    boolean getIsDistractionOptimized() {
+    public boolean getIsDistractionOptimized() {
         return mIsDistractionOptimized;
     }
 

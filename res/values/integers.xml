@@ -34,7 +34,7 @@ limitations under the License.
     <!-- Duration to animate the app item highlight when it is targeted during drag drop  -->
     <integer name="ms_background_highlight_duration">75</integer>
 
-    <!-- Durations for animating scroll state change in position indicator  -->
+    <!-- Durations for animating scroll state change in page indicator  -->
     <integer name="ms_scrollbar_appear_animation_duration">50</integer>
     <integer name="ms_scrollbar_appear_animation_delay">0</integer>
     <integer name="ms_scrollbar_fade_animation_duration">50</integer>

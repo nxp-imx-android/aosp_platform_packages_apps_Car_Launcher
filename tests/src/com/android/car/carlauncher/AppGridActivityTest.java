@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 public class AppGridActivityTest {
     private ActivityScenario<AppGridActivity> mActivityScenario;
     private CarUxRestrictionsManager mCarUxRestrictionsManager;
-    private AppGridPositionIndicator mPositionIndicator;
+    private PageIndicator mPageIndicator;
 
     @After
     public void tearDown() {
@@ -57,20 +57,20 @@ public class AppGridActivityTest {
     public void onCreate_appGridRecyclerView_isVisible() {
         mActivityScenario = ActivityScenario.launch(AppGridActivity.class);
         onView(withId(R.id.apps_grid)).check(matches(isDisplayed()));
-        onView(withId(R.id.position_indicator_container)).check(matches(isDisplayed()));
+        onView(withId(R.id.page_indicator_container)).check(matches(isDisplayed()));
     }
 
     @Test
     public void onResume_ScrollStateIsUpdated() {
         mActivityScenario = ActivityScenario.launch(AppGridActivity.class);
         mActivityScenario.onActivity(activity -> {
-            mPositionIndicator = mock(AppGridPositionIndicator.class);
-            activity.setPosIndicator(mPositionIndicator);
+            mPageIndicator = mock(PageIndicator.class);
+            activity.setPageIndicator(mPageIndicator);
         });
         mActivityScenario.moveToState(Lifecycle.State.RESUMED);
         onView(withId(R.id.apps_grid)).check(matches(isDisplayed()));
-        onView(withId(R.id.position_indicator_container)).check(matches(isDisplayed()));
-        verify(mPositionIndicator, times(1)).updatePageCount(anyInt());
+        onView(withId(R.id.page_indicator_container)).check(matches(isDisplayed()));
+        verify(mPageIndicator, times(1)).updatePageCount(anyInt());
 
     }
 

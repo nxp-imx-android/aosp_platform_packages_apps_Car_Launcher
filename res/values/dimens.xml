@@ -40,8 +40,8 @@
     <dimen name="app_name_margin_horizontal">6dp</dimen>
     <dimen name="app_item_highlight_corner_radius">18dp</dimen>
     <dimen name="app_item_highlight_edge_width">5dp</dimen>
-    <dimen name="position_indicator_edge_corner_radius">4dp</dimen>
-    <dimen name="position_indicator_height">4dp</dimen>
+    <dimen name="page_indicator_edge_corner_radius">4dp</dimen>
+    <dimen name="page_indicator_height">4dp</dimen>
     <!-- Gap between top of screen (statusbar) and header content -->
     <dimen name="recent_apps_divider_margin">40dp</dimen>
     <dimen name="app_grid_header_margin">@*android:dimen/car_padding_4</dimen>

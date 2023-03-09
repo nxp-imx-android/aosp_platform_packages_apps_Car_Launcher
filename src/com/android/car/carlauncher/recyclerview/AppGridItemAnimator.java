@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher;
+package com.android.car.carlauncher.recyclerview;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -24,6 +24,8 @@ import android.view.ViewPropertyAnimator;
 
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
+
+import com.android.car.carlauncher.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +54,7 @@ public class AppGridItemAnimator extends DefaultItemAnimator {
             return animateDrop(viewHolder);
         }
         resetAnimation(viewHolder);
-        viewHolder.prepareForMoveAnimation();
+        viewHolder.resetTranslationZ();
         mQueuedMoveAnimations.add(viewHolder);
         return super.animateMove(holder, fromX, fromY, toX, toY);
     }
@@ -111,21 +113,21 @@ public class AppGridItemAnimator extends DefaultItemAnimator {
                 .setStartDelay(viewHolder.itemView.getResources().getInteger(
                         R.integer.ms_drop_animation_delay))
                 .setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                dispatchDropStarting(viewHolder);
-            }
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                        dispatchDropStarting(viewHolder);
+                    }
 
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                dropAnimation.setListener(null);
-                mDropAnimations.remove(viewHolder);
-                dispatchDropFinished(viewHolder);
-                if (!isRunning()) {
-                    dispatchAnimationsFinished();
-                }
-            }
-        }).start();
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        dropAnimation.setListener(null);
+                        mDropAnimations.remove(viewHolder);
+                        dispatchDropFinished(viewHolder);
+                        if (!isRunning()) {
+                            dispatchAnimationsFinished();
+                        }
+                    }
+                }).start();
     }
 
     @Override
