@@ -18,10 +18,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"કાર લૉન્ચર"</string>
-    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
-    <skip />
-    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
-    <skip />
+    <string name="reset_appgrid_title" msgid="814562055108028366">"ઍપ ગ્રિડને A-Z ક્રમ અનુસાર રીસેટ કરો"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"આ સુવિધા, સેટ કરવામાં આવેલા બધા કસ્ટમ ક્રમ કાઢી નાખશે. શું તમે ચાલુ રાખવા માગો છો?"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"બધી ઍપ"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"મીડિયા ઍપ"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"ઍપ બંધ કરો"</string>
@@ -44,6 +42,5 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"માઉન્ટેન વ્યૂ • H: --° L: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"ડિબગ ઍપ છુપાવો"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"ડિબગ ઍપ બતાવો"</string>
-    <!-- no translation found for times_separator (6180368193321715816) -->
-    <skip />
+    <string name="times_separator" msgid="6180368193321715816">"/"</string>
 </resources>

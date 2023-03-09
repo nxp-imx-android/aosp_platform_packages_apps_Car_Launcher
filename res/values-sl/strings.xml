@@ -18,10 +18,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"Zaganjalnik za avtomobil"</string>
-    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
-    <skip />
-    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
-    <skip />
+    <string name="reset_appgrid_title" msgid="814562055108028366">"Ponastavi mrežo aplikacij na vrstni red od A do Ž"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"Ta funkcija bo odstranila vse razvrščanje po meri. Ali želite nadaljevati?"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Vse aplikacije"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Aplikacije za predstavnost"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Ustavi aplikacijo"</string>
@@ -44,6 +42,5 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"Mountain View • V: --° N: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"Skrij aplikacije za odpravljanje napak"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Prikaži aplikacije za odpravljanje napak"</string>
-    <!-- no translation found for times_separator (6180368193321715816) -->
-    <skip />
+    <string name="times_separator" msgid="6180368193321715816">"/"</string>
 </resources>

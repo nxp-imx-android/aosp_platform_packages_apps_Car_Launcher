@@ -18,10 +18,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"Trình chạy cho ô tô"</string>
-    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
-    <skip />
-    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
-    <skip />
+    <string name="reset_appgrid_title" msgid="814562055108028366">"Đặt lại lưới ứng dụng theo thứ tự A-Z"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"Chức năng này sẽ xoá mọi thứ tự tuỳ chỉnh. Bạn có muốn tiếp tục không?"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Tất cả ứng dụng"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Ứng dụng đa phương tiện"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Dừng ứng dụng"</string>
@@ -44,6 +42,5 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"Mountain View • H: --° L: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"Ẩn các ứng dụng gỡ lỗi"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Hiển thị các ứng dụng gỡ lỗi"</string>
-    <!-- no translation found for times_separator (6180368193321715816) -->
-    <skip />
+    <string name="times_separator" msgid="6180368193321715816">"/"</string>
 </resources>

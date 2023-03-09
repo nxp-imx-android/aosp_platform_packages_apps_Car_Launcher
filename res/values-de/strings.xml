@@ -18,10 +18,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"Auto-Launcher"</string>
-    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
-    <skip />
-    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
-    <skip />
+    <string name="reset_appgrid_title" msgid="814562055108028366">"App-Raster auf Sortierung von A–Z zurücksetzen"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"Durch diese Funktion wird die gesamte benutzerdefinierte Sortierung entfernt. Möchtest du fortfahren?"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Alle Apps"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Medien-Apps"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"App beenden"</string>
@@ -44,6 +42,5 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"Mountain View • H: --° T: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"Debug-Apps verbergen"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Debug-Apps anzeigen"</string>
-    <!-- no translation found for times_separator (6180368193321715816) -->
-    <skip />
+    <string name="times_separator" msgid="6180368193321715816">"/"</string>
 </resources>
