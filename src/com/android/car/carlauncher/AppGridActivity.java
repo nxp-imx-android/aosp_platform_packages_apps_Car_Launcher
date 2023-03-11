@@ -16,6 +16,8 @@
 
 package com.android.car.carlauncher;
 
+import static android.content.Intent.URI_INTENT_SCHEME;
+
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_LAUNCHABLES;
@@ -45,6 +47,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -79,6 +85,7 @@ import com.android.car.ui.toolbar.ToolbarController;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -141,6 +148,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private RecyclerView.ItemDecoration mPageMarginDecorator;
     private AppGridPageSnapper.AppGridPageSnapCallback mSnapCallback;
     private AppItemViewHolder.AppItemDragCallback mDragCallback;
+
+    private Messenger mMirroringService;
+    private Messenger mMessenger;
+    private String mMirroringPackageName;
+    private Intent mMirroringIntentRedirect;
 
     /**
      * enum to define the state of display area possible.
@@ -253,7 +265,9 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                     mPackageManager,
                     new AppLauncherUtils.VideoAppPredicate(mPackageManager),
                     mCarMediaManager,
-                    AppGridActivity.this);
+                    AppGridActivity.this,
+                    mMirroringPackageName,
+                    mMirroringIntentRedirect);
             mLauncherModel.generateAlphabetizedAppOrder(mAppsInfo);
             alphabetizeExecutorService.shutdown();
         });
@@ -292,6 +306,44 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 Arrays.asList(getResources().getStringArray(R.array.custom_media_packages)));
         setContentView(R.layout.app_grid_activity);
         updateMode();
+
+        ServiceConnection mirroringConnectionListener = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                Log.d(TAG, "Mirroring service connected");
+                mMirroringService = new Messenger(service);
+                mMessenger = new Messenger(new IncomingHandler(Looper.getMainLooper()));
+                Message msg = Message.obtain(null, getResources()
+                        .getInteger(R.integer.config_msg_register_mirroring_pkg_code));
+                msg.replyTo = mMessenger;
+                try {
+                    mMirroringService.send(msg);
+                } catch (RemoteException e) {
+                    Log.d(TAG, "Exception sending message to mirroring service: " + e);
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d(TAG, "Mirroring service disconnected");
+                mMirroringPackageName = null;
+                mMirroringIntentRedirect = null;
+            }
+        };
+
+        // Bind to service that will inform about apps that are being mirrored
+        try {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName(
+                    getString(R.string.config_msg_mirroring_service_pkg_name),
+                    getString(R.string.config_msg_mirroring_service_class_name)));
+            if (mPackageManager.resolveService(intent, /* flags = */ 0) != null) {
+                bindService(intent, mirroringConnectionListener,
+                        BIND_AUTO_CREATE | BIND_IMPORTANT);
+            }
+        } catch (SecurityException e) {
+            Log.e(TAG, "Error binding to mirroring service: " + e);
+        }
 
         if (mShowToolbar) {
             ToolbarController toolbar = CarUi.requireToolbar(this);
@@ -498,6 +550,18 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
             mCar.disconnect();
             mCar = null;
         }
+
+        if (mMirroringService != null) {
+            Message msg = Message.obtain(null,
+                    getResources().getInteger(R.integer.config_msg_unregister_mirroring_pkg_code));
+            msg.replyTo = mMessenger;
+            try {
+                mMirroringService.send(msg);
+            } catch (RemoteException e) {
+                Log.d(TAG, "Exception sending message to mirroring service: " + e);
+            }
+        }
+
         super.onDestroy();
     }
 
@@ -919,5 +983,41 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     @VisibleForTesting
     void setPosIndicator(AppGridPositionIndicator posIndicator) {
         mPosIndicator = posIndicator;
+    }
+
+    class IncomingHandler extends Handler {
+
+        int mSendMirroringPkgCode = getResources()
+                .getInteger(R.integer.config_msg_send_mirroring_pkg_code);
+        String mMirroringPkgNameKey = getString(R.string.config_msg_mirroring_pkg_name_key);
+        String mMirroringRedirectUriKey = getString(R.string.config_msg_mirroring_redirect_uri_key);
+
+        IncomingHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            Log.d(TAG, "Message received: " + msg);
+            if (msg.what
+                    == mSendMirroringPkgCode) {
+                Bundle bundle = (Bundle) msg.obj;
+                mMirroringPackageName =
+                        bundle.getString(mMirroringPkgNameKey);
+                Log.d(TAG, "message received with package name = " + mMirroringPackageName);
+                try {
+                    mMirroringIntentRedirect = Intent.parseUri(
+                            bundle.getString(mMirroringRedirectUriKey),
+                            URI_INTENT_SCHEME);
+                    Log.d(TAG, "intent is: " + mMirroringIntentRedirect);
+                    mLauncherModel.updateMirroringItem(mMirroringPackageName,
+                            mMirroringIntentRedirect);
+                } catch (URISyntaxException e) {
+                    Log.d(TAG, "Error parsing mirroring redirect intent " + e);
+                }
+            } else {
+                super.handleMessage(msg);
+            }
+        }
     }
 }

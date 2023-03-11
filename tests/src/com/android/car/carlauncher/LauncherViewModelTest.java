@@ -74,6 +74,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("A", "A"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         AppMetaData app2 = new AppMetaData(
@@ -81,6 +82,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("B", "B"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         AppMetaData app3 = new AppMetaData(
@@ -88,6 +90,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("C", "C"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         mApps.add(app1);
@@ -231,6 +234,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("D", "D"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
@@ -262,6 +266,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("A1", "D"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
@@ -283,6 +288,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("A1", "D"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
@@ -314,6 +320,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
                 new ComponentName("A1", "D"),
                 mDrawable,
                 true,
+                false,
                 mConsumer,
                 mConsumer);
         mLauncherModel.addPackage(app4);
