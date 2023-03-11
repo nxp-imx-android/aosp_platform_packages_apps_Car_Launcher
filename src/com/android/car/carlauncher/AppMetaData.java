@@ -39,6 +39,7 @@ final class AppMetaData {
     private final ComponentName mComponentName;
     private final Drawable mIcon;
     private final boolean mIsDistractionOptimized;
+    private final boolean mIsMirroring;
     private final Consumer<Context> mLaunchCallback;
     private final Consumer<Pair<Context, View>> mAlternateLaunchCallback;
 
@@ -58,12 +59,14 @@ final class AppMetaData {
             ComponentName componentName,
             Drawable icon,
             boolean isDistractionOptimized,
+            boolean isMirroring,
             Consumer<Context> launchCallback,
             Consumer<Pair<Context, View>> alternateLaunchCallback) {
         mDisplayName = displayName == null ? "" : displayName.toString();
         mComponentName = componentName;
         mIcon = icon;
         mIsDistractionOptimized = isDistractionOptimized;
+        mIsMirroring = isMirroring;
         mLaunchCallback = launchCallback;
         mAlternateLaunchCallback = alternateLaunchCallback;
     }
@@ -100,6 +103,10 @@ final class AppMetaData {
         return mIsDistractionOptimized;
     }
 
+    boolean getIsMirroring() {
+        return mIsMirroring;
+    }
+
     /**
      * The equality of two AppMetaData is determined by whether the component names are the same.
      *
@@ -111,7 +118,8 @@ final class AppMetaData {
         if (!(o instanceof AppMetaData)) {
             return false;
         } else {
-            return ((AppMetaData) o).getComponentName().equals(mComponentName);
+            return ((AppMetaData) o).getComponentName().equals(mComponentName)
+                    && ((AppMetaData) o).getIsMirroring() == mIsMirroring;
         }
     }
 

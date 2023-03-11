@@ -17,6 +17,7 @@
 package com.android.car.carlauncher;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
@@ -199,6 +200,48 @@ public class LauncherViewModel extends ViewModel {
             mIsAlphabetized = false;
             mAppOrderRead = false;
         }
+    }
+
+    /**
+     * Update an AppItem's AppMetaData isMirroring state and its launchCallback
+     * Then, post the updated live data object
+     */
+    // TODO (b/272796126): refactor to data model and move deep copying to inside DiffUtil
+    public void updateMirroringItem(String packageName, Intent mirroringIntent) {
+        List<LauncherItem> launcherList = mCurrentLauncher.getValue();
+        if (launcherList == null) {
+            return;
+        }
+        List<LauncherItem> launcherListCopy = new ArrayList<>();
+        for (LauncherItem item : launcherList) {
+            if (item instanceof AppItem) {
+                AppMetaData metaData = ((AppItem) item).getAppMetaData();
+                if (item.getPackageName().equals(packageName)) {
+                    launcherListCopy.add(new AppItem(item.getPackageName(), item.getClassName(),
+                            item.getDisplayName(), new AppMetaData(metaData.getDisplayName(),
+                            metaData.getComponentName(), metaData.getIcon(),
+                            metaData.getIsDistractionOptimized(), /* isMirroring= */ true,
+                            contextArg -> AppLauncherUtils.launchApp(contextArg, mirroringIntent),
+                            metaData.getAlternateLaunchCallback())));
+                } else if (metaData.getIsMirroring()) {
+                    Intent intent = new Intent(Intent.ACTION_MAIN)
+                            .setComponent(metaData.getComponentName())
+                            .addCategory(Intent.CATEGORY_LAUNCHER)
+                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    launcherListCopy.add(new AppItem(item.getPackageName(), item.getClassName(),
+                            item.getDisplayName(), new AppMetaData(metaData.getDisplayName(),
+                            metaData.getComponentName(), metaData.getIcon(),
+                            metaData.getIsDistractionOptimized(), /* isMirroring= */ false,
+                            contextArg -> AppLauncherUtils.launchApp(contextArg, intent),
+                            metaData.getAlternateLaunchCallback())));
+                } else {
+                    launcherListCopy.add(item);
+                }
+            } else {
+                launcherListCopy.add(item);
+            }
+        }
+        mCurrentLauncher.postValue(launcherListCopy);
     }
 
     /**
