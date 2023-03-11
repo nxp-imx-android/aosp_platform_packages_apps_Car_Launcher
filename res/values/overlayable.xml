@@ -173,6 +173,9 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="integer" name="car_app_selector_column_number"/>
       <item type="integer" name="car_app_selector_row_number"/>
       <item type="integer" name="card_content_text_block_max_lines"/>
+      <item type="integer" name="config_msg_register_mirroring_pkg_code"/>
+      <item type="integer" name="config_msg_send_mirroring_pkg_code"/>
+      <item type="integer" name="config_msg_unregister_mirroring_pkg_code"/>
       <item type="integer" name="ms_background_highlight_duration"/>
       <item type="integer" name="ms_drop_animation_delay"/>
       <item type="integer" name="ms_long_press_animation_duration"/>
@@ -208,6 +211,10 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="app_launcher_title_all_apps"/>
       <item type="string" name="app_launcher_title_media_only"/>
       <item type="string" name="app_title"/>
+      <item type="string" name="config_msg_mirroring_pkg_name_key"/>
+      <item type="string" name="config_msg_mirroring_redirect_uri_key"/>
+      <item type="string" name="config_msg_mirroring_service_class_name"/>
+      <item type="string" name="config_msg_mirroring_service_pkg_name"/>
       <item type="string" name="config_smallCanvasOptimizedMapIntent"/>
       <item type="string" name="default_media_song_title"/>
       <item type="string" name="dialing_call_text"/>

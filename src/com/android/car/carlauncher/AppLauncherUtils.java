@@ -225,7 +225,9 @@ public class AppLauncherUtils {
             PackageManager packageManager,
             @NonNull Predicate<ResolveInfo> videoAppPredicate,
             CarMediaManager carMediaManager,
-            ShortcutsListener shortcutsListener) {
+            ShortcutsListener shortcutsListener,
+            String mirroringAppPkgName,
+            Intent mirroringAppRedirect) {
 
         if (launcherApps == null || carPackageManager == null || packageManager == null
                 || carMediaManager == null) {
@@ -271,6 +273,7 @@ public class AppLauncherUtils {
                             componentName,
                             info.serviceInfo.loadIcon(packageManager),
                             isDistractionOptimized,
+                            /* isMirroring = */ false,
                             contextArg -> {
                                 if (openMediaCenter) {
                                     AppLauncherUtils.launchApp(contextArg, intent);
@@ -303,12 +306,21 @@ public class AppLauncherUtils {
                             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                     CharSequence displayName = info.getLabel();
+                    boolean isMirroring = packageName.equals(mirroringAppPkgName);
                     AppMetaData appMetaData = new AppMetaData(
                             displayName,
                             componentName,
                             info.getBadgedIcon(0),
                             isDistractionOptimized,
-                            contextArg -> AppLauncherUtils.launchApp(contextArg, intent),
+                            isMirroring,
+                            contextArg -> {
+                                if (packageName.equals(mirroringAppPkgName)) {
+                                    Log.d(TAG, "non-media service package name "
+                                            + "equals mirroring pkg name");
+                                }
+                                AppLauncherUtils.launchApp(contextArg,
+                                        isMirroring ? mirroringAppRedirect : intent);
+                            },
                             buildShortcuts(packageName, displayName, shortcutsListener));
                     launchablesMap.put(componentName, appMetaData);
                 }
@@ -338,6 +350,7 @@ public class AppLauncherUtils {
                         componentName,
                         info.activityInfo.loadIcon(packageManager),
                         isDistractionOptimized,
+                        /* isMirroring = */ false,
                         contextArg -> {
                             packageManager.setApplicationEnabledSetting(packageName,
                                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
