@@ -16,9 +16,6 @@
 
 package com.android.car.carlauncher.homescreen;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
-
 import static com.android.car.carlauncher.homescreen.ui.CardContent.HomeCardContentType.DESCRIPTIVE_TEXT_WITH_CONTROLS;
 
 import android.content.res.ColorStateList;
@@ -31,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -43,6 +41,7 @@ import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
+import com.android.car.carlauncher.homescreen.ui.SeekBarViewModel;
 import com.android.car.carlauncher.homescreen.ui.TextBlockView;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
@@ -59,7 +58,6 @@ import com.android.internal.util.ArrayUtils;
  */
 public class HomeCardFragment extends Fragment implements HomeCardInterface.View {
 
-    private static final String TAG = "HomeFragment";
     private HomeCardInterface.Presenter mPresenter;
     private Size mSize;
     private View mCardBackground;
@@ -67,7 +65,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     private View mRootView;
     private TextView mCardTitle;
     private ImageView mCardIcon;
-
+    private ProgressBar mOptionalProgressBar;
     private SeekBar mOptionalSeekBar;
     private TextView mOptionalTimes;
     private ViewGroup mOptionalSeekBarWithTimesContainer;
@@ -97,9 +95,6 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
 
     private boolean mTrackingTouch;
     private PlaybackCallback mPlaybackCallback;
-
-
-    private boolean mShowTimes;
     private SeekBar.OnSeekBarChangeListener mOnSeekBarChangeListener =
             new SeekBar.OnSeekBarChangeListener() {
                 @Override
@@ -113,7 +108,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    if (mTrackingTouch && mShowTimes) {
+                    if (mTrackingTouch) {
                         mPlaybackCallback.seekTo(seekBar.getProgress());
                     }
                     mTrackingTouch = false;
@@ -195,9 +190,9 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     }
 
     @Override
-    public void updateContentView(CardContent content, boolean showTimes) {
+    public void updateContentView(CardContent content, boolean updateProgress) {
         requireActivity().runOnUiThread(() ->
-                updateSeekBarAndTimes(content, showTimes)
+                updateSeekBarAndTimes(content, updateProgress)
         );
     }
 
@@ -230,44 +225,54 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         }
     }
 
-    private void updateSeekBarAndTimes(CardContent content, boolean showTimes) {
-        updateSeekBarAndTimes(showTimes);
-        if (!showTimes || content.getType() != DESCRIPTIVE_TEXT_WITH_CONTROLS) {
-            return;
-        }
+    private void updateSeekBarAndTimes(CardContent content, boolean updateProgress) {
         DescriptiveTextWithControlsView descriptiveTextWithControlsContent =
                 (DescriptiveTextWithControlsView) content;
-        updateSeekBarAndTimes(descriptiveTextWithControlsContent.isTimesAvailable(),
-                descriptiveTextWithControlsContent.getTimes(),
-                descriptiveTextWithControlsContent.getSeekBarColor(),
-                descriptiveTextWithControlsContent.getProgress());
-        mPlaybackCallback = descriptiveTextWithControlsContent.getPlaybackCallback();
-    }
-
-    protected final void updateSeekBarAndTimes(boolean showTimes) {
-        if (!isSeekbarWithTimesAvailable()) {
+        if (!isSeekbarWithTimesAvailable() || content.getType() != DESCRIPTIVE_TEXT_WITH_CONTROLS
+                || descriptiveTextWithControlsContent.getSeekBarViewModel() == null) {
             return;
         }
-        mShowTimes = showTimes;
-        // Ony change the visibility of the container. In landscape UI, the seekbar and times are
-        // set to gone, so they will never show even if the visibility of the container is
-        // changed, in portrait UI, the seekbar and times are visible
-        getOptionalSeekbarWithTimesContainer().setVisibility(showTimes ? VISIBLE : GONE);
-        getOptionalSeekBar().setOnSeekBarChangeListener(mOnSeekBarChangeListener);
+
+        SeekBarViewModel seekBarViewModel =
+                descriptiveTextWithControlsContent.getSeekBarViewModel();
+        boolean shouldUseSeekBar = seekBarViewModel.isSeekEnabled();
+
+        if (updateProgress) {
+            ProgressBar progressBar = shouldUseSeekBar ? getOptionalSeekBar()
+                            : getOptionalProgressBar();
+            progressBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
+        } else {
+            SeekBar seekBar = getOptionalSeekBar();
+            ProgressBar progressBar = getOptionalProgressBar();
+            if (shouldUseSeekBar) {
+                updateSeekBar(seekBar, seekBarViewModel);
+            } else {
+                updateProgressBar(progressBar, seekBarViewModel);
+            }
+            seekBar.setVisibility(shouldUseSeekBar ? View.VISIBLE : View.GONE);
+            progressBar.setVisibility(shouldUseSeekBar ? View.GONE : View.VISIBLE);
+        }
+        getOptionalTimes().setText(seekBarViewModel.getTimes());
+
     }
 
-    protected final void updateSeekBarAndTimes(boolean hasTime, CharSequence times,
-            int seekBarColor, int progress) {
-        if (!isSeekbarWithTimesAvailable() || !hasTime) {
-            return;
+    private void updateProgressBar(ProgressBar progressBar, SeekBarViewModel seekBarViewModel) {
+        if (mOptionalSeekBarColor != seekBarViewModel.getSeekBarColor()) {
+            mOptionalSeekBarColor = seekBarViewModel.getSeekBarColor();
+            progressBar.setProgressTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
         }
-        getOptionalTimes().setText(times);
-        getOptionalSeekBar().setProgress(progress, true);
-        if (mOptionalSeekBarColor != seekBarColor) {
-            mOptionalSeekBarColor = seekBarColor;
-            getOptionalSeekBar().setThumbTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
-            getOptionalSeekBar().setProgressTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
+        progressBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
+    }
+
+    private void updateSeekBar(SeekBar seekBar, SeekBarViewModel seekBarViewModel) {
+        mPlaybackCallback = seekBarViewModel.getPlaybackCallback();
+        seekBar.setOnSeekBarChangeListener(mOnSeekBarChangeListener);
+        if (mOptionalSeekBarColor != seekBarViewModel.getSeekBarColor()) {
+            mOptionalSeekBarColor = seekBarViewModel.getSeekBarColor();
+            seekBar.setThumbTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
+            seekBar.setProgressTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
         }
+        seekBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
     }
 
     private boolean isSeekbarWithTimesAvailable() {
@@ -357,6 +362,13 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         return mCardBackgroundImage;
     }
 
+    private ProgressBar getOptionalProgressBar() {
+        if (mOptionalProgressBar == null) {
+            mOptionalProgressBar = getRootView().findViewById(R.id.optional_progress_bar);
+        }
+        return mOptionalProgressBar;
+    }
+
     private SeekBar getOptionalSeekBar() {
         if (mOptionalSeekBar == null) {
             mOptionalSeekBar = getRootView().findViewById(R.id.optional_seek_bar);
@@ -371,7 +383,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         return mOptionalTimes;
     }
 
-    private ViewGroup getOptionalSeekbarWithTimesContainer() {
+    protected ViewGroup getOptionalSeekbarWithTimesContainer() {
         if (mOptionalSeekBarWithTimesContainer == null) {
             mOptionalSeekBarWithTimesContainer = getRootView().findViewById(
                     R.id.optional_seek_bar_with_times_container);
