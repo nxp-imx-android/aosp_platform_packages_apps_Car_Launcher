@@ -51,6 +51,7 @@ public class AudioFragment extends HomeCardFragment {
     private TextView mMediaTitle;
     private TextView mMediaSubtitle;
 
+    private boolean mShowSeekBar;
     @Override
     public void setPresenter(HomeCardInterface.Presenter presenter) {
         super.setPresenter(presenter);
@@ -64,6 +65,7 @@ public class AudioFragment extends HomeCardFragment {
         mDefaultCardBackgroundImage = new CardContent.CardBackgroundImage(
                 getContext().getDrawable(R.drawable.default_audio_background),
                 getContext().getDrawable(R.drawable.control_bar_image_background));
+        mShowSeekBar = getResources().getBoolean(R.bool.show_seek_bar);
     }
 
     @Override
@@ -147,6 +149,10 @@ public class AudioFragment extends HomeCardFragment {
         mMediaTitle.setText(title);
         mMediaSubtitle.setText(subtitle);
         mMediaSubtitle.setVisibility(TextUtils.isEmpty(subtitle) ? View.GONE : View.VISIBLE);
+        if (getOptionalSeekbarWithTimesContainer() != null) {
+            getOptionalSeekbarWithTimesContainer().setVisibility(
+                    mShowSeekBar ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void updateAudioDuration(DescriptiveTextWithControlsView content) {

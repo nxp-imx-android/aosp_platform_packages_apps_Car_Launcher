@@ -19,27 +19,20 @@ package com.android.car.carlauncher.homescreen.ui;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-import com.android.car.carlauncher.homescreen.audio.MediaViewModel.PlaybackCallback;
-
 /**
  * A layout that displays a title line of text with a subtitle line below and three buttons to
  * control the audio. Displayed using card_content_descriptive_text_with_controls.xml
  */
 public class DescriptiveTextWithControlsView extends CardContent {
 
-    private PlaybackCallback mPlaybackCallback;
     private CardBackgroundImage mImage;
     private CharSequence mTitle;
     private CharSequence mSubtitle;
-    private CharSequence mTimes;
-    private boolean mIsTimesAvailable;
-    private int mSeekBarColor;
-    private int mProgress;
-
     private Control mLeftControl;
     private Control mCenterControl;
     private Control mRightControl;
     private long mStartTime;
+    private SeekBarViewModel mSeekBarViewModel;
 
     //TODO(b/260002616): considering using builder
     public DescriptiveTextWithControlsView(CardBackgroundImage image, CharSequence title,
@@ -50,16 +43,11 @@ public class DescriptiveTextWithControlsView extends CardContent {
     }
 
     public DescriptiveTextWithControlsView(CardBackgroundImage image, CharSequence title,
-            CharSequence subtitle, CharSequence times, boolean isTimesAvailable,
-            int seekBarColor, int progress, PlaybackCallback callback) {
+            CharSequence subtitle, SeekBarViewModel seekBarViewModel) {
         mImage = image;
         mTitle = title;
         mSubtitle = subtitle;
-        mTimes = times;
-        mIsTimesAvailable = isTimesAvailable;
-        mSeekBarColor = seekBarColor;
-        mProgress = progress;
-        mPlaybackCallback = callback;
+        mSeekBarViewModel = seekBarViewModel;
     }
 
     public DescriptiveTextWithControlsView(CardBackgroundImage image, CharSequence title,
@@ -102,14 +90,6 @@ public class DescriptiveTextWithControlsView extends CardContent {
         return mSubtitle;
     }
 
-    public CharSequence getTimes() {
-        return mTimes;
-    }
-
-    public boolean isTimesAvailable() {
-        return mIsTimesAvailable;
-    }
-
     public long getStartTime() {
         return mStartTime;
     }
@@ -126,16 +106,8 @@ public class DescriptiveTextWithControlsView extends CardContent {
         return mRightControl;
     }
 
-    public int getSeekBarColor() {
-        return mSeekBarColor;
-    }
-
-    public int getProgress() {
-        return mProgress;
-    }
-
-    public PlaybackCallback getPlaybackCallback() {
-        return mPlaybackCallback;
+    public SeekBarViewModel getSeekBarViewModel() {
+        return mSeekBarViewModel;
     }
 
     /**
