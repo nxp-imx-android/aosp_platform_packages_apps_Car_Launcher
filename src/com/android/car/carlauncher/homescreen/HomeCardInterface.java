@@ -120,11 +120,10 @@ public interface HomeCardInterface {
         void onModelUpdated(Model model);
 
         /**
-         * Called by one of the Presenter's models when it has updated time related information to
-         * display on
-         * the card.
+         * Called by one of the Presenter's models when it has updated progress related information
+         * to display on the card.
          */
-        default void onModelUpdated(Model model, boolean updateTimes) {}
+        default void onModelUpdated(Model model, boolean updateProgress) {}
     }
 
     /**

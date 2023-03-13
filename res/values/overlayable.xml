@@ -25,6 +25,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="bool" name="car_app_show_toolbar"/>
       <item type="bool" name="config_allow_reordering"/>
       <item type="bool" name="config_useRemoteCarTaskView"/>
+      <item type="bool" name="show_seek_bar"/>
       <item type="bool" name="use_defined_app_grid_dimensions"/>
       <item type="bool" name="use_media_source_color_for_seek_bar"/>
       <item type="bool" name="use_vertical_app_grid"/>
@@ -152,6 +153,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="media_layout"/>
       <item type="id" name="media_playback_controls_bar"/>
       <item type="id" name="optional_image"/>
+      <item type="id" name="optional_progress_bar"/>
       <item type="id" name="optional_seek_bar"/>
       <item type="id" name="optional_seek_bar_with_times_container"/>
       <item type="id" name="optional_timer"/>
