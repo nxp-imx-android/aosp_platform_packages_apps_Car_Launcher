@@ -30,4 +30,7 @@
     <color name="app_item_on_hover_border_color">@*android:color/car_accent_light</color>
     <color name="app_item_on_hover_background_color">#3d66b5ff</color>
     <color name="app_name_color">@*android:color/car_grey_200</color>
+    <color name="recents_background_color">@*android:color/car_grey_900</color>
+    <color name="default_recents_thumbnail_color">@*android:color/car_grey_846</color>
+    <color name="clear_all_recents_text_color">@*android:color/car_accent</color>
 </resources>
