@@ -234,6 +234,9 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="app_launcher_title_all_apps"/>
       <item type="string" name="app_launcher_title_media_only"/>
       <item type="string" name="app_title"/>
+      <item type="string" name="banner_dismiss_button_text"/>
+      <item type="string" name="banner_review_button_text"/>
+      <item type="string" name="banner_title_text"/>
       <item type="string" name="config_msg_mirroring_pkg_name_key"/>
       <item type="string" name="config_msg_mirroring_redirect_uri_key"/>
       <item type="string" name="config_msg_mirroring_service_class_name"/>

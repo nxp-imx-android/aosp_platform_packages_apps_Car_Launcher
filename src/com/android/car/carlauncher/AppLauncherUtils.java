@@ -18,6 +18,7 @@ package com.android.car.carlauncher;
 
 import static android.car.settings.CarSettings.Secure.KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE;
 import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
+import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -95,6 +96,8 @@ public class AppLauncherUtils {
     private static final String TYPE_VIDEO = "video";
     // TODO (b/276975875): deprecate current key
     private static final String TOS_FIRST_RUN = "firstRun";
+    // This value indicates if TOS has not been accepted by the user
+    private static final String TOS_NOT_ACCEPTED = "1";
     static final String TOS_DISABLED_APPS_SEPARATOR = ",";
     static final String PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR = ";";
 
@@ -878,5 +881,31 @@ public class AppLauncherUtils {
         return TextUtils.isEmpty(settingsValue) ? new ArraySet<>()
                 : new ArraySet<>(Arrays.asList(settingsValue.split(
                         sep)));
+    }
+
+    /**
+     * Check if the tos banner has to be displayed
+     * @param context The application context
+     * @return true if the banner needs to be displayed, false otherwise
+     */
+    static boolean showTosBanner(Context context) {
+        // TODO (b/277235742): Add backoff strategy to dismiss banner
+        return !tosAccepted(context);
+    }
+
+    /**
+     * Check if a user has accepted TOS
+     *
+     * @param context The application context
+     * @return true if the user has accepted Tos, false otherwise
+     */
+    private static boolean tosAccepted(Context context) {
+        ContentResolver contentResolverForUser = context.createContextAsUser(
+                        UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
+                .getContentResolver();
+        String settingsValue = Settings.Secure.getString(
+                contentResolverForUser,
+                KEY_USER_TOS_ACCEPTED);
+        return !Objects.equals(settingsValue, TOS_NOT_ACCEPTED);
     }
 }
