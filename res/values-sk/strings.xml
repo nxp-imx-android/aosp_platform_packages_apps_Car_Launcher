@@ -43,4 +43,10 @@
     <string name="hide_debug_apps" msgid="6128313544379622475">"Skryť aplikácie na ladenie"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Zobraziť aplikácie ladenia"</string>
     <string name="times_separator" msgid="6180368193321715816">"/"</string>
+    <!-- no translation found for recents_empty_state_text (6703106170272215731) -->
+    <skip />
+    <!-- no translation found for recents_clear_all_text (2088678071417053923) -->
+    <skip />
+    <!-- no translation found for failure_opening_recent_task_message (9097595793150874357) -->
+    <skip />
 </resources>
