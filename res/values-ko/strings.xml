@@ -18,10 +18,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"차량 런처"</string>
-    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
-    <skip />
-    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
-    <skip />
+    <string name="reset_appgrid_title" msgid="814562055108028366">"앱 그리드를 가나다순으로 재설정하기"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"이 기능은 모든 맞춤설정 정렬을 삭제합니다. 계속하시겠습니까?"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"모든 앱"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"미디어 앱"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"앱 종료"</string>
@@ -44,6 +42,11 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"마운틴 뷰 • 최고: --° 최저: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"디버그 앱 숨기기"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"디버그 앱 표시"</string>
-    <!-- no translation found for times_separator (6180368193321715816) -->
+    <string name="times_separator" msgid="6180368193321715816">"/"</string>
+    <!-- no translation found for recents_empty_state_text (6703106170272215731) -->
+    <skip />
+    <!-- no translation found for recents_clear_all_text (2088678071417053923) -->
+    <skip />
+    <!-- no translation found for failure_opening_recent_task_message (9097595793150874357) -->
     <skip />
 </resources>
