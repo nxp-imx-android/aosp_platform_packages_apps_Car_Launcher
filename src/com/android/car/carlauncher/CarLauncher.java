@@ -179,7 +179,7 @@ public class CarLauncher extends FragmentActivity {
                                     carTaskViewController.createControlledRemoteCarTaskView(
                                             new ControlledRemoteCarTaskViewConfig.Builder()
                                                     .setActivityIntent(mapIntent)
-                                                    .setShouldAutoRestartOnCrash(true)
+                                                    .setShouldAutoRestartOnTaskRemoval(true)
                                                     .build(),
                                             getMainExecutor(),
                                             new ControlledRemoteCarTaskViewCallback() {
