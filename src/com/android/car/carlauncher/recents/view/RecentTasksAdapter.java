@@ -19,6 +19,7 @@ package com.android.car.carlauncher.recents.view;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -39,30 +40,30 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<TaskViewHolder> imp
     private final RecentTasksViewModel mRecentTasksViewModel;
     private final LayoutInflater mLayoutInflater;
     private final ItemTouchHelper mItemTouchHelper;
-    private final float mStartSwipeThreshold;
 
-    public RecentTasksAdapter(LayoutInflater layoutInflater, ItemTouchHelper itemTouchHelper,
-            float startSwipeThreshold) {
+    public RecentTasksAdapter(LayoutInflater layoutInflater, ItemTouchHelper itemTouchHelper) {
         mRecentTasksViewModel = RecentTasksViewModel.getInstance();
         mRecentTasksViewModel.addRecentTasksChangeListener(this);
         mLayoutInflater = layoutInflater;
         mItemTouchHelper = itemTouchHelper;
-        mStartSwipeThreshold = startSwipeThreshold;
     }
 
     @NotNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new TaskViewHolder(
-                mLayoutInflater.inflate(R.layout.recent_task_view, parent, false),
-                mItemTouchHelper, mStartSwipeThreshold);
+        return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
+                        /* attachToRoot= */ false), mItemTouchHelper);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Drawable taskIcon = mRecentTasksViewModel.getRecentTaskIconAt(position);
         Bitmap taskThumbnail = mRecentTasksViewModel.getRecentTaskThumbnailAt(position);
-        holder.bind(taskIcon, taskThumbnail, new TaskClickListener(position));
+        boolean isDisabled = mRecentTasksViewModel.isRecentTaskDisabled(position);
+        View.OnClickListener onClickListener =
+                isDisabled ? mRecentTasksViewModel.getDisabledTaskClickListener(position)
+                        : new TaskClickListener(position);
+        holder.bind(taskIcon, taskThumbnail, isDisabled, onClickListener);
     }
 
     @Override
