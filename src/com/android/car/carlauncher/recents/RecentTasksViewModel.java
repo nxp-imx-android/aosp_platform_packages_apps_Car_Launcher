@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -40,6 +41,7 @@ public class RecentTasksViewModel {
     private final RecentTasksProviderInterface mDataStore;
     private final Set<RecentTasksChangeListener> mRecentTasksChangeListener;
     private final Set<HiddenTaskProvider> mHiddenTaskProviders;
+    private DisabledTaskProvider mDisabledTaskProvider;
     private final RecentTasksProviderInterface.RecentsDataChangeListener
             mRecentsDataChangeListener =
             new RecentTasksProviderInterface.RecentsDataChangeListener() {
@@ -114,6 +116,7 @@ public class RecentTasksViewModel {
         mDataStore.setRecentsDataChangeListener(/* listener= */ null);
         mRecentTasksChangeListener.clear();
         mHiddenTaskProviders.clear();
+        mDisabledTaskProvider = null;
     }
 
     public static RecentTasksViewModel getInstance() {
@@ -129,6 +132,14 @@ public class RecentTasksViewModel {
      */
     public void fetchRecentTaskList() {
         mDataStore.getRecentTasksAsync();
+    }
+
+    /**
+     * Refreshes the UI associated with recent tasks.
+     * Does not fetch recent task list from the system.
+     */
+    public void refreshRecentTaskList() {
+        mRecentTasksChangeListener.forEach(RecentTasksChangeListener::onRecentTasksFetched);
     }
 
     /**
@@ -162,6 +173,39 @@ public class RecentTasksViewModel {
             return croppedThumbnail;
         }
         return mDefaultThumbnail;
+    }
+
+    /**
+     * @return {@code true} if task for the given {@code index} is disabled.
+     */
+    public boolean isRecentTaskDisabled(int index) {
+        if (mDisabledTaskProvider == null) {
+            return false;
+        }
+        ComponentName componentName = getRecentTaskComponentName(index);
+        return componentName != null &&
+                mDisabledTaskProvider.isTaskDisabledFromRecents(componentName);
+    }
+
+    /**
+     * @return the {@link View.OnClickListener} for the task at the given {@code index} or null.
+     */
+    @Nullable
+    public View.OnClickListener getDisabledTaskClickListener(int index) {
+        if (mDisabledTaskProvider == null) {
+            return null;
+        }
+        ComponentName componentName = getRecentTaskComponentName(index);
+        return componentName != null
+                ? mDisabledTaskProvider.getDisabledTaskClickListener(componentName) : null;
+    }
+
+    @Nullable
+    private ComponentName getRecentTaskComponentName(int index) {
+        if (!safeCheckIndex(mRecentTaskIds, index)) {
+            return null;
+        }
+        return mDataStore.getRecentTaskComponentName(mRecentTaskIds.get(index));
     }
 
     /**
@@ -297,6 +341,13 @@ public class RecentTasksViewModel {
     }
 
     /**
+     * @param provider provider of packages to be disabled in recents.
+     */
+    public void setDisabledTaskProvider(DisabledTaskProvider provider) {
+        mDisabledTaskProvider = provider;
+    }
+
+    /**
      * Listen to changes in the recents.
      */
     public interface RecentTasksChangeListener {
@@ -352,5 +403,25 @@ public class RecentTasksViewModel {
          * @return if the task should be hidden from recents.
          */
         boolean isTaskHiddenFromRecents(String packageName, String className);
+    }
+
+    /**
+     * Decides if a task is disabled in recents.
+     * This is necessary to be able to get tasks to be disabled at runtime.
+     * Note: Hidden tasks cannot be disabled.
+     */
+    public interface DisabledTaskProvider {
+        /**
+         * @return if the task associated with {@code componentName} is disabled in recents.
+         */
+        boolean isTaskDisabledFromRecents(ComponentName componentName);
+
+        /**
+         * @return {@link View.OnClickListener} to be called when user tries to click on
+         * disabled task associated with {@code componentName}.
+         */
+        default View.OnClickListener getDisabledTaskClickListener(ComponentName componentName) {
+            return null;
+        }
     }
 }
