@@ -18,10 +18,8 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"Selector para vehículos"</string>
-    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
-    <skip />
-    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
-    <skip />
+    <string name="reset_appgrid_title" msgid="814562055108028366">"Restablecer la cuadrícula de apps al orden alfabético"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"Esta función quitará todo el orden personalizado. ¿Quieres continuar?"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Todas las apps"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Apps multimedia"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Detener la app"</string>
@@ -44,6 +42,11 @@
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"Mountain View • M: --° M: --°"</string>
     <string name="hide_debug_apps" msgid="6128313544379622475">"Ocultar apps de depuración"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Mostrar apps de depuración"</string>
-    <!-- no translation found for times_separator (6180368193321715816) -->
+    <string name="times_separator" msgid="6180368193321715816">"/"</string>
+    <!-- no translation found for recents_empty_state_text (6703106170272215731) -->
+    <skip />
+    <!-- no translation found for recents_clear_all_text (2088678071417053923) -->
+    <skip />
+    <!-- no translation found for failure_opening_recent_task_message (9097595793150874357) -->
     <skip />
 </resources>
