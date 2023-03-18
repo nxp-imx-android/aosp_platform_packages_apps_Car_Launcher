@@ -45,8 +45,7 @@ import java.util.List;
 import java.util.Set;
 
 public class CarRecentsActivity extends AppCompatActivity implements
-        RecentTasksViewModel.RecentTasksChangeListener,
-        RecentTasksViewModel.HiddenTaskProvider {
+        RecentTasksViewModel.RecentTasksChangeListener {
     public static final String OPEN_RECENT_TASK_ACTION =
             "com.android.car.carlauncher.recents.OPEN_RECENT_TASK_ACTION";
     private RecyclerView mRecentsRecyclerView;
@@ -55,6 +54,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     private Group mRecentTasksGroup;
     private View mEmptyStateView;
     private Animator mClearAllAnimator;
+    private NonDOHiddenPackageProvider mNonDOHiddenPackageProvider;
     private Set<String> mPackagesToHideFromRecents;
     private int mRecentTaskRowSpacing;
     private int mRecentTaskColSpacing;
@@ -72,7 +72,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
                 R.array.packages_hidden_from_recents)));
         mRecentTasksViewModel = RecentTasksViewModel.getInstance();
         mRecentTasksViewModel.addRecentTasksChangeListener(this);
-        mRecentTasksViewModel.addHiddenTaskProvider(this);
+        mRecentTasksViewModel.addHiddenTaskProvider(
+                (packageName, className) -> mPackagesToHideFromRecents.contains(packageName));
+        mNonDOHiddenPackageProvider = new NonDOHiddenPackageProvider(this);
+        mRecentTasksViewModel.setDisabledTaskProvider(mNonDOHiddenPackageProvider);
         WindowMetrics windowMetrics = this.getWindowManager().getCurrentWindowMetrics();
         mRecentTasksViewModel.init(
                 /* displayId= */ getDisplay().getDisplayId(),
@@ -100,15 +103,13 @@ public class CarRecentsActivity extends AppCompatActivity implements
         });
 
         mRecentsRecyclerView.addItemDecoration(getRecentTasksItemDecoration());
-        float startSwipeThreshold = getResources().getFloat(
-                R.dimen.recent_task_start_swipe_threshold);
         float swipedThreshold = getResources().getFloat(R.dimen.recent_task_swiped_threshold);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
                 new TaskTouchHelperCallback(
                         /* dragDirs= */ 0, ItemTouchHelper.UP, swipedThreshold));
         itemTouchHelper.attachToRecyclerView(mRecentsRecyclerView);
         mRecentsRecyclerView.setAdapter(
-                new RecentTasksAdapter(getLayoutInflater(), itemTouchHelper, startSwipeThreshold));
+                new RecentTasksAdapter(getLayoutInflater(), itemTouchHelper));
 
         mClearAllAnimator = AnimatorInflater.loadAnimator(this,
                 R.animator.recents_clear_all);
@@ -151,6 +152,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mNonDOHiddenPackageProvider.terminate();
         mRecentTasksViewModel.terminate();
         mClearAllAnimator.end();
         mClearAllAnimator.removeAllListeners();
@@ -179,10 +181,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public boolean isTaskHiddenFromRecents(String packageName, String className) {
-        return mPackagesToHideFromRecents.contains(packageName);
-    }
 
     private RecyclerView.ItemDecoration getRecentTasksItemDecoration() {
         return new RecyclerView.ItemDecoration() {
