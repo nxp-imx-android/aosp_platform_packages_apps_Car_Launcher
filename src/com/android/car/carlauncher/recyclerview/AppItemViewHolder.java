@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher;
+package com.android.car.carlauncher.recyclerview;
 
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
@@ -45,6 +45,9 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.carlauncher.AppGridPageSnapper.AppGridPageSnapCallback;
+import com.android.car.carlauncher.AppItemDragShadowBuilder;
+import com.android.car.carlauncher.AppMetaData;
+import com.android.car.carlauncher.R;
 
 /**
  * App item view holder that contains the app icon and name.
@@ -68,7 +71,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     private final int mThresholdToStartDragDrop;
 
     @PageOrientation
-    private int mAppGridOrientation;
+    private int mPageOrientation;
     @AppItemBoundDirection
     private int mDragExitDirection;
 
@@ -81,7 +84,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     private boolean mIsTargeted;
     private boolean mCanStartDragAction;
 
-    AppItemViewHolder(View view, Context context, AppItemDragCallback dragCallback,
+    public AppItemViewHolder(View view, Context context, AppItemDragCallback dragCallback,
             AppGridPageSnapCallback snapCallback, Rect pageBound) {
         super(view);
         mContext = context;
@@ -98,7 +101,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         // reordering, measured in pixels on screen.
         mThresholdToStartDragDrop = context.getResources().getDimensionPixelSize(
                 R.dimen.threshold_to_start_drag_drop);
-        mAppGridOrientation = context.getResources().getBoolean(R.bool.use_vertical_app_grid)
+        mPageOrientation = context.getResources().getBoolean(R.bool.use_vertical_app_grid)
                 ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL;
 
         mIconScaledSize = context.getResources().getDimensionPixelSize(
@@ -237,7 +240,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
      * Transforms the app icon into the drop shadow's drop location in preparation for animateDrop,
      * which should be dispatched by AppGridItemAnimator shortly after prepareForDropAnimation.
      */
-    void prepareForDropAnimation() {
+    public void prepareForDropAnimation() {
         // dragOffset is the offset between dragged icon center and users finger touch point
         int dragOffsetX = mDragCallback.mDragPoint.x - mIconScaledSize / 2;
         int dragOffsetY = mDragCallback.mDragPoint.y - mIconScaledSize / 2;
@@ -258,8 +261,10 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         mAppIcon.setTranslationZ(1.f);
     }
 
-
-    void prepareForMoveAnimation() {
+    /**
+     * Resets Z axis translation of all views contained by the view holder.
+     */
+    public void resetTranslationZ() {
         mAppItemView.setTranslationZ(0.f);
         mAppIcon.setTranslationZ(0.f);
         mAppName.setTranslationZ(0.f);
@@ -268,7 +273,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     /**
      * Animates the drop transition back to the original app icon location.
      */
-    ViewPropertyAnimator getDropAnimation() {
+    public ViewPropertyAnimator getDropAnimation() {
         return mAppIcon.animate()
                 .translationX(0).translationY(0)
                 .scaleX(1.f).scaleY(1.f)
@@ -441,7 +446,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     @AppItemBoundDirection
     int getClosestBoundDirection(float eventX, float eventY) {
         float cutoffThreshold = .25f;
-        if (isHorizontal(mAppGridOrientation)) {
+        if (isHorizontal(mPageOrientation)) {
             float horizontalPosition = eventX / mAppItemWidth;
             if (horizontalPosition < cutoffThreshold) {
                 return AppItemBoundDirection.LEFT;
@@ -459,7 +464,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         return AppItemBoundDirection.NONE;
     }
 
-    boolean isMostRecentlySelected() {
+    public boolean isMostRecentlySelected() {
         return mComponentName != null
                 && mComponentName.equals(mDragCallback.getPreviousSelectedComponent());
     }

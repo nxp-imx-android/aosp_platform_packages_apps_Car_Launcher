@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher;
+package com.android.car.carlauncher.pagination;
 
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
@@ -23,26 +23,27 @@ import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
 import android.view.View;
 
 /**
- * A utility class that handles all the pagination and page rounding logic for AppGridAdapter, and
- * should be initiated by the AppGridAdapter.
+ * Helper class that handles all page rounding logic.
  */
-public class AppGridPagingUtils {
-    int mNumOfCols;
-    int mNumOfRows;
-    int mLayoutDirection;
-    int mAppGridOrientation;
+public class PageIndexingHelper {
+    private final int mNumOfCols;
+    private final int mNumOfRows;
+    @PageOrientation
+    private final int mPageOrientation;
 
-    public AppGridPagingUtils(int numOfCols, int numOfRows, @PageOrientation int orientation) {
+    private int mLayoutDirection;
+
+    public PageIndexingHelper(int numOfCols, int numOfRows, @PageOrientation int orientation) {
         mNumOfCols = numOfCols;
         mNumOfRows = numOfRows;
-        mAppGridOrientation = orientation;
+        mPageOrientation = orientation;
     }
 
     /**
      * Layout direction needs to be reset onResume as to not crash when user switches to another
      * language with different layout direction.
      */
-    void setLayoutDirection(int layoutDirection) {
+    public void setLayoutDirection(int layoutDirection) {
         mLayoutDirection = layoutDirection;
     }
 
@@ -56,7 +57,7 @@ public class AppGridPagingUtils {
     @AppItemBoundDirection
     public int getOffsetBoundDirection(int gridPosition) {
         // TODO (b/271628061): rename gridPosition and adapterIndex
-        if (isHorizontal(mAppGridOrientation)) {
+        if (isHorizontal(mPageOrientation)) {
             int cid = (gridPosition / mNumOfRows) % mNumOfCols;
             if (cid == 0) {
                 return AppItemBoundDirection.LEFT;
@@ -81,7 +82,7 @@ public class AppGridPagingUtils {
      * This is the value returned by the default ViewHolder.getAbsoluteAdapterPosition().
      */
     public int gridPositionToAdaptorIndex(int position) {
-        if (!isHorizontal(mAppGridOrientation)) {
+        if (!isHorizontal(mPageOrientation)) {
             if (mLayoutDirection == View.LAYOUT_DIRECTION_RTL) {
                 int cid = position % mNumOfCols;
                 // column order swap
@@ -108,7 +109,7 @@ public class AppGridPagingUtils {
      * read the app in their language (either LTR or RTL on each page)
      */
     public int adaptorIndexToGridPosition(int index) {
-        if (!isHorizontal(mAppGridOrientation)) {
+        if (!isHorizontal(mPageOrientation)) {
             if (mLayoutDirection == View.LAYOUT_DIRECTION_RTL) {
                 int cid = index % mNumOfCols;
                 // column order swap
