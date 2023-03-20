@@ -28,6 +28,10 @@ import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.android.car.carlauncher.pagination.PageIndexingHelper;
+import com.android.car.carlauncher.recyclerview.AppGridAdapter;
+import com.android.car.carlauncher.recyclerview.AppItemViewHolder;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -56,7 +60,7 @@ public class AppGridAdapterTest {
         mTestAppGridAdapter = new AppGridAdapter(mMockContext, numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL,
                 mMockLayoutInflater, mMockLauncherModel, mMockDragCallback, mMockSnapCallback);
-        mTestAppGridAdapter.updateAppGridDimensions(mMockPageBound,
+        mTestAppGridAdapter.updateViewHolderDimensions(mMockPageBound,
                 /* appItemWidth */ 260, /* appItemHeight */ 200);
         mTestAppGridAdapter = spy(mTestAppGridAdapter);
 
@@ -84,7 +88,7 @@ public class AppGridAdapterTest {
         mTestAppGridAdapter = new AppGridAdapter(mMockContext, numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL,
                 mMockLayoutInflater, mMockLauncherModel, mMockDragCallback, mMockSnapCallback);
-        mTestAppGridAdapter.updateAppGridDimensions(mMockPageBound,
+        mTestAppGridAdapter.updateViewHolderDimensions(mMockPageBound,
                 /* appItemWidth */ 260, /* appItemHeight */ 200);
         mTestAppGridAdapter = spy(mTestAppGridAdapter);
 
@@ -113,7 +117,7 @@ public class AppGridAdapterTest {
         mTestAppGridAdapter = new AppGridAdapter(mMockContext, numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL,
                 mMockLayoutInflater, mMockLauncherModel, mMockDragCallback, mMockSnapCallback);
-        mTestAppGridAdapter.updateAppGridDimensions(mMockPageBound,
+        mTestAppGridAdapter.updateViewHolderDimensions(mMockPageBound,
                 /* appItemWidth */ 260, /* appItemHeight */ 200);
         mTestAppGridAdapter = spy(mTestAppGridAdapter);
         when(mTestAppGridAdapter.getItemCount()).thenReturn(45);
@@ -148,7 +152,7 @@ public class AppGridAdapterTest {
         mTestAppGridAdapter = new AppGridAdapter(mMockContext, numOfCols, numOfRows,
                 /* pageOrientation */ PageOrientation.HORIZONTAL,
                 mMockLayoutInflater, mMockLauncherModel, mMockDragCallback, mMockSnapCallback);
-        mTestAppGridAdapter.updateAppGridDimensions(mMockPageBound,
+        mTestAppGridAdapter.updateViewHolderDimensions(mMockPageBound,
                 /* appItemWidth */ 260, /* appItemHeight */ 200);
         mTestAppGridAdapter = spy(mTestAppGridAdapter);
         when(mTestAppGridAdapter.getItemCount()).thenReturn(45);
@@ -191,10 +195,10 @@ public class AppGridAdapterTest {
         mTestAppGridAdapter = new AppGridAdapter(mMockContext, numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL,
                 mMockLayoutInflater, mMockLauncherModel, mMockDragCallback, mMockSnapCallback);
-        mTestAppGridAdapter.updateAppGridDimensions(mMockPageBound,
+        mTestAppGridAdapter.updateViewHolderDimensions(mMockPageBound,
                 /* appItemWidth */ 260, /* appItemHeight */ 200);
         mTestAppGridAdapter = spy(mTestAppGridAdapter);
-        AppGridPagingUtils pagingUtils = new AppGridPagingUtils(numOfCols, numOfRows,
+        PageIndexingHelper pagingUtils = new PageIndexingHelper(numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL);
 
         when(mTestAppGridAdapter.getLauncherItemsCount()).thenReturn(40);
@@ -244,10 +248,10 @@ public class AppGridAdapterTest {
         mTestAppGridAdapter = new AppGridAdapter(mMockContext, numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL,
                 mMockLayoutInflater, mMockLauncherModel, mMockDragCallback, mMockSnapCallback);
-        mTestAppGridAdapter.updateAppGridDimensions(mMockPageBound,
+        mTestAppGridAdapter.updateViewHolderDimensions(mMockPageBound,
                 /* appItemWidth */ 260, /* appItemHeight */ 200);
         mTestAppGridAdapter = spy(mTestAppGridAdapter);
-        AppGridPagingUtils pagingUtils = new AppGridPagingUtils(numOfCols, numOfRows,
+        PageIndexingHelper pagingUtils = new PageIndexingHelper(numOfCols, numOfRows,
                 PageOrientation.HORIZONTAL);
 
         int numItems = 44;

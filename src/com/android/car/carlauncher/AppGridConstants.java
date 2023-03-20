@@ -65,10 +65,10 @@ public interface AppGridConstants {
     /**
      * Static method for checking if the app grid orientation value represents horizontal.
      *
-     * @param orientation an integer value defined in {@code AppGridOrientation}
-     * @return true if the input {@code AppGridOrientation.HORIZONTAL}, false otherwise
+     * @param pageOrientation an integer value defined in {@code PageOrientation}
+     * @return true if the input {@code PageOrientation.HORIZONTAL}, false otherwise
      */
-    static boolean isHorizontal(int orientation) {
-        return orientation == PageOrientation.HORIZONTAL;
+    static boolean isHorizontal(int pageOrientation) {
+        return pageOrientation == PageOrientation.HORIZONTAL;
     }
 }
