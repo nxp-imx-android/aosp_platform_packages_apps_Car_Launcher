@@ -17,31 +17,50 @@
 package com.android.car.carlauncher;
 
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
-import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.car.carlauncher.pagination.PageIndexingHelper;
+import com.android.car.carlauncher.pagination.PageMeasurementHelper.GridDimensions;
+import com.android.car.carlauncher.pagination.PageMeasurementHelper.PageDimensions;
+import com.android.car.carlauncher.pagination.PaginationController.DimensionUpdateListener;
+import com.android.car.carlauncher.recyclerview.AppGridAdapter;
+import com.android.car.carlauncher.recyclerview.PageMarginDecoration;
 
 /**
  * The RecyclerView that holds all the apps as children in the main app grid.
  */
-public class AppGridRecyclerView extends RecyclerView {
-    /* the previous rotary focus direction */
+public class AppGridRecyclerView extends RecyclerView implements DimensionUpdateListener {
+    // the previous rotary focus direction
     private int mPrevRotaryPageScrollDirection = View.FOCUS_FORWARD;
     private final int mNumOfCols;
     private final int mNumOfRows;
     @PageOrientation
-    private int mAppGridOrientation;
+    private final int mPageOrientation;
+    private AppGridAdapter mAdapter;
+    private PageMarginDecoration mPageMarginDecoration;
 
     public AppGridRecyclerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mNumOfCols = getResources().getInteger(R.integer.car_app_selector_column_number);
         mNumOfRows = getResources().getInteger(R.integer.car_app_selector_row_number);
-        mAppGridOrientation = getResources().getBoolean(R.bool.use_vertical_app_grid)
+        mPageOrientation = getResources().getBoolean(R.bool.use_vertical_app_grid)
                 ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL;
+    }
+
+    @Override
+    public void setAdapter(RecyclerView.Adapter adapter) {
+        if (!(adapter instanceof AppGridAdapter)) {
+            throw new IllegalStateException("Expected Adapter of type AppGridAdapter");
+        }
+        mAdapter = (AppGridAdapter) adapter;
+        super.setAdapter(mAdapter);
     }
 
     /**
@@ -74,7 +93,7 @@ public class AppGridRecyclerView extends RecyclerView {
 
         // since the view is not on the screen and focusSearch cannot target a view that has not
         // been recycled yet, we need to dispatch a scroll event and postpone focusing.
-        if (isHorizontal(mAppGridOrientation)) {
+        if (AppGridConstants.isHorizontal(mPageOrientation)) {
             // TODO: fix rounding issue on last page with rotary
             int pageWidth = getMeasuredWidth();
             int dx = (direction == View.FOCUS_FORWARD) ? pageWidth : -pageWidth;
@@ -90,7 +109,11 @@ public class AppGridRecyclerView extends RecyclerView {
         return focused;
     }
 
-    void maybeHandleRotaryFocus() {
+    /**
+     * Handles the delayed rotary focus request. This method should only be called after rotary page
+     * scroll completed.
+     */
+    public void maybeHandleRotaryFocus() {
         if (!isInTouchMode()) {
             // if the recyclerview just settled, and it is using remote inputs, it must have been
             // scrolled by focusSearch
@@ -100,5 +123,26 @@ public class AppGridRecyclerView extends RecyclerView {
             }
             getChildAt(mNumOfCols * mNumOfRows - 1).requestFocus();
         }
+    }
+
+    @Override
+    public void onDimensionsUpdated(PageDimensions pageDimens, GridDimensions gridDimens) {
+        ViewGroup.LayoutParams layoutParams = getLayoutParams();
+        layoutParams.width = pageDimens.recyclerViewWidthPx;
+        layoutParams.height = pageDimens.recyclerViewHeightPx;
+
+        Rect gridBounds = new Rect();
+        getGlobalVisibleRect(gridBounds);
+        mAdapter.updateViewHolderDimensions(gridBounds, gridDimens.cellWidthPx,
+                gridDimens.cellHeightPx);
+        mAdapter.notifyDataSetChanged();
+
+        if (mPageMarginDecoration != null) {
+            removeItemDecoration(mPageMarginDecoration);
+        }
+        mPageMarginDecoration = new PageMarginDecoration(pageDimens.marginHorizontalPx,
+                pageDimens.marginVerticalPx, new PageIndexingHelper(mNumOfCols, mNumOfRows,
+                mPageOrientation));
+        addItemDecoration(mPageMarginDecoration);
     }
 }
