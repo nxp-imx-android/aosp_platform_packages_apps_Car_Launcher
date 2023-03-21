@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher;
+package com.android.car.carlauncher.recyclerview;
 
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
@@ -26,9 +26,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.car.carlauncher.AppGridPageSnapper;
+import com.android.car.carlauncher.AppItem;
+import com.android.car.carlauncher.LauncherItem;
+import com.android.car.carlauncher.LauncherItemDiffCallback;
+import com.android.car.carlauncher.LauncherViewModel;
+import com.android.car.carlauncher.R;
+import com.android.car.carlauncher.RecentAppsRowViewHolder;
+import com.android.car.carlauncher.pagination.PageIndexingHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,14 +44,14 @@ import java.util.List;
 /**
  * The adapter that populates the grid view with apps.
  */
-final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int RECENT_APPS_TYPE = 1;
     public static final int APP_ITEM_TYPE = 2;
 
     private static final String TAG = "AppGridAdapter";
     private final Context mContext;
     private final LayoutInflater mInflater;
-    private final AppGridPagingUtils mPagingUtil;
+    private final PageIndexingHelper mIndexingHelper;
     private final AppItemViewHolder.AppItemDragCallback mDragCallback;
     private final AppGridPageSnapper.AppGridPageSnapCallback mSnapCallback;
     private final int mNumOfCols;
@@ -57,11 +65,11 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private List<LauncherItem> mLauncherItems;
     private boolean mIsDistractionOptimizationRequired;
     private int mPageScrollDestination;
-    // the global bounding rect of the app grid including margins (excluding position indicator bar)
+    // the global bounding rect of the app grid including margins (excluding page indicator bar)
     private Rect mGridBound;
 
-    AppGridAdapter(Context context, int numOfCols, int numOfRows, LauncherViewModel dataModel,
-            AppItemViewHolder.AppItemDragCallback dragCallback,
+    public AppGridAdapter(Context context, int numOfCols, int numOfRows,
+            LauncherViewModel dataModel, AppItemViewHolder.AppItemDragCallback dragCallback,
             AppGridPageSnapper.AppGridPageSnapCallback snapCallback) {
         this(context, numOfCols, numOfRows,
                 context.getResources().getBoolean(R.bool.use_vertical_app_grid)
@@ -69,8 +77,7 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 LayoutInflater.from(context), dataModel, dragCallback, snapCallback);
     }
 
-    @VisibleForTesting
-    AppGridAdapter(Context context, int numOfCols, int numOfRows,
+    public AppGridAdapter(Context context, int numOfCols, int numOfRows,
             @PageOrientation int pageOrientation,
             LayoutInflater layoutInflater, LauncherViewModel dataModel,
             AppItemViewHolder.AppItemDragCallback dragCallback,
@@ -82,18 +89,28 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         mDragCallback = dragCallback;
         mSnapCallback = snapCallback;
 
-        mPagingUtil = new AppGridPagingUtils(numOfCols, numOfRows, pageOrientation);
+        mIndexingHelper = new PageIndexingHelper(numOfCols, numOfRows, pageOrientation);
         mGridOrderedLauncherItems = new ArrayList<>();
         mDataModel = dataModel;
     }
 
-    void updateAppGridDimensions(Rect gridBound, int appItemWidth, int appItemHeight) {
+    /**
+     * Updates the dimension measurements of the app items and app grid bounds.
+     *
+     * To dispatch the UI changes, the recyclerview needs to call {@link RecyclerView#setAdapter}
+     * after calling this method to recreate the view holders.
+     */
+    public void updateViewHolderDimensions(Rect gridBound, int appItemWidth, int appItemHeight) {
         mGridBound = gridBound;
         mAppItemWidth = appItemWidth;
         mAppItemHeight = appItemHeight;
     }
 
-    void setIsDistractionOptimizationRequired(boolean isDistractionOptimizationRequired) {
+    /**
+     * Updates the current driving restriction to {@code isDistractionOptimizationRequired}, then
+     * rebind the view holders.
+     */
+    public void setIsDistractionOptimizationRequired(boolean isDistractionOptimizationRequired) {
         mIsDistractionOptimizationRequired = isDistractionOptimizationRequired;
         // notifyDataSetChanged will rebind distraction optimization to all app items
         notifyDataSetChanged();
@@ -141,7 +158,10 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         AppItemViewHolder viewHolder = (AppItemViewHolder) holder;
-        int adapterIndex = mPagingUtil.gridPositionToAdaptorIndex(position);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                mAppItemWidth, mAppItemHeight);
+        holder.itemView.setLayoutParams(layoutParams);
+        int adapterIndex = mIndexingHelper.gridPositionToAdaptorIndex(position);
         if (adapterIndex >= mLauncherItems.size()) {
             // the current view holder is an empty item used to pad the last page.
             viewHolder.bind(null, mIsDistractionOptimizationRequired);
@@ -151,10 +171,12 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         viewHolder.bind(item.getAppMetaData(), mIsDistractionOptimizationRequired);
     }
 
-    void setLayoutDirection(int layoutDirection) {
-        mPagingUtil.setLayoutDirection(layoutDirection);
+    /**
+     * Sets the layout direction of the indexing helper.
+     */
+    public void setLayoutDirection(int layoutDirection) {
+        mIndexingHelper.setLayoutDirection(layoutDirection);
     }
-
 
     @Override
     public int getItemCount() {
@@ -170,8 +192,7 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return pageCount * mNumOfCols * mNumOfRows;
     }
 
-    @VisibleForTesting
-    int getLauncherItemsCount() {
+    public int getLauncherItemsCount() {
         return mLauncherItems == null ? 0 : mLauncherItems.size();
     }
 
@@ -184,16 +205,19 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     /**
-     * Calculates the number of pages required to fit in
+     * Calculates the number of pages required to fit {@code unpaddedItemCount} number of app items.
      */
-    int getPageCount(int unpaddedItemCount) {
+    public int getPageCount(int unpaddedItemCount) {
         int pageCount = getItemCountInternal(unpaddedItemCount) / (mNumOfRows * mNumOfCols);
         return Math.max(pageCount, 1);
     }
 
+    /**
+     * Return the offset bound direction of the given gridPosition.
+     */
     @AppItemBoundDirection
-    int getOffsetBoundDirection(int gridPosition) {
-        return mPagingUtil.getOffsetBoundDirection(gridPosition);
+    public int getOffsetBoundDirection(int gridPosition) {
+        return mIndexingHelper.getOffsetBoundDirection(gridPosition);
     }
 
 
@@ -202,8 +226,11 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return false;
     }
 
+    /**
+     * Sets the cached drag start position to {@code gridPosition}.
+     */
     public void setDragStartPoint(int gridPosition) {
-        mPageScrollDestination = mPagingUtil.roundToFirstIndexOnPage(gridPosition);
+        mPageScrollDestination = mIndexingHelper.roundToFirstIndexOnPage(gridPosition);
         mSnapCallback.notifySnapToPosition(mPageScrollDestination);
     }
 
@@ -214,9 +241,9 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      * this method since UI changes relating to data model should be handled by data observer.
      */
     public void moveAppItem(int gridPositionFrom, int gridPositionTo) {
-        int adaptorIndexFrom = mPagingUtil.gridPositionToAdaptorIndex(gridPositionFrom);
-        int adaptorIndexTo = mPagingUtil.gridPositionToAdaptorIndex(gridPositionTo);
-        mPageScrollDestination = mPagingUtil.roundToFirstIndexOnPage(gridPositionTo);
+        int adaptorIndexFrom = mIndexingHelper.gridPositionToAdaptorIndex(gridPositionFrom);
+        int adaptorIndexTo = mIndexingHelper.gridPositionToAdaptorIndex(gridPositionTo);
+        mPageScrollDestination = mIndexingHelper.roundToFirstIndexOnPage(gridPositionTo);
         mSnapCallback.notifySnapToPosition(mPageScrollDestination);
 
         // we need to move package to target index even if the from and to index are the same to
@@ -230,23 +257,25 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      * Updates page scroll destination after user has held the app item at the end of page for
      * longer than the scroll dispatch threshold.
      */
-    void updatePageScrollDestination(boolean scrollToNextPage) {
+    public void updatePageScrollDestination(boolean scrollToNextPage) {
         int newDestination;
         int blockSize = mNumOfCols * mNumOfRows;
         if (scrollToNextPage) {
             newDestination = mPageScrollDestination + blockSize;
             mPageScrollDestination = (newDestination >= getItemCount()) ? mPageScrollDestination :
-                    mPagingUtil.roundToLastIndexOnPage(newDestination);
+                    mIndexingHelper.roundToLastIndexOnPage(newDestination);
         } else {
             newDestination = mPageScrollDestination - blockSize;
             mPageScrollDestination = (newDestination < 0) ? mPageScrollDestination :
-                    mPagingUtil.roundToFirstIndexOnPage(newDestination);
+                    mIndexingHelper.roundToFirstIndexOnPage(newDestination);
         }
         mSnapCallback.notifySnapToPosition(mPageScrollDestination);
     }
 
-    @VisibleForTesting
-    int getPageScrollDestination() {
+    /**
+     * Returns the last cached page scroll destination.
+     */
+    public int getPageScrollDestination() {
         return mPageScrollDestination;
     }
 
@@ -262,7 +291,7 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
 
         for (int i = 0; i < mLauncherItems.size(); i++) {
-            newAppsList.set(mPagingUtil.adaptorIndexToGridPosition(i), mLauncherItems.get(i));
+            newAppsList.set(mIndexingHelper.adaptorIndexToGridPosition(i), mLauncherItems.get(i));
         }
         LauncherItemDiffCallback callback = new LauncherItemDiffCallback(
                 /* oldList */ mGridOrderedLauncherItems, /* newList */ newAppsList);
@@ -283,11 +312,11 @@ final class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
      * same logical order as the adapter indexes.
      */
     public int getNextRotaryFocus(int focusedGridPosition, int direction) {
-        int targetAdapterIndex = mPagingUtil.gridPositionToAdaptorIndex(focusedGridPosition)
+        int targetAdapterIndex = mIndexingHelper.gridPositionToAdaptorIndex(focusedGridPosition)
                 + (direction == View.FOCUS_FORWARD ? 1 : -1);
         if (targetAdapterIndex < 0 || targetAdapterIndex >= getLauncherItemsCount()) {
             return focusedGridPosition;
         }
-        return mPagingUtil.adaptorIndexToGridPosition(targetAdapterIndex);
+        return mIndexingHelper.adaptorIndexToGridPosition(targetAdapterIndex);
     }
 }

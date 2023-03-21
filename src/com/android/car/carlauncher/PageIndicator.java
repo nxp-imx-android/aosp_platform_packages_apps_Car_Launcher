@@ -21,31 +21,36 @@ import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
-import android.widget.FrameLayout.LayoutParams;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.core.content.ContextCompat;
+
+import com.android.car.carlauncher.pagination.PageMeasurementHelper.GridDimensions;
+import com.android.car.carlauncher.pagination.PageMeasurementHelper.PageDimensions;
+import com.android.car.carlauncher.pagination.PaginationController.DimensionUpdateListener;
 
 /**
  * A scrollbar like view that dynamically adjusts its offset and size to indicate to users which
  * page they are on when scrolling through the app grid.
  */
-public class AppGridPositionIndicator extends View {
-    final long mAppearAnimationDurationMs;
-    final long mAppearAnimationDelayMs;
-    final long mFadeAnimationDurationMs;
-    final long mFadeAnimationDelayMs;
+public class PageIndicator extends FrameLayout implements DimensionUpdateListener {
+    private final long mAppearAnimationDurationMs;
+    private final long mAppearAnimationDelayMs;
+    private final long mFadeAnimationDurationMs;
+    private final long mFadeAnimationDelayMs;
+    @PageOrientation
+    private final int mPageOrientation;
 
+    private FrameLayout mContainer;
     private int mAppGridWidth;
     private int mAppGridHeight;
     private int mAppGridOffset;
     private int mPageCount = 1;
 
-    @PageOrientation
-    private int mAppGridOrientation;
     private float mOffsetScaleFactor = 1.f;
 
-    public AppGridPositionIndicator(Context context, AttributeSet attrs) {
+    public PageIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
         mFadeAnimationDurationMs = getResources().getInteger(
                 R.integer.ms_scrollbar_fade_animation_duration);
@@ -55,20 +60,30 @@ public class AppGridPositionIndicator extends View {
                 R.integer.ms_scrollbar_appear_animation_duration);
         mAppearAnimationDelayMs = getResources().getInteger(
                 R.integer.ms_scrollbar_appear_animation_delay);
-        mAppGridOrientation = getResources().getBoolean(R.bool.use_vertical_app_grid)
+        mPageOrientation = getResources().getBoolean(R.bool.use_vertical_app_grid)
                 ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL;
-        setBackground(ContextCompat.getDrawable(context, R.drawable.position_indicator_bar));
+        setBackground(ContextCompat.getDrawable(context, R.drawable.page_indicator_bar));
         setLayoutParams(new LayoutParams(/* width */ mAppGridWidth,
                 /* height */ LayoutParams.MATCH_PARENT));
         setAlpha(0.f);
     }
 
-    void updateAppGridDimensions(int windowWidth, int windowHeight, int appGridWidth,
-            int appGridHeight) {
-        mAppGridWidth = appGridWidth;
-        mAppGridHeight = appGridHeight;
-        mOffsetScaleFactor = isHorizontal(mAppGridOrientation)
-                ? (float) mAppGridWidth / windowWidth : (float) mAppGridHeight / windowHeight;
+    public void setContainer(FrameLayout container) {
+        // TODO (b/271637411): along with adding scroll controller, create an a layout xml where
+        // the container is inflated along with the scroll bar in this class so its accessible.
+        mContainer = container;
+    }
+
+    @Override
+    public void onDimensionsUpdated(PageDimensions pageDimens, GridDimensions gridDimens) {
+        ViewGroup.LayoutParams indicatorContainerParams = mContainer.getLayoutParams();
+        indicatorContainerParams.width = pageDimens.pageIndicatorWidthPx;
+        indicatorContainerParams.height = pageDimens.pageIndicatorHeightPx;
+        mOffsetScaleFactor = isHorizontal(mPageOrientation)
+                ? (float) gridDimens.gridWidthPx / pageDimens.windowWidthPx
+                : (float) gridDimens.gridHeightPx / pageDimens.windowHeightPx;
+        mAppGridWidth = gridDimens.gridWidthPx;
+        mAppGridHeight = gridDimens.gridHeightPx;
         updatePageCount(mPageCount);
     }
 
@@ -78,7 +93,7 @@ public class AppGridPositionIndicator extends View {
     void updatePageCount(int pageCount) {
         mPageCount = pageCount;
         LayoutParams params = (LayoutParams) getLayoutParams();
-        if (isHorizontal(mAppGridOrientation)) {
+        if (isHorizontal(mPageOrientation)) {
             params.width = mAppGridWidth / mPageCount;
         } else {
             params.height = mAppGridHeight / mPageCount;
@@ -94,7 +109,7 @@ public class AppGridPositionIndicator extends View {
         mAppGridOffset = appGridOffset;
         LayoutParams params = (LayoutParams) getLayoutParams();
         int offset = (int) (mAppGridOffset * mOffsetScaleFactor / mPageCount);
-        if (isHorizontal(mAppGridOrientation)) {
+        if (isHorizontal(mPageOrientation)) {
             params.leftMargin = offset;
         } else {
             params.topMargin = offset;
@@ -103,6 +118,7 @@ public class AppGridPositionIndicator extends View {
     }
 
     void animateAppearance() {
+        // TODO (b/273771594) allow custom animations for fade transitions
         animate().alpha(1.f)
                  .setDuration(mAppearAnimationDurationMs)
                  .setStartDelay(mAppearAnimationDelayMs);

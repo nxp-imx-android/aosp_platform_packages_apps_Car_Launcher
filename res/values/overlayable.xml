@@ -45,7 +45,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="color" name="launcher_home_icon_color"/>
       <item type="color" name="media_button_tint"/>
       <item type="color" name="minimized_progress_bar_background"/>
-      <item type="color" name="position_indicator_bar_color"/>
+      <item type="color" name="page_indicator_bar_color"/>
       <item type="color" name="recent_apps_line_divider_color"/>
       <item type="color" name="recents_background_color"/>
       <item type="color" name="seek_bar_color"/>
@@ -97,8 +97,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="page_snap_threshold"/>
       <item type="dimen" name="panel_margin"/>
       <item type="dimen" name="playback_controls_margin"/>
-      <item type="dimen" name="position_indicator_edge_corner_radius"/>
-      <item type="dimen" name="position_indicator_height"/>
+      <item type="dimen" name="page_indicator_edge_corner_radius"/>
+      <item type="dimen" name="page_indicator_height"/>
       <item type="dimen" name="recent_apps_divider_margin"/>
       <item type="dimen" name="recent_apps_row_height"/>
       <item type="dimen" name="recent_task_col_space"/>
@@ -135,7 +135,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="ic_mic_on"/>
       <item type="drawable" name="ic_mute_activatable"/>
       <item type="drawable" name="ic_search_black"/>
-      <item type="drawable" name="position_indicator_bar"/>
+      <item type="drawable" name="page_indicator_bar"/>
       <item type="drawable" name="recent_task_shape"/>
       <item type="id" name="app_icon"/>
       <item type="id" name="app_item"/>
@@ -174,8 +174,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="optional_timer"/>
       <item type="id" name="optional_timer_separator"/>
       <item type="id" name="optional_times"/>
-      <item type="id" name="position_indicator"/>
-      <item type="id" name="position_indicator_container"/>
+      <item type="id" name="page_indicator"/>
+      <item type="id" name="page_indicator_container"/>
       <item type="id" name="primary_text"/>
       <item type="id" name="recent_apps_row"/>
       <item type="id" name="recent_tasks_group"/>
