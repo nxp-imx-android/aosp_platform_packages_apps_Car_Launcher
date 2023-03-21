@@ -127,4 +127,5 @@
          start a swipe gesture. If the gesture has a smaller change, the gesture is forwarded to
          other handlers. -->
     <item name="recent_task_start_swipe_threshold" type="dimen" format="float">5</item>
+    <item name="disabled_recent_task_alpha" type="dimen" format="float">0.35</item>
 </resources>

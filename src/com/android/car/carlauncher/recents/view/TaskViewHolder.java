@@ -32,20 +32,27 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
     private final ImageView mThumbnailImageView;
     private final ImageView mIconImageView;
     private final View.OnTouchListener mTaskTouchListener;
+    private final float mDisabledStateAlpha;
 
-    public TaskViewHolder(@NonNull View itemView, ItemTouchHelper itemTouchHelper,
-            float startSwipeThreshold) {
+    public TaskViewHolder(@NonNull View itemView, ItemTouchHelper itemTouchHelper) {
         super(itemView);
         mThumbnailImageView = itemView.findViewById(R.id.task_thumbnail);
         mIconImageView = itemView.findViewById(R.id.task_icon);
+        mDisabledStateAlpha = itemView.getResources().getFloat(
+                R.dimen.disabled_recent_task_alpha);
+        float startSwipeThreshold = itemView.getResources().getFloat(
+                R.dimen.recent_task_start_swipe_threshold);
         mTaskTouchListener = new TaskTouchListener(startSwipeThreshold,
                 itemTouchHelper, /* viewHolder= */ this);
     }
 
-    public void bind(@Nullable Drawable icon, @Nullable Bitmap thumbnail,
+    public void bind(@Nullable Drawable icon, @Nullable Bitmap thumbnail, boolean isDisabled,
             @Nullable View.OnClickListener onClickListener) {
         updateThumbnail(thumbnail);
         updateIcon(icon);
+
+        setDisabledAlpha(mThumbnailImageView, isDisabled);
+        setDisabledAlpha(mIconImageView, isDisabled);
 
         setListeners(mThumbnailImageView, mTaskTouchListener, onClickListener);
         setListeners(mIconImageView, mTaskTouchListener, onClickListener);
@@ -71,5 +78,13 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
             View.OnClickListener onClickListener) {
         view.setOnTouchListener(onTouchListener);
         view.setOnClickListener(onClickListener);
+    }
+
+    private void setDisabledAlpha(View view, boolean isDisabled) {
+        if (isDisabled) {
+            view.setAlpha(mDisabledStateAlpha);
+        } else {
+            view.setAlpha(1f);
+        }
     }
 }
