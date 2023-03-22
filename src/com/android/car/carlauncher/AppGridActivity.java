@@ -296,7 +296,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                         mAdapter.setLauncherItems(launcherItems);
                         mNextScrollDestination = mSnapCallback.getSnapPosition();
                         updateScrollState();
-                        mLauncherModel.maybeSaveAppsOrder();
+                        //TODO: b/275079533 Disable drag and drop ability in AppGrid with
+                        // only Media apps
+                        if (mMode == Mode.ALL_APPS) {
+                            mLauncherModel.maybeSaveAppsOrder();
+                        }
                     }
                 }
         );
@@ -542,6 +546,9 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         super.onNewIntent(intent);
         setIntent(intent);
         updateMode();
+        if (mCar.isConnected()) {
+            initializeLauncherModel();
+        }
     }
 
     @Override
