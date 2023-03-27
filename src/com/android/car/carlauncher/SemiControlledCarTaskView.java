@@ -19,8 +19,8 @@ package com.android.car.carlauncher;
 import android.app.Activity;
 
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.taskview.TaskViewTransitions;
 
 import java.util.concurrent.Executor;
 

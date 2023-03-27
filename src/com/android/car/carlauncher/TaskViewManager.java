@@ -54,7 +54,6 @@ import com.android.car.carlauncher.taskstack.TaskStackChangeListeners;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -66,6 +65,7 @@ import com.android.wm.shell.startingsurface.phone.PhoneStartingWindowTypeAlgorit
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
