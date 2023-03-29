@@ -39,7 +39,7 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.wm.shell.TaskView;
+import com.android.wm.shell.taskview.TaskView;
 
 import java.util.List;
 
