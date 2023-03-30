@@ -31,8 +31,8 @@ import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.TaskViewTransitions;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.taskview.TaskViewTransitions;
 
 import java.util.concurrent.Executor;
 
