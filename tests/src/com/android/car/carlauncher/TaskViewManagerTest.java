@@ -72,12 +72,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.car.carlauncher.taskstack.TaskStackChangeListeners;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.TaskView;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.startingsurface.StartingWindowController;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.transition.Transitions;
 
 import com.google.common.collect.ImmutableList;
