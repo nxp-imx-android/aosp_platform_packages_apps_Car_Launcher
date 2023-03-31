@@ -41,8 +41,7 @@ public class CarLauncherUtils {
 
     /** Intent used to find/launch the maps activity to run in the relevant DisplayArea. */
     public static Intent getMapsIntent(Context context) {
-        Intent defaultIntent =
-                Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_MAPS);
+        Intent defaultIntent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MAPS);
         defaultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PackageManager pm = context.getPackageManager();
         ComponentName defaultActivity = defaultIntent.resolveActivity(pm);
