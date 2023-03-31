@@ -135,6 +135,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         mAppItemView.setFocusable(true);
         mAppName.setText(app.getDisplayName());
         mAppIcon.setImageDrawable(app.getIcon());
+        mAppIcon.setAlpha(1.f);
         mComponentName = app.getComponentName();
 
         Drawable highlightedLayer = mContext.getDrawable(R.drawable.app_item_highlight);
@@ -291,6 +292,8 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         mAppIcon.setLongClickable(false);
         mAppIcon.setOnLongClickListener(null);
         mAppIcon.setOnTouchListener(null);
+        mAppIcon.setAlpha(0.f);
+        mAppIcon.setOutlineProvider(null);
 
         mAppIcon.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
             @Override
@@ -331,7 +334,9 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
             mAppIcon.setAlpha(0.f);
             return;
         }
-        mAppIcon.setAlpha(1.f);
+        if (mHasAppMetadata) {
+            mAppIcon.setAlpha(1.f);
+        }
     }
 
 
