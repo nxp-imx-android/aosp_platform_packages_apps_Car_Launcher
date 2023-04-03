@@ -38,6 +38,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.recents.view.RecentTasksAdapter;
+import com.android.car.carlauncher.recents.view.RecentsRecyclerView;
+import com.android.car.carlauncher.recents.view.TaskSnapHelper;
 import com.android.car.carlauncher.recents.view.TaskTouchHelperCallback;
 
 import java.util.HashSet;
@@ -48,7 +50,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
         RecentTasksViewModel.RecentTasksChangeListener {
     public static final String OPEN_RECENT_TASK_ACTION =
             "com.android.car.carlauncher.recents.OPEN_RECENT_TASK_ACTION";
-    private RecyclerView mRecentsRecyclerView;
+    private RecentsRecyclerView mRecentsRecyclerView;
     private GridLayoutManager mGridLayoutManager;
     private RecentTasksViewModel mRecentTasksViewModel;
     private Group mRecentTasksGroup;
@@ -56,8 +58,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
     private Animator mClearAllAnimator;
     private NonDOHiddenPackageProvider mNonDOHiddenPackageProvider;
     private Set<String> mPackagesToHideFromRecents;
-    private int mRecentTaskRowSpacing;
-    private int mRecentTaskColSpacing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +66,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mRecentsRecyclerView = findViewById(R.id.recent_tasks_list);
         mRecentTasksGroup = findViewById(R.id.recent_tasks_group);
         mEmptyStateView = findViewById(R.id.empty_state);
-        mRecentTaskRowSpacing = getResources().getDimensionPixelSize(R.dimen.recent_task_row_space);
-        mRecentTaskColSpacing = getResources().getDimensionPixelSize(R.dimen.recent_task_col_space);
         mPackagesToHideFromRecents = new HashSet<>(List.of(getResources().getStringArray(
                 R.array.packages_hidden_from_recents)));
         mRecentTasksViewModel = RecentTasksViewModel.getInstance();
@@ -102,14 +100,27 @@ public class CarRecentsActivity extends AppCompatActivity implements
             }
         });
 
-        mRecentsRecyclerView.addItemDecoration(getRecentTasksItemDecoration());
-        float swipedThreshold = getResources().getFloat(R.dimen.recent_task_swiped_threshold);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
-                new TaskTouchHelperCallback(
-                        /* dragDirs= */ 0, ItemTouchHelper.UP, swipedThreshold));
+        int colSpacing = getResources().getDimensionPixelSize(R.dimen.recent_task_col_space);
+        mRecentsRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
+                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                outRect.right = colSpacing / 2;
+                outRect.left = colSpacing / 2;
+            }
+        });
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new TaskTouchHelperCallback(
+                /* dragDirs= */ 0, ItemTouchHelper.UP,
+                getResources().getFloat(R.dimen.recent_task_swiped_threshold)));
         itemTouchHelper.attachToRecyclerView(mRecentsRecyclerView);
-        mRecentsRecyclerView.setAdapter(
-                new RecentTasksAdapter(getLayoutInflater(), itemTouchHelper));
+
+        TaskSnapHelper snapHelper = new TaskSnapHelper(gridSpanCount,
+                getResources().getInteger(R.integer.config_recents_columns_per_page));
+        snapHelper.attachToRecyclerView(mRecentsRecyclerView);
+
+        mRecentsRecyclerView.setAdapter(new RecentTasksAdapter(this, getLayoutInflater(),
+                itemTouchHelper));
 
         mClearAllAnimator = AnimatorInflater.loadAnimator(this,
                 R.animator.recents_clear_all);
@@ -135,6 +146,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
         }
         mRecentTasksViewModel.fetchRecentTaskList();
         resetViewState();
+        mRecentsRecyclerView.resetPadding();
     }
 
     @Override
@@ -147,6 +159,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     protected void onStop() {
         super.onStop();
         mRecentTasksViewModel.clearCache();
+        mRecentsRecyclerView.resetPadding();
     }
 
     @Override
@@ -161,6 +174,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     @Override
     public void onRecentTasksFetched() {
         resetViewState();
+        mRecentsRecyclerView.resetPadding();
     }
 
     @Override
@@ -176,25 +190,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
 
     @Override
     public void onRecentTaskRemoved(int position) {
+        mRecentsRecyclerView.resetPadding();
         if (mRecentTasksViewModel.getRecentTasksSize() == 0) {
             launchHomeIntent();
         }
-    }
-
-
-    private RecyclerView.ItemDecoration getRecentTasksItemDecoration() {
-        return new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
-                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.left = mRecentTaskColSpacing;
-                int position = parent.getChildAdapterPosition(view);
-                if (position % 2 == 0) {
-                    outRect.top = mRecentTaskRowSpacing;
-                }
-            }
-        };
     }
 
     private void launchHomeIntent() {
