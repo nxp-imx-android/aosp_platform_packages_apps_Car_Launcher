@@ -74,4 +74,6 @@
     <integer name="config_msg_send_mirroring_pkg_code">3</integer>
     <string name="config_msg_mirroring_pkg_name_key" translatable="false">msg_mirroring_pkg_name_key</string>
     <string name="config_msg_mirroring_redirect_uri_key" translatable="false">msg_mirroring_redirect_uri_key</string>
+    <!-- Number of columns in recents that should be included in a page when snapping -->
+    <integer name="config_recents_columns_per_page">2</integer>
 </resources>

@@ -50,8 +50,6 @@ import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.wm.shell.recents.IRecentTasks;
 import com.android.wm.shell.util.GroupedRecentTaskInfo;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,7 +145,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             return;
         }
         RECENTS_MODEL_EXECUTOR.execute(() -> {
-            GroupedRecentTaskInfo[] groupedRecentTasks = new GroupedRecentTaskInfo[0];
+            GroupedRecentTaskInfo[] groupedRecentTasks;
             try {
                 // todo: b/271498799 use ActivityManagerWrapper.getInstance().getCurrentUserId()
                 //  or equivalent instead of hidden API mContext.getUserId()
@@ -165,10 +163,10 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             }
             mRecentTaskIds = new ArrayList<>(groupedRecentTasks.length);
             mRecentTaskIdToTaskMap = new HashMap<>(groupedRecentTasks.length);
-            boolean areSplitOrFREEFORMTypeTasksPresent = false;
+            boolean areSplitOrFreeformTypeTasksPresent = false;
             for (GroupedRecentTaskInfo groupedRecentTask : groupedRecentTasks) {
                 switch (groupedRecentTask.getType()) {
-                    case TYPE_SINGLE -> {
+                    case TYPE_SINGLE:
                         // Automotive doesn't have split screen functionality, only process tasks
                         // of TYPE_SINGLE.
                         ActivityManager.RecentTaskInfo taskInfo = groupedRecentTask.getTaskInfo1();
@@ -186,11 +184,13 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
                         mRecentTaskIdToTaskMap.put(task.key.id, task);
                         getRecentTaskThumbnailAsync(task.key.id);
                         getRecentTaskIconAsync(task.key.id);
-                    }
-                    case TYPE_SPLIT, TYPE_FREEFORM -> areSplitOrFREEFORMTypeTasksPresent = true;
+                        break;
+                    case TYPE_SPLIT:
+                    case TYPE_FREEFORM:
+                        areSplitOrFreeformTypeTasksPresent = true;
                 }
             }
-            if (areSplitOrFREEFORMTypeTasksPresent && DEBUG) {
+            if (areSplitOrFreeformTypeTasksPresent && DEBUG) {
                 Log.d(TAG, "Automotive doesn't support TYPE_SPLIT and TYPE_FREEFORM tasks");
             }
             if (mRecentsDataChangeListener != null) {
@@ -226,7 +226,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
         return thumbnailData != null ? thumbnailData.thumbnail : null;
     }
 
-    @NotNull
+    @NonNull
     @Override
     public Rect getRecentTaskInsets(int taskId) {
         ThumbnailData thumbnailData = getRecentTaskThumbnailData(taskId);
@@ -252,7 +252,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
     }
 
     @Override
-    public boolean openTopRunningTask(@NotNull Class<? extends Activity> recentsActivity,
+    public boolean openTopRunningTask(@NonNull Class<? extends Activity> recentsActivity,
             int displayId) {
         ActivityManager.RunningTaskInfo[] runningTasks = mActivityManagerWrapper.getRunningTasks(
                 /* filterOnlyVisibleRecents= */false, displayId);
