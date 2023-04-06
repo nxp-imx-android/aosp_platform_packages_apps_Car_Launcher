@@ -106,6 +106,7 @@ public final class TaskViewManager {
 
     private CarUserManager mCarUserManager;
     private Activity mContext;
+    private Car mCar;
 
     private final ShellTaskOrganizer.TaskListener mRootTaskListener =
             new ShellTaskOrganizer.TaskListener() {
@@ -379,7 +380,7 @@ public final class TaskViewManager {
     }
 
     private void initCar() {
-        Car.createCar(/* context= */ mContext, /* handler= */ null,
+        mCar = Car.createCar(/* context= */ mContext, /* handler= */ null,
                 Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
                 (car, ready) -> {
                     if (!ready) {
@@ -547,6 +548,10 @@ public final class TaskViewManager {
             mContext.unregisterActivityLifecycleCallbacks(mActivityLifecycleCallbacks);
             mTaskOrganizer.unregisterOrganizer();
             mTaskViewInputInterceptor.release();
+
+            if (mCar != null) {
+                mCar.disconnect();
+            }
         });
     }
 
