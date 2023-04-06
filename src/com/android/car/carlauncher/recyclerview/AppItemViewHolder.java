@@ -151,10 +151,13 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         // previous page, so we need to rebind the app with the correct visibility.
         setStateSelected(mComponentName.equals(mDragCallback.mSelectedComponent));
 
-        boolean isLaunchable =
+        boolean isLaunchableDistractionOptimized =
                 !isDistractionOptimizationRequired || app.getIsDistractionOptimized();
-        mAppIcon.setAlpha(mContext.getResources().getFloat(
-                isLaunchable ? R.dimen.app_icon_opacity : R.dimen.app_icon_opacity_unavailable));
+        boolean isDisabledByTos = app.getIsDisabledByTos();
+        boolean isLaunchable = isLaunchableDistractionOptimized || isDisabledByTos;
+
+        int opacity = getOpacity(isLaunchable, isDisabledByTos);
+        mAppIcon.setAlpha(mContext.getResources().getFloat(opacity));
 
         if (isLaunchable) {
             View.OnClickListener appLaunchListener = new View.OnClickListener() {
@@ -615,5 +618,15 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         void onDragExited(int gridPosition, @AppItemBoundDirection int exitDirection);
         /** Listener method called during AppItemDragCallback.notifyItemDropped */
         void onItemDropped(int gridPositionFrom, int gridPositionTo);
+    }
+
+    private int getOpacity(boolean isLaunchable, boolean isDisabledByTos) {
+        if (isDisabledByTos) {
+            return R.dimen.app_icon_opacity_tos_disabled;
+        }
+        if (isLaunchable) {
+            return R.dimen.app_icon_opacity;
+        }
+        return R.dimen.app_icon_opacity_unavailable;
     }
 }

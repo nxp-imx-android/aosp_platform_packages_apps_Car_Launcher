@@ -17,6 +17,7 @@
 package com.android.car.carlauncher;
 
 import static android.car.settings.CarSettings.Secure.KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE;
+import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -92,6 +93,9 @@ public class AppLauncherUtils {
     private static final String TAG_USES = "uses";
     private static final String ATTRIBUTE_NAME = "name";
     private static final String TYPE_VIDEO = "video";
+    // TODO (b/276975875): deprecate current key
+    private static final String TOS_FIRST_RUN = "firstRun";
+    static final String TOS_DISABLED_APPS_SEPARATOR = ",";
     static final String PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR = ";";
 
     // Max no. of uses tags in automotiveApp XML. This is an arbitrary limit to be defensive
@@ -251,6 +255,10 @@ public class AppLauncherUtils {
         Map<ComponentName, AppMetaData> launchablesMap = new HashMap<>(launchablesSize);
         Map<ComponentName, ResolveInfo> mediaServicesMap = new HashMap<>(mediaServices.size());
         Set<String> mEnabledPackages = new ArraySet<>(launchablesSize);
+        Set<String> tosDisabledPackages = getTosDisabledPackages(
+                context,
+                KEY_UNACCEPTED_TOS_DISABLED_APPS,
+                TOS_DISABLED_APPS_SEPARATOR);
 
         // Process media services
         if ((appTypes & APP_TYPE_MEDIA_SERVICES) != 0) {
@@ -263,6 +271,7 @@ public class AppLauncherUtils {
                 if (shouldAddToLaunchables(componentName, appsToHide, customMediaComponents,
                         appTypes, APP_TYPE_MEDIA_SERVICES)) {
                     final boolean isDistractionOptimized = true;
+                    boolean isDisabledByTos = tosDisabledPackages.contains(packageName);
 
                     Intent intent = new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE);
                     intent.putExtra(Car.CAR_EXTRA_MEDIA_COMPONENT, componentName.flattenToString());
@@ -274,6 +283,7 @@ public class AppLauncherUtils {
                             info.serviceInfo.loadIcon(packageManager),
                             isDistractionOptimized,
                             /* isMirroring = */ false,
+                            isDisabledByTos,
                             contextArg -> {
                                 if (openMediaCenter) {
                                     AppLauncherUtils.launchApp(contextArg, intent);
@@ -299,6 +309,7 @@ public class AppLauncherUtils {
                     boolean isDistractionOptimized =
                             isActivityDistractionOptimized(carPackageManager, packageName,
                                     info.getName());
+                    boolean isDisabledByTos = tosDisabledPackages.contains(packageName);
 
                     Intent intent = new Intent(Intent.ACTION_MAIN)
                             .setComponent(componentName)
@@ -313,6 +324,7 @@ public class AppLauncherUtils {
                             info.getBadgedIcon(0),
                             isDistractionOptimized,
                             isMirroring,
+                            isDisabledByTos,
                             contextArg -> {
                                 if (packageName.equals(mirroringAppPkgName)) {
                                     Log.d(TAG, "non-media service package name "
@@ -338,6 +350,7 @@ public class AppLauncherUtils {
                 }
                 boolean isDistractionOptimized =
                         isActivityDistractionOptimized(carPackageManager, packageName, className);
+                boolean isDisabledByTos = tosDisabledPackages.contains(packageName);
 
                 Intent intent = new Intent(Intent.ACTION_MAIN)
                         .setComponent(componentName)
@@ -351,6 +364,7 @@ public class AppLauncherUtils {
                         info.activityInfo.loadIcon(packageManager),
                         isDistractionOptimized,
                         /* isMirroring = */ false,
+                        isDisabledByTos,
                         contextArg -> {
                             packageManager.setApplicationEnabledSetting(packageName,
                                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
@@ -370,9 +384,50 @@ public class AppLauncherUtils {
                         buildShortcuts(packageName, displayName, shortcutsListener));
                 launchablesMap.put(componentName, appMetaData);
             }
+
+            List<ResolveInfo> restrictedActivities = getTosDisabledActivities(
+                    context,
+                    packageManager,
+                    mEnabledPackages
+            );
+            for (ResolveInfo info: restrictedActivities) {
+                String packageName = info.activityInfo.packageName;
+                String className = info.activityInfo.name;
+                ComponentName componentName = new ComponentName(packageName, className);
+
+                boolean isDistractionOptimized =
+                        isActivityDistractionOptimized(carPackageManager, packageName, className);
+                boolean isDisabledByTos = tosDisabledPackages.contains(packageName);
+
+                AppMetaData appMetaData = new AppMetaData(
+                        info.activityInfo.loadLabel(packageManager),
+                        componentName,
+                        info.activityInfo.loadIcon(packageManager),
+                        isDistractionOptimized,
+                        /* isMirroring = */ false,
+                        isDisabledByTos,
+                        AppLauncherUtils::launchTosAcceptanceFlow,
+                        null
+                );
+                launchablesMap.put(componentName, appMetaData);
+            }
         }
 
         return new LauncherAppsInfo(launchablesMap, mediaServicesMap);
+    }
+
+    /**
+     * Launches the TOS flow screen
+     *
+     * @param context the app context
+     */
+    public static void launchTosAcceptanceFlow(Context context) {
+        // TODO (b/276779487): Need to launch a different intent while in driving state
+        String tosIntentName =
+                context.getResources().getString(R.string.user_tos_activity_intent);
+
+        Intent intent = new Intent(tosIntentName).putExtra(TOS_FIRST_RUN, true);
+        AppLauncherUtils.launchApp(context, intent);
     }
 
     private static Consumer<Pair<Context, View>> buildShortcuts(String packageName,
@@ -661,32 +716,71 @@ public class AppLauncherUtils {
 
     private static List<ResolveInfo> getDisabledActivities(Context context,
             PackageManager packageManager, Set<String> enabledPackages) {
+        return getActivitiesFromSystemPreferences(
+                context,
+                packageManager,
+                enabledPackages,
+                KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE,
+                PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS,
+                PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR);
+    }
+
+    private static List<ResolveInfo> getTosDisabledActivities(
+            Context context,
+            PackageManager packageManager,
+            Set<String> enabledPackages) {
+        return getActivitiesFromSystemPreferences(
+                context,
+                packageManager,
+                enabledPackages,
+                KEY_UNACCEPTED_TOS_DISABLED_APPS,
+                PackageManager.MATCH_DISABLED_COMPONENTS,
+                TOS_DISABLED_APPS_SEPARATOR);
+    }
+
+    /**
+     * Get a list of activities from packages in system preferences by key
+     * @param context the app context
+     * @param packageManager The PackageManager
+     * @param enabledPackages Set of packages enabled by system
+     * @param settingsKey Key to read from system preferences
+     * @param sep Separator
+     *
+     * @return List of activities read from system preferences
+     */
+    private static List<ResolveInfo> getActivitiesFromSystemPreferences(
+            Context context,
+            PackageManager packageManager,
+            Set<String> enabledPackages,
+            String settingsKey,
+            int filter,
+            String sep) {
         ContentResolver contentResolverForUser = context.createContextAsUser(
                         UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
                 .getContentResolver();
-        String settingsValue = Settings.Secure.getString(contentResolverForUser,
-                KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE);
-        Set<String> disabledPackages = TextUtils.isEmpty(settingsValue) ? new ArraySet<>()
+        String settingsValue = Settings.Secure.getString(contentResolverForUser, settingsKey);
+        Set<String> packages = TextUtils.isEmpty(settingsValue) ? new ArraySet<>()
                 : new ArraySet<>(Arrays.asList(settingsValue.split(
-                        PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR)));
-        if (disabledPackages.isEmpty()) {
+                        sep)));
+
+        if (packages.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<ResolveInfo> allActivities = packageManager.queryIntentActivities(
                 new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
                 PackageManager.ResolveInfoFlags.of(PackageManager.GET_RESOLVED_FILTER
-                        | PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS));
+                        | filter));
 
-        List<ResolveInfo> disabledActivities = new ArrayList<>();
+        List<ResolveInfo> activities = new ArrayList<>();
         for (int i = 0; i < allActivities.size(); ++i) {
             ResolveInfo info = allActivities.get(i);
             if (!enabledPackages.contains(info.activityInfo.packageName)
-                    && disabledPackages.contains(info.activityInfo.packageName)) {
-                disabledActivities.add(info);
+                    && packages.contains(info.activityInfo.packageName)) {
+                activities.add(info);
             }
         }
-        return disabledActivities;
+        return activities;
     }
 
     private static boolean shouldAddToLaunchables(@NonNull ComponentName componentName,
@@ -763,5 +857,26 @@ public class AppLauncherUtils {
                 boolean allowStopApp);
 
         void onStopAppSuccess(String message);
+    }
+
+    /**
+     * Returns a set of packages that are disabled by tos
+     *
+     * @param context The application context
+     * @param settingsKey System preference key which has list of disabled apps
+     * @param sep Separator
+     * @return Set of packages disabled by tos
+     */
+    static Set<String> getTosDisabledPackages(
+            Context context,
+            String settingsKey,
+            String sep) {
+        ContentResolver contentResolverForUser = context.createContextAsUser(
+                        UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
+                .getContentResolver();
+        String settingsValue = Settings.Secure.getString(contentResolverForUser, settingsKey);
+        return TextUtils.isEmpty(settingsValue) ? new ArraySet<>()
+                : new ArraySet<>(Arrays.asList(settingsValue.split(
+                        sep)));
     }
 }

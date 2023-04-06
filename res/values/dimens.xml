@@ -36,6 +36,7 @@
     <dimen name="app_icon_size">84dp</dimen>
     <dimen name="app_icon_scaled_size">100dp</dimen>
     <item name="app_icon_opacity_unavailable" type="dimen" format="float">0.5</item>
+    <item name="app_icon_opacity_tos_disabled" type="dimen" format="float">0.46</item>
     <item name="app_icon_opacity" type="dimen" format="float">1.0</item>
     <dimen name="app_name_margin_horizontal">6dp</dimen>
     <dimen name="app_item_highlight_corner_radius">18dp</dimen>
