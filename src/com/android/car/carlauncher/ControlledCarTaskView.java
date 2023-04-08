@@ -18,6 +18,7 @@ package com.android.car.carlauncher;
 
 import static com.android.car.carlauncher.TaskViewManager.DBG;
 
+import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -26,6 +27,7 @@ import android.graphics.Rect;
 import android.os.UserManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -52,6 +54,7 @@ final class ControlledCarTaskView extends CarTaskView {
     private final UserManager mUserManager;
     private final TaskViewManager mTaskViewManager;
     private final ControlledCarTaskViewConfig mConfig;
+    @Nullable private RunnerWithBackoff mStartActivityWithBackoff;
 
     ControlledCarTaskView(
             Activity context,
@@ -71,6 +74,9 @@ final class ControlledCarTaskView extends CarTaskView {
         mTaskViewManager = taskViewManager;
 
         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewCreated(this));
+        if (mConfig.mAutoRestartOnCrash) {
+            mStartActivityWithBackoff = new RunnerWithBackoff(this::startActivityInternal);
+        }
     }
 
     @Override
@@ -84,6 +90,25 @@ final class ControlledCarTaskView extends CarTaskView {
      * Starts the underlying activity.
      */
     public void startActivity() {
+        if (mStartActivityWithBackoff == null) {
+            startActivityInternal();
+            return;
+        }
+        mStartActivityWithBackoff.stop();
+        mStartActivityWithBackoff.start();
+    }
+
+    private void stopTheStartActivityBackoffIfExists() {
+        if (mStartActivityWithBackoff == null) {
+            if (DBG) {
+                Log.d(TAG, "mStartActivityWithBackoff is not present.");
+            }
+            return;
+        }
+        mStartActivityWithBackoff.stop();
+    }
+
+    private void startActivityInternal() {
         if (!mUserManager.isUserUnlocked()) {
             if (DBG) Log.d(TAG, "Can't start activity due to user is isn't unlocked");
             return;
@@ -130,6 +155,13 @@ final class ControlledCarTaskView extends CarTaskView {
     }
 
     @Override
+    public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
+        super.onTaskAppeared(taskInfo, leash);
+        // Stop the start activity backoff because a task has already appeared.
+        stopTheStartActivityBackoffIfExists();
+    }
+
+    @Override
     public void onTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
         super.onTaskVanished(taskInfo);
         if (mConfig.mAutoRestartOnCrash && mTaskViewManager.isHostVisible()) {
@@ -151,5 +183,11 @@ final class ControlledCarTaskView extends CarTaskView {
             return;
         }
         super.showEmbeddedTask(wct);
+    }
+
+    @Override
+    public void release() {
+        super.release();
+        stopTheStartActivityBackoffIfExists();
     }
 }
