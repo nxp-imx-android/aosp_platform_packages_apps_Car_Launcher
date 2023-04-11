@@ -43,10 +43,7 @@
     <string name="hide_debug_apps" msgid="6128313544379622475">"డీబగ్ యాప్‌లను దాచండి"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"డీబగ్ యాప్‌లను చూపించండి"</string>
     <string name="times_separator" msgid="6180368193321715816">"/"</string>
-    <!-- no translation found for recents_empty_state_text (6703106170272215731) -->
-    <skip />
-    <!-- no translation found for recents_clear_all_text (2088678071417053923) -->
-    <skip />
-    <!-- no translation found for failure_opening_recent_task_message (9097595793150874357) -->
-    <skip />
+    <string name="recents_empty_state_text" msgid="6703106170272215731">"ఇటీవలి ఐటెమ్‌లు ఏవీ లేవు"</string>
+    <string name="recents_clear_all_text" msgid="2088678071417053923">"అన్నీ తీసివేయండి"</string>
+    <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"యాప్ అందుబాటులో లేదు"</string>
 </resources>
