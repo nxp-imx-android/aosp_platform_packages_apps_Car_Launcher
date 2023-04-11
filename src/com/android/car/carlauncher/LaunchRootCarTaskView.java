@@ -16,6 +16,7 @@
 
 package com.android.car.carlauncher;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
@@ -170,7 +171,7 @@ final class LaunchRootCarTaskView extends CarTaskView {
         WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setLaunchRoot(taskInfo.token,
                         new int[]{WINDOWING_MODE_FULLSCREEN, WINDOWING_MODE_UNDEFINED},
-                        new int[]{ACTIVITY_TYPE_STANDARD})
+                        new int[]{ACTIVITY_TYPE_STANDARD, ACTIVITY_TYPE_RECENTS})
                 .reorder(taskInfo.token, true);
         mSyncQueue.queue(wct);
     }
