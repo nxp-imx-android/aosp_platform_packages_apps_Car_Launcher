@@ -21,7 +21,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,10 +40,15 @@ public class AppGridPageSnapper extends LinearSnapHelper {
     private int mPrevFirstVisiblePos = 0;
     private AppGridPageSnapCallback mSnapCallback;
 
-    public AppGridPageSnapper(@NonNull Context context, AppGridPageSnapCallback snapCallback) {
+    public AppGridPageSnapper(
+            @NonNull Context context,
+            int numOfCol,
+            int numOfRow,
+            AppGridPageSnapCallback snapCallback) {
         mSnapCallback = snapCallback;
         mContext = context;
         mPageSnapThreshold = context.getResources().getFloat(R.dimen.page_snap_threshold);
+        mBlockSize = numOfCol * numOfRow;
     }
 
     // Orientation helpers are lazily created per LayoutManager.
@@ -70,24 +74,6 @@ public class AppGridPageSnapper extends LinearSnapHelper {
             return null;
         }
 
-        if (mBlockSize == 0) {
-            View currentPosView = getFirstMostVisibleChild(orientationHelper);
-            if (mHorizontalHelper != null) {
-                int screenWidth = mRecyclerView.getWidth();
-                int itemWidth = currentPosView.getWidth();
-                // All items have the same width
-                int numOfColumns = screenWidth / itemWidth;
-                mBlockSize = numOfColumns
-                        * ((GridLayoutManager) mRecyclerView.getLayoutManager()).getSpanCount();
-            } else {
-                int screenHeight = mRecyclerView.getHeight();
-                int itemHeight = currentPosView.getHeight();
-                // All items have the same width
-                int numOfRows = screenHeight / itemHeight;
-                mBlockSize = numOfRows
-                        * ((GridLayoutManager) mRecyclerView.getLayoutManager()).getSpanCount();
-            }
-        }
         View currentPosView = getFirstMostVisibleChild(orientationHelper);
         RecyclerView.ViewHolder holder = mRecyclerView.findContainingViewHolder(currentPosView);
         int adapterPos = holder.getAbsoluteAdapterPosition();
