@@ -43,10 +43,7 @@
     <string name="hide_debug_apps" msgid="6128313544379622475">"디버그 앱 숨기기"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"디버그 앱 표시"</string>
     <string name="times_separator" msgid="6180368193321715816">"/"</string>
-    <!-- no translation found for recents_empty_state_text (6703106170272215731) -->
-    <skip />
-    <!-- no translation found for recents_clear_all_text (2088678071417053923) -->
-    <skip />
-    <!-- no translation found for failure_opening_recent_task_message (9097595793150874357) -->
-    <skip />
+    <string name="recents_empty_state_text" msgid="6703106170272215731">"최근 항목 없음"</string>
+    <string name="recents_clear_all_text" msgid="2088678071417053923">"모두 지우기"</string>
+    <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"앱을 사용할 수 없음"</string>
 </resources>
