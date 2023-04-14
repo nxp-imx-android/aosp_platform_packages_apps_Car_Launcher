@@ -115,4 +115,9 @@
     -->
     <string-array name="packages_hidden_from_recents" translatable="false">
     </string-array>
+
+    <!-- TosBanner strings -->
+    <string name="banner_title_text">To use user tos disabled apps, agree to User tos</string>
+    <string name="banner_review_button_text">Review</string>
+    <string name="banner_dismiss_button_text">Not Now</string>
 </resources>

@@ -19,6 +19,8 @@ package com.android.car.carlauncher.pagination;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 
+import com.android.car.carlauncher.Banner;
+import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.pagination.PageMeasurementHelper.GridDimensions;
 import com.android.car.carlauncher.pagination.PageMeasurementHelper.PageDimensions;
 
@@ -31,16 +33,22 @@ import java.util.Set;
 public class PaginationController {
     private final PageMeasurementHelper mPageMeasurementHelper;
     private final DimensionUpdateCallback mCallback;
+    // Terms of Service Banner
+    private final Banner mTosBanner;
 
     public PaginationController(View windowBackground, DimensionUpdateCallback callback) {
         mCallback = callback;
         mPageMeasurementHelper = new PageMeasurementHelper(windowBackground);
+        mTosBanner = windowBackground.findViewById(R.id.tos_banner);
         windowBackground.getViewTreeObserver().addOnGlobalLayoutListener(
                 new OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        maybeHandleWindowResize(windowBackground.getMeasuredWidth(),
-                                windowBackground.getMeasuredHeight());
+                        // We need to subtract the banner height from the available window height
+                        // available to the app_grid
+                        int windowHeight = windowBackground.getMeasuredHeight() - getBannerHeight();
+                        int windowWidth = windowBackground.getMeasuredWidth();
+                        maybeHandleWindowResize(windowWidth, windowHeight);
                     }
                 });
     }
@@ -51,6 +59,13 @@ public class PaginationController {
             mCallback.notifyDimensionsUpdated(mPageMeasurementHelper.getPageDimensions(),
                     mPageMeasurementHelper.getGridDimensions());
         }
+    }
+
+    private int getBannerHeight() {
+        if (mTosBanner.getVisibility() == View.VISIBLE) {
+            return mTosBanner.getMeasuredHeight();
+        }
+        return 0;
     }
 
     /**

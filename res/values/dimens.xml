@@ -129,4 +129,9 @@
          other handlers. -->
     <item name="recent_task_start_swipe_threshold" type="dimen" format="float">5</item>
     <item name="disabled_recent_task_alpha" type="dimen" format="float">0.35</item>
+
+    <!-- banner dimensions -->
+    <dimen name="banner_button_maximum_width">300dp</dimen>
+    <dimen name="banner_content_margin">28dp</dimen>
+    <dimen name="banner_image_view_size">30dp</dimen>
 </resources>

@@ -33,4 +33,7 @@
     <color name="recents_background_color">@*android:color/car_grey_900</color>
     <color name="default_recents_thumbnail_color">@*android:color/car_grey_846</color>
     <color name="clear_all_recents_text_color">@*android:color/car_accent</color>
+    <color name="banner_background_color">#2E3134</color>
+    <color name="banner_button_text_color">#66B5FF</color>
+    <color name="banner_title_text_color">#FFFFFF</color>
 </resources>
