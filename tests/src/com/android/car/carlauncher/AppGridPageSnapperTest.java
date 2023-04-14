@@ -56,6 +56,7 @@ public class AppGridPageSnapperTest {
     private AppGridPageSnapper.AppGridPageSnapCallback mAppGridPageSnapCallback;
     private AppGridPageSnapper mPageSnapper;
     private int mRowNo = 3;
+    private int mColNo = 5;
     private int mItemPerPage = 15;
 
     @Rule
@@ -96,7 +97,11 @@ public class AppGridPageSnapperTest {
             Context testableContext = (Context) spy(activity);
             RecyclerView rv = activity.requireViewById(R.id.list);
             mAppGridPageSnapCallback = mock(AppGridPageSnapper.AppGridPageSnapCallback.class);
-            mPageSnapper = new AppGridPageSnapper(testableContext, mAppGridPageSnapCallback);
+            mPageSnapper = new AppGridPageSnapper(
+                    testableContext,
+                    mColNo,
+                    mRowNo,
+                    mAppGridPageSnapCallback);
             mPageSnapper.attachToRecyclerView(rv);
         });
         // Check if first item on the first page is displayed
@@ -140,7 +145,11 @@ public class AppGridPageSnapperTest {
             Context testableContext = (Context) spy(activity);
             RecyclerView rv = activity.requireViewById(R.id.list);
             mAppGridPageSnapCallback = mock(AppGridPageSnapper.AppGridPageSnapCallback.class);
-            mPageSnapper = new AppGridPageSnapper(testableContext, mAppGridPageSnapCallback);
+            mPageSnapper = new AppGridPageSnapper(
+                    testableContext,
+                    mColNo,
+                    mRowNo,
+                    mAppGridPageSnapCallback);
             mPageSnapper.attachToRecyclerView(rv);
         });
 
@@ -186,7 +195,11 @@ public class AppGridPageSnapperTest {
             Context testableContext = (Context) spy(activity);
             RecyclerView rv = activity.requireViewById(R.id.list);
             mAppGridPageSnapCallback = mock(AppGridPageSnapper.AppGridPageSnapCallback.class);
-            mPageSnapper = new AppGridPageSnapper(testableContext, mAppGridPageSnapCallback);
+            mPageSnapper = new AppGridPageSnapper(
+                    testableContext,
+                    mColNo,
+                    mRowNo,
+                    mAppGridPageSnapCallback);
             mPageSnapper.attachToRecyclerView(rv);
         });
 
@@ -248,7 +261,11 @@ public class AppGridPageSnapperTest {
             Context testableContext = (Context) spy(activity);
             RecyclerView rv = activity.requireViewById(R.id.list);
             mAppGridPageSnapCallback = mock(AppGridPageSnapper.AppGridPageSnapCallback.class);
-            mPageSnapper = new AppGridPageSnapper(testableContext, mAppGridPageSnapCallback);
+            mPageSnapper = new AppGridPageSnapper(
+                    testableContext,
+                    mColNo,
+                    mRowNo,
+                    mAppGridPageSnapCallback);
             mPageSnapper.attachToRecyclerView(rv);
         });
 
