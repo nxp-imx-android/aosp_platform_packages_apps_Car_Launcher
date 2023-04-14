@@ -383,7 +383,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         mLayoutManager = new AppGridLayoutManager(this, mNumOfCols, mNumOfRows, mPageOrientation);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        AppGridPageSnapper pageSnapper = new AppGridPageSnapper(this, mSnapCallback);
+        AppGridPageSnapper pageSnapper = new AppGridPageSnapper(
+                this,
+                mNumOfCols,
+                mNumOfRows,
+                mSnapCallback);
         pageSnapper.attachToRecyclerView(mRecyclerView);
 
         mRecyclerView.setItemAnimator(new AppGridItemAnimator());
