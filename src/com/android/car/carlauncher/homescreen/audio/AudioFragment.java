@@ -52,6 +52,7 @@ public class AudioFragment extends HomeCardFragment {
     private TextView mMediaSubtitle;
 
     private boolean mShowSeekBar;
+
     @Override
     public void setPresenter(HomeCardInterface.Presenter presenter) {
         super.setPresenter(presenter);
@@ -83,6 +84,7 @@ public class AudioFragment extends HomeCardFragment {
                         audioContent.getCenterControl(), audioContent.getRightControl());
                 updateAudioDuration(audioContent);
             }
+            updateSeekBarAndTimes(audioContent, false);
         } else {
             super.updateContentViewInternal(content);
         }
