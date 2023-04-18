@@ -225,7 +225,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         }
     }
 
-    private void updateSeekBarAndTimes(CardContent content, boolean updateProgress) {
+    protected void updateSeekBarAndTimes(CardContent content, boolean updateProgress) {
         DescriptiveTextWithControlsView descriptiveTextWithControlsContent =
                 (DescriptiveTextWithControlsView) content;
         if (!isSeekbarWithTimesAvailable() || content.getType() != DESCRIPTIVE_TEXT_WITH_CONTROLS
@@ -239,7 +239,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
 
         if (updateProgress) {
             ProgressBar progressBar = shouldUseSeekBar ? getOptionalSeekBar()
-                            : getOptionalProgressBar();
+                    : getOptionalProgressBar();
             progressBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
         } else {
             SeekBar seekBar = getOptionalSeekBar();
@@ -276,7 +276,9 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     }
 
     private boolean isSeekbarWithTimesAvailable() {
-        return getOptionalSeekbarWithTimesContainer() != null && getOptionalSeekBar() != null
+        return (getOptionalSeekbarWithTimesContainer() != null
+                && getOptionalSeekbarWithTimesContainer().getVisibility() == View.VISIBLE)
+                && getOptionalSeekBar() != null
                 && getOptionalTimes() != null;
     }
 
