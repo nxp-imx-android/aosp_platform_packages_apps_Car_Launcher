@@ -99,7 +99,7 @@ public class CarTaskView extends TaskView {
         mTaskToken = taskInfo.token;
         super.onTaskAppeared(taskInfo, leash);
 
-        applyInsets();
+        applyAllInsets();
     }
 
     /**
@@ -157,10 +157,19 @@ public class CarTaskView extends TaskView {
      * @param frame The rectangle area of the insets source.
      */
     public void addInsets(int index, int type, @NonNull Rect frame) {
-        mInsets.clear();
-        mInsets.append(InsetsSource.createId(mInsetsOwner, index, type),
-                new InsetsFrameProvider(mInsetsOwner, index, type).setArbitraryRectangle(frame));
-        applyInsets();
+        InsetsFrameProvider p =
+                new InsetsFrameProvider(mInsetsOwner, index, type).setArbitraryRectangle(frame);
+        mInsets.append(InsetsSource.createId(mInsetsOwner, index, type), p);
+
+        if (mTaskToken == null) {
+            // The insets will be applied later as part of onTaskAppeared.
+            Log.w(TAG, "Cannot apply insets as the task token is not present.");
+            return;
+        }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.addInsetsSource(mTaskToken,
+                p.getOwner(), p.getIndex(), p.getType(), p.getArbitraryRectangle());
+        mSyncQueue.queue(wct);
     }
 
     /**
@@ -175,23 +184,24 @@ public class CarTaskView extends TaskView {
             Log.w(TAG, "No insets set.");
             return;
         }
+        int id = InsetsSource.createId(mInsetsOwner, index, type);
+        if (!mInsets.contains(id)) {
+            Log.w(TAG, "Insets type: " + type + " can't be removed as it was not "
+                    + "applied as part of the last addInsets()");
+            return;
+        }
+        mInsets.remove(id);
+
         if (mTaskToken == null) {
             Log.w(TAG, "Cannot remove insets as the task token is not present.");
             return;
         }
-        final int id = InsetsSource.createId(mInsetsOwner, index, type);
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        if (mInsets.contains(id)) {
-            wct.removeInsetsSource(mTaskToken, mInsetsOwner, index, type);
-            mInsets.remove(id);
-        } else {
-            Log.w(TAG, "Insets type: " + type + " can't be removed as it was not "
-                    + "applied as part of the last addInsets()");
-        }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeInsetsSource(mTaskToken, mInsetsOwner, index, type);
         mSyncQueue.queue(wct);
     }
 
-    private void applyInsets() {
+    private void applyAllInsets() {
         if (mInsets.size() == 0) {
             Log.w(TAG, "Cannot apply null or empty insets");
             return;
