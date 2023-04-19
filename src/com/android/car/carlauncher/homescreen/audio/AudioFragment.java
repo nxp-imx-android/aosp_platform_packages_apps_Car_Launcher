@@ -40,7 +40,7 @@ import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView
  */
 public class AudioFragment extends HomeCardFragment {
 
-    private HomeAudioCardPresenter mPresenter;
+    private AudioPresenter mPresenter;
     private Chronometer mChronometer;
     private View mChronometerSeparator;
     private float mBlurRadius;
@@ -56,7 +56,7 @@ public class AudioFragment extends HomeCardFragment {
     @Override
     public void setPresenter(HomeCardInterface.Presenter presenter) {
         super.setPresenter(presenter);
-        mPresenter = (HomeAudioCardPresenter) presenter;
+        mPresenter = (AudioPresenter) presenter;
     }
 
     @Override

@@ -227,11 +227,15 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
     }
 
     /**
-     * Package private method to allow the {@link HomeAudioCardPresenter} to access the model to
+     * Allows the {@link HomeAudioCardPresenter} to access the model to
      * initialize the {@link com.android.car.media.common.PlaybackControlsActionBar}
      */
-    PlaybackViewModel getPlaybackViewModel() {
+    public PlaybackViewModel getPlaybackViewModel() {
         return mPlaybackViewModel;
+    }
+
+    protected MediaSourceViewModel getMediaSourceViewModel() {
+        return mSourceViewModel;
     }
 
     /**
