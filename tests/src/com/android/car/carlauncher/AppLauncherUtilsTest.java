@@ -100,7 +100,9 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     private static final String TEST_TOS_DISABLED_APP_2 = "com.android.car.test.tosdisabled2";
     private static final String TEST_VIDEO_APP = "com.android.car.test.video";
     private static final String TEST_MIRROR_APP_PKG = "com.android.car.test.mirroring";
-    private static final String TOS_INTENT_NAME = "com.android.car.test.SHOW_USER_TOS_ACTIVITY";
+    private static final String TOS_INTENT_NAME = "#Intent;action="
+            + "com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;"
+            + "S.mini_flow_extra=GTOS_GATED_FLOW;end";
 
     private static final Predicate<ResolveInfo> MATCH_NO_APP = (resolveInfo) -> false;
 
@@ -287,18 +289,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mMockContext, times(2)).startActivity(intentCaptor.capture(), any());
 
-        assertTrue(intentCaptor
-                .getAllValues()
-                .stream()
-                .map(Intent::getExtras)
-                // TODO (b/276975875): deprecate current key
-                .anyMatch(extra -> extra.getBoolean("firstRun")));
-
-        assertTrue(intentCaptor
-                .getAllValues()
-                .stream()
-                .map(Intent::getAction)
-                .anyMatch(action -> action.equals(TOS_INTENT_NAME)));
+        String intentUri = intentCaptor.getAllValues().get(0).toUri(0);
+        assertEquals(TOS_INTENT_NAME, intentUri);
     }
 
     @Test
@@ -334,18 +326,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
         verify(mMockContext, times(2)).startActivity(intentCaptor.capture(), any());
 
-        assertTrue(intentCaptor
-                .getAllValues()
-                .stream()
-                .map(Intent::getExtras)
-                // TODO (b/276975875): deprecate current key
-                .anyMatch(extra -> extra.getBoolean("firstRun")));
-
-        assertTrue(intentCaptor
-                .getAllValues()
-                .stream()
-                .map(Intent::getAction)
-                .anyMatch(action -> action.equals(TOS_INTENT_NAME)));
+        String intentUri = intentCaptor.getAllValues().get(0).toUri(0);
+        assertEquals(TOS_INTENT_NAME, intentUri);
     }
 
     private void forceStopInit(ActivityManager activityManager, CarMediaManager carMediaManager,
