@@ -68,7 +68,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.Suppress;
 
 import com.android.car.carlauncher.taskstack.TaskStackChangeListeners;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
@@ -102,8 +101,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 //TODO(b/266742500): Test that uses setUpLaunchRootTaskView get null listener
-
-@Suppress // Class to be ignored until resolved b/276483341
 @RunWith(AndroidJUnit4.class)
 public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
     @Rule
