@@ -21,12 +21,21 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
-import static org.mockito.Mockito.any;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
+import android.car.test.mocks.AbstractExtendedMockitoTestCase;
 import android.car.user.CarUserManager;
 import android.car.user.CarUserManager.UserLifecycleListener;
+import android.content.Intent;
 import android.testing.TestableContext;
+import android.util.ArraySet;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.test.InstrumentationRegistry;
@@ -35,22 +44,21 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.filters.Suppress;
 
+import com.android.dx.mockito.inline.extended.ExtendedMockito;
 
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
+
+import java.net.URISyntaxException;
+import java.util.Set;
 
 @Suppress // To be ignored until b/224978827 is fixed
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class CarLauncherTest {
-
-    @Rule
-    public final MockitoRule rule = MockitoJUnit.rule();
+public class CarLauncherTest extends AbstractExtendedMockitoTestCase {
 
     @Rule
     public TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
@@ -58,6 +66,24 @@ public class CarLauncherTest {
 
     @Mock
     private CarUserManager mMockCarUserManager;
+
+    private static final String TOS_MAP_INTENT = "intent:#Intent;"
+            + "component=com.android.car.carlauncher/"
+            + "com.android.car.carlauncher.homescreen.MapActivityTos;"
+            + "action=android.intent.action.MAIN;end";
+    private static final String DEFAULT_MAP_INTENT = "intent:#Intent;"
+            + "component=com.android.car.maps/"
+            + "com.android.car.maps.MapActivity;"
+            + "action=android.intent.action.MAIN;end";
+    private static final String CUSTOM_MAP_INTENT = "intent:#Intent;component=com.custom.car.maps/"
+            + "com.custom.car.maps.MapActivity;"
+            + "action=android.intent.action.MAIN;end";
+
+    @Override
+    protected void onSessionBuilder(CustomMockitoSessionBuilder session) {
+        session.spyStatic(AppLauncherUtils.class);
+        session.spyStatic(CarLauncherUtils.class);
+    }
 
     @After
     public void tearDown() {
@@ -98,5 +124,114 @@ public class CarLauncherTest {
         mActivityScenario.moveToState(Lifecycle.State.DESTROYED);
 
         verify(mMockCarUserManager).removeListener(any(UserLifecycleListener.class));
+    }
+
+    @Test
+    public void onCreate_tosMapActivity_tosUnaccepted_canvasOptimizedMapsDisabledByTos() {
+        doReturn(false).when(() -> AppLauncherUtils.tosAccepted(any()));
+        doReturn(true)
+                        .when(() ->
+                                CarLauncherUtils.isSmallCanvasOptimizedMapIntentConfigured(any()));
+        doReturn(createIntentFromString(TOS_MAP_INTENT))
+                .when(() -> CarLauncherUtils.getTosMapIntent(any()));
+        doReturn(createIntentFromString(DEFAULT_MAP_INTENT))
+                .when(() -> CarLauncherUtils.getSmallCanvasOptimizedMapIntent(any()));
+        doReturn(tosDisabledPackages())
+                .when(() -> AppLauncherUtils.getTosDisabledPackages(any()));
+
+        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
+
+        mActivityScenario.onActivity(activity -> {
+            Intent mapIntent = activity.getMapsIntent();
+            // If TOS is not accepted, and the default map is disabled by TOS, or
+            // package name maybe null when resolving intent from package manager.
+            // We replace the map intent with TOS map activity
+            assertEquals(createIntentFromString(TOS_MAP_INTENT).getComponent().getClassName(),
+                    mapIntent.getComponent().getClassName());
+        });
+    }
+
+    @Test
+    public void onCreate_tosMapActivity_tosUnaccepted_mapsNotDisabledByTos() {
+        doReturn(false).when(() -> AppLauncherUtils.tosAccepted(any()));
+        doReturn(true)
+                .when(() -> CarLauncherUtils.isSmallCanvasOptimizedMapIntentConfigured(any()));
+        doReturn(createIntentFromString(CUSTOM_MAP_INTENT))
+                .when(() -> CarLauncherUtils.getSmallCanvasOptimizedMapIntent(any()));
+        doReturn(tosDisabledPackages())
+                .when(() -> AppLauncherUtils.getTosDisabledPackages(any()));
+
+        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
+
+        mActivityScenario.onActivity(activity -> {
+            Intent mapIntent = activity.getMapsIntent();
+            // If TOS is not accepted, and the default map is not disabled by TOS,
+            // these can be some other navigation app set as default,
+            // package name will not be null.
+            // We will not replace the map intent with TOS map activity
+            assertEquals(
+                    createIntentFromString(CUSTOM_MAP_INTENT).getComponent().getClassName(),
+                    mapIntent.getComponent().getClassName());
+        });
+    }
+
+    @Test
+    public void onCreate_tosMapActivity_tosAccepted() {
+        doReturn(true).when(() -> AppLauncherUtils.tosAccepted(any()));
+        doReturn(createIntentFromString(TOS_MAP_INTENT))
+                .when(() -> CarLauncherUtils.getTosMapIntent(any()));
+
+        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
+
+        mActivityScenario.onActivity(activity -> {
+            Intent mapIntent = activity.getMapsIntent();
+            // If TOS is accepted, map intent is not replaced
+            assertNotEquals("com.android.car.carlauncher.homescreen.MapActivityTos",
+                    mapIntent.getComponent().getClassName());
+        });
+    }
+
+    @Test
+    public void onCreate_tosStateContentObserver_tosAccepted() {
+        doReturn(true).when(() -> AppLauncherUtils.tosAccepted(any()));
+
+        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
+        mActivityScenario.moveToState(Lifecycle.State.RESUMED);
+
+        mActivityScenario.onActivity(activity -> {
+            assertNull(activity.mTosContentObserver); // Content observer not setup
+        });
+    }
+
+    @Test
+    public void recreate_tosStateContentObserver_tosNotAccepted() {
+        ExtendedMockito
+                .doReturn(false, false, true)
+                .when(() -> AppLauncherUtils.tosAccepted(any()));
+
+        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
+        mActivityScenario.moveToState(Lifecycle.State.RESUMED);
+
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver); // Content observer is setup
+            activity.mTosContentObserver.onChange(true);
+        });
+        // Content observer is null after recreate
+        mActivityScenario.onActivity(activity -> assertNull(activity.mTosContentObserver));
+    }
+
+    private Intent createIntentFromString(String intentString) {
+        try {
+            return Intent.parseUri(intentString, Intent.URI_ANDROID_APP_SCHEME);
+        } catch (URISyntaxException se) {
+            return null;
+        }
+    }
+
+    private Set<String> tosDisabledPackages() {
+        Set<String> packages = new ArraySet<>();
+        packages.add("com.android.car.maps");
+        packages.add("com.android.car.assistant");
+        return packages;
     }
 }

@@ -100,7 +100,10 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     private static final String TEST_TOS_DISABLED_APP_2 = "com.android.car.test.tosdisabled2";
     private static final String TEST_VIDEO_APP = "com.android.car.test.video";
     private static final String TEST_MIRROR_APP_PKG = "com.android.car.test.mirroring";
-    private static final String TOS_INTENT_NAME = "#Intent;action="
+    private static final String TOS_INTENT_NAME = "intent:#Intent;action="
+            + "com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;"
+            + "S.mini_flow_extra=GTOS_GATED_FLOW;end";
+    private static final String TOS_INTENT_VERIFY = "#Intent;action="
             + "com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;"
             + "S.mini_flow_extra=GTOS_GATED_FLOW;end";
 
@@ -295,7 +298,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         verify(mMockContext, times(2)).startActivity(intentCaptor.capture(), any());
 
         String intentUri = intentCaptor.getAllValues().get(0).toUri(0);
-        assertEquals(TOS_INTENT_NAME, intentUri);
+        assertEquals(TOS_INTENT_VERIFY, intentUri);
     }
 
     @Test
@@ -332,7 +335,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         verify(mMockContext, times(2)).startActivity(intentCaptor.capture(), any());
 
         String intentUri = intentCaptor.getAllValues().get(0).toUri(0);
-        assertEquals(TOS_INTENT_NAME, intentUri);
+        assertEquals(TOS_INTENT_VERIFY, intentUri);
     }
 
     private void forceStopInit(ActivityManager activityManager, CarMediaManager carMediaManager,

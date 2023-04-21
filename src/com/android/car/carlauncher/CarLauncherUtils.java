@@ -70,6 +70,21 @@ public class CarLauncherUtils {
     }
 
     /**
+     * Return an intent used to launch the tos map activity
+     * @param context The application context
+     * @return Tos Intent, null if the config is incorrect
+     */
+    public static Intent getTosMapIntent(Context context) {
+        String intentString = context.getString(R.string.config_tosMapIntent);
+        try {
+            return Intent.parseUri(intentString, Intent.URI_ANDROID_APP_SCHEME);
+        } catch (URISyntaxException se) {
+            Log.w(TAG, "Invalid intent URI in config_tosMapIntent", se);
+            return null;
+        }
+    }
+
+    /**
      * Returns {@code true} if a proper limited map intent is configured via
      * {@code config_smallCanvasOptimizedMapIntent} string resource.
      */

@@ -121,7 +121,7 @@ public class AppLauncherUtils {
      *
      * @param app the requesting app's AppMetaData
      */
-    static void launchApp(Context context, Intent intent) {
+    public static void launchApp(Context context, Intent intent) {
         ActivityOptions options = ActivityOptions.makeBasic();
         options.setLaunchDisplayId(context.getDisplayId());
         context.startActivity(intent, options.toBundle());
@@ -259,10 +259,7 @@ public class AppLauncherUtils {
         Map<ComponentName, AppMetaData> launchablesMap = new HashMap<>(launchablesSize);
         Map<ComponentName, ResolveInfo> mediaServicesMap = new HashMap<>(mediaServices.size());
         Set<String> mEnabledPackages = new ArraySet<>(launchablesSize);
-        Set<String> tosDisabledPackages = getTosDisabledPackages(
-                context,
-                KEY_UNACCEPTED_TOS_DISABLED_APPS,
-                TOS_DISABLED_APPS_SEPARATOR);
+        Set<String> tosDisabledPackages = getTosDisabledPackages(context);
 
         // Process media services
         if ((appTypes & APP_TYPE_MEDIA_SERVICES) != 0) {
@@ -410,7 +407,10 @@ public class AppLauncherUtils {
                         isDistractionOptimized,
                         /* isMirroring = */ false,
                         isDisabledByTos,
-                        AppLauncherUtils::launchTosAcceptanceFlow,
+                        contextArg -> {
+                            Intent tosIntent = getIntentForTosAcceptanceFlow(contextArg);
+                            launchApp(contextArg, tosIntent);
+                        },
                         null
                 );
                 launchablesMap.put(componentName, appMetaData);
@@ -421,18 +421,20 @@ public class AppLauncherUtils {
     }
 
     /**
-     * Launches the TOS flow screen
+     * Gets the intent for launching the TOS acceptance flow
      *
-     * @param context the app context
+     * @param context The app context
+     * @return TOS intent, or null
      */
-    public static void launchTosAcceptanceFlow(Context context) {
+    @Nullable
+    public static Intent getIntentForTosAcceptanceFlow(Context context) {
         String tosIntentName =
                 context.getResources().getString(R.string.user_tos_activity_intent);
         try {
-            Intent intent = Intent.parseUri(tosIntentName, Intent.URI_ANDROID_APP_SCHEME);
-            AppLauncherUtils.launchApp(context, intent);
+            return Intent.parseUri(tosIntentName, Intent.URI_ANDROID_APP_SCHEME);
         } catch (URISyntaxException se) {
             Log.e(TAG, "Invalid intent URI in user_tos_activity_intent", se);
+            return null;
         }
     }
 
@@ -909,21 +911,17 @@ public class AppLauncherUtils {
      * Returns a set of packages that are disabled by tos
      *
      * @param context The application context
-     * @param settingsKey System preference key which has list of disabled apps
-     * @param sep Separator
      * @return Set of packages disabled by tos
      */
-    static Set<String> getTosDisabledPackages(
-            Context context,
-            String settingsKey,
-            String sep) {
+    static Set<String> getTosDisabledPackages(Context context) {
         ContentResolver contentResolverForUser = context.createContextAsUser(
                         UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
                 .getContentResolver();
-        String settingsValue = Settings.Secure.getString(contentResolverForUser, settingsKey);
+        String settingsValue = Settings.Secure.getString(contentResolverForUser,
+                KEY_UNACCEPTED_TOS_DISABLED_APPS);
         return TextUtils.isEmpty(settingsValue) ? new ArraySet<>()
                 : new ArraySet<>(Arrays.asList(settingsValue.split(
-                        sep)));
+                        TOS_DISABLED_APPS_SEPARATOR)));
     }
 
     /**
@@ -942,7 +940,7 @@ public class AppLauncherUtils {
      * @param context The application context
      * @return true if the user has accepted Tos, false otherwise
      */
-    private static boolean tosAccepted(Context context) {
+    static boolean tosAccepted(Context context) {
         ContentResolver contentResolverForUser = context.createContextAsUser(
                         UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
                 .getContentResolver();
