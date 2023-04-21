@@ -19,7 +19,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"Car Launcher"</string>
     <string name="reset_appgrid_title" msgid="814562055108028366">"將應用程式網格重設為按字母排序"</string>
-    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"此功能會移除所有自訂順序。您要繼續嗎？"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"此功能會移除所有自訂順序。你要繼續嗎？"</string>
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"所有應用程式"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"媒體應用程式"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"停止應用程式"</string>
