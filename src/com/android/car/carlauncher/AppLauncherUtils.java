@@ -64,6 +64,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
+import java.net.URISyntaxException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,8 +95,6 @@ public class AppLauncherUtils {
     private static final String TAG_USES = "uses";
     private static final String ATTRIBUTE_NAME = "name";
     private static final String TYPE_VIDEO = "video";
-    // TODO (b/276975875): deprecate current key
-    private static final String TOS_FIRST_RUN = "firstRun";
     // This value indicates if TOS has not been accepted by the user
     private static final String TOS_NOT_ACCEPTED = "1";
     static final String TOS_DISABLED_APPS_SEPARATOR = ",";
@@ -425,12 +424,14 @@ public class AppLauncherUtils {
      * @param context the app context
      */
     public static void launchTosAcceptanceFlow(Context context) {
-        // TODO (b/276779487): Need to launch a different intent while in driving state
         String tosIntentName =
                 context.getResources().getString(R.string.user_tos_activity_intent);
-
-        Intent intent = new Intent(tosIntentName).putExtra(TOS_FIRST_RUN, true);
-        AppLauncherUtils.launchApp(context, intent);
+        try {
+            Intent intent = Intent.parseUri(tosIntentName, Intent.URI_ANDROID_APP_SCHEME);
+            AppLauncherUtils.launchApp(context, intent);
+        } catch (URISyntaxException se) {
+            Log.e(TAG, "Invalid intent URI in user_tos_activity_intent", se);
+        }
     }
 
     private static Consumer<Pair<Context, View>> buildShortcuts(String packageName,
