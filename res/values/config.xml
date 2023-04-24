@@ -88,4 +88,8 @@
         the passenger Launcher role too.
     -->
     <string name="config_passengerLauncherComponent">com.android.car.multidisplay/.launcher.LauncherActivity</string>
+
+    <!-- Boolean value to indicate if the secondary descriptive text of homescreen cards
+         without controls should have multiple lines -->
+    <bool name="config_homecard_single_line_secondary_descriptive_text">true</bool>
 </resources>
