@@ -48,4 +48,10 @@
     <string name="recents_empty_state_text" msgid="6703106170272215731">"कोणतेही अलीकडील आयटम नाहीत"</string>
     <string name="recents_clear_all_text" msgid="2088678071417053923">"सर्व साफ करा"</string>
     <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"अ‍ॅप उपलब्ध नाही"</string>
+    <!-- no translation found for banner_title_text (8769404950674630387) -->
+    <skip />
+    <!-- no translation found for banner_review_button_text (8263234087487949865) -->
+    <skip />
+    <!-- no translation found for banner_dismiss_button_text (333850829842822963) -->
+    <skip />
 </resources>
