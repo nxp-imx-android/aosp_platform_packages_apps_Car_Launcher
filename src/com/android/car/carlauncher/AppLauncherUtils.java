@@ -37,9 +37,8 @@ import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -54,16 +53,12 @@ import android.view.View;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import com.google.common.collect.Sets;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,13 +69,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Util class that contains helper method used by app launcher classes.
  */
 public class AppLauncherUtils {
     private static final String TAG = "AppLauncherUtils";
+    private static final String ANDROIDX_CAR_APP_LAUNCHABLE = "androidx.car.app.launchable";
 
     @Retention(SOURCE)
     @IntDef({APP_TYPE_LAUNCHABLES, APP_TYPE_MEDIA_SERVICES})
@@ -89,10 +84,6 @@ public class AppLauncherUtils {
     static final int APP_TYPE_LAUNCHABLES = 1;
     static final int APP_TYPE_MEDIA_SERVICES = 2;
 
-    private static final String TAG_AUTOMOTIVE_APP = "automotiveApp";
-    private static final String TAG_USES = "uses";
-    private static final String ATTRIBUTE_NAME = "name";
-    private static final String TYPE_VIDEO = "video";
     static final String PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR = ";";
 
     // Max no. of uses tags in automotiveApp XML. This is an arbitrary limit to be defensive
@@ -200,17 +191,12 @@ public class AppLauncherUtils {
      * launcher activities and media services.
      *
      * @param appsToHide            A (possibly empty) list of apps (package names) to hide
-     * @param customMediaComponents A (possibly empty) list of media components (component names)
-     *                              that shouldn't be shown in Launcher because their applications'
-     *                              launcher activities will be shown
      * @param appTypes              Types of apps to show (e.g.: all, or media sources only)
      * @param openMediaCenter       Whether launcher should navigate to media center when the
      *                              user selects a media source.
      * @param launcherApps          The {@link LauncherApps} system service
      * @param carPackageManager     The {@link CarPackageManager} system service
      * @param packageManager        The {@link PackageManager} system service
-     * @param videoAppPredicate     Predicate that checks if a given {@link ResolveInfo} resolves
-     *                              to a video app. See {@link #VideoAppPredicate}. Media-services
      *                              of such apps are always excluded.
      * @param carMediaManager       The {@link CarMediaManager} system service
      * @return a new {@link LauncherAppsInfo}
@@ -219,13 +205,11 @@ public class AppLauncherUtils {
     static LauncherAppsInfo getLauncherApps(
             Context context,
             @NonNull Set<String> appsToHide,
-            @NonNull Set<String> customMediaComponents,
             @AppTypes int appTypes,
             boolean openMediaCenter,
             LauncherApps launcherApps,
             CarPackageManager carPackageManager,
             PackageManager packageManager,
-            @NonNull Predicate<ResolveInfo> videoAppPredicate,
             CarMediaManager carMediaManager,
             ShortcutsListener shortcutsListener,
             String mirroringAppPkgName,
@@ -242,9 +226,6 @@ public class AppLauncherUtils {
                 packageManager.queryIntentServices(
                         new Intent(MediaBrowserService.SERVICE_INTERFACE),
                         PackageManager.GET_RESOLVED_FILTER));
-        // Exclude Media Services from Video apps from being considered. These apps should offer a
-        // normal Launcher Activity as an entry point.
-        mediaServices.removeIf(videoAppPredicate);
 
         List<LauncherActivityInfo> availableActivities =
                 launcherApps.getActivityList(null, Process.myUserHandle());
@@ -254,6 +235,10 @@ public class AppLauncherUtils {
         Map<ComponentName, ResolveInfo> mediaServicesMap = new HashMap<>(mediaServices.size());
         Set<String> mEnabledPackages = new ArraySet<>(launchablesSize);
 
+        Set<String> customMediaComponents = Sets.newHashSet(
+                context.getResources().getStringArray(
+                        com.android.car.media.common.R.array.custom_media_packages));
+
         // Process media services
         if ((appTypes & APP_TYPE_MEDIA_SERVICES) != 0) {
             for (ResolveInfo info : mediaServices) {
@@ -262,8 +247,8 @@ public class AppLauncherUtils {
                 ComponentName componentName = new ComponentName(packageName, className);
                 mediaServicesMap.put(componentName, info);
                 mEnabledPackages.add(packageName);
-                if (shouldAddToLaunchables(componentName, appsToHide, customMediaComponents,
-                        appTypes, APP_TYPE_MEDIA_SERVICES)) {
+                if (shouldAddToLaunchables(packageManager, componentName, appsToHide,
+                        customMediaComponents, appTypes, APP_TYPE_MEDIA_SERVICES)) {
                     final boolean isDistractionOptimized = true;
 
                     Intent intent = new Intent(Car.CAR_INTENT_ACTION_MEDIA_TEMPLATE);
@@ -296,8 +281,8 @@ public class AppLauncherUtils {
                 ComponentName componentName = info.getComponentName();
                 String packageName = componentName.getPackageName();
                 mEnabledPackages.add(packageName);
-                if (shouldAddToLaunchables(componentName, appsToHide, customMediaComponents,
-                        appTypes, APP_TYPE_LAUNCHABLES)) {
+                if (shouldAddToLaunchables(packageManager, componentName, appsToHide,
+                        customMediaComponents, appTypes, APP_TYPE_LAUNCHABLES)) {
                     boolean isDistractionOptimized =
                             isActivityDistractionOptimized(carPackageManager, packageName,
                                     info.getName());
@@ -334,8 +319,8 @@ public class AppLauncherUtils {
                 String packageName = info.activityInfo.packageName;
                 String className = info.activityInfo.name;
                 ComponentName componentName = new ComponentName(packageName, className);
-                if (!shouldAddToLaunchables(componentName, appsToHide, customMediaComponents,
-                        appTypes, APP_TYPE_LAUNCHABLES)) {
+                if (!shouldAddToLaunchables(packageManager, componentName, appsToHide,
+                        customMediaComponents, appTypes, APP_TYPE_LAUNCHABLES)) {
                     continue;
                 }
                 boolean isDistractionOptimized =
@@ -375,6 +360,52 @@ public class AppLauncherUtils {
         }
 
         return new LauncherAppsInfo(launchablesMap, mediaServicesMap);
+    }
+
+    /**
+     * Determine if the given media browse service is supported through media templates
+     */
+    public static boolean isMediaTemplate(PackageManager pm, ComponentName mbsComponentName) {
+        Bundle metaData = null;
+        try {
+            metaData = pm.getServiceInfo(
+                    mbsComponentName,
+                    PackageManager.GET_META_DATA)
+                    .metaData;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Service for Component " + mbsComponentName + " was not found");
+            return false;
+        }
+
+        if (metaData != null && metaData.containsKey(ANDROIDX_CAR_APP_LAUNCHABLE)) {
+            boolean launchable = metaData.getBoolean(ANDROIDX_CAR_APP_LAUNCHABLE);
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(TAG, "MBS for " + mbsComponentName
+                        + " is opted " + (launchable ? "in" : "out"));
+            }
+            return launchable;
+        }
+
+        // No explicit declaration. For backward compatibility, keep MBS only for media apps
+        String packageName = mbsComponentName.getPackageName();
+        try {
+            if (isLegacyMediaApp(pm, packageName)) {
+                Log.d(TAG, "Including " + mbsComponentName + "  for media app " + packageName);
+                return true;
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Package " + packageName + " was not found");
+        }
+        Log.d(TAG, "Skipping MBS for " + mbsComponentName
+                + " belonging to non media app " + packageName);
+        return false;
+    }
+
+    /** Determine if it's a legacy media app that doesn't have a launcher activity*/
+    private static boolean isLegacyMediaApp(
+            PackageManager pm, String packageName) throws PackageManager.NameNotFoundException {
+        // a media app doesn't have a launcher activity
+        return pm.getLaunchIntentForPackage(packageName) == null;
     }
 
     private static Consumer<Pair<Context, View>> buildShortcuts(String packageName,
@@ -557,150 +588,6 @@ public class AppLauncherUtils {
         return false;
     }
 
-    /**
-     * Predicate that can be used to check if a given {@link ResolveInfo} resolves to a Video app.
-     */
-    static class VideoAppPredicate implements Predicate<ResolveInfo> {
-        private final PackageManager mPackageManager;
-
-        VideoAppPredicate(PackageManager packageManager) {
-            mPackageManager = packageManager;
-        }
-
-        @Override
-        public boolean test(ResolveInfo resolveInfo) {
-            String packageName = resolveInfo != null ? getPackageName(resolveInfo) : null;
-            if (packageName == null) {
-                Log.w(TAG, "Unable to determine packageName from resolveInfo");
-                return false;
-            }
-            List<String> automotiveAppTypes =
-                    getAutomotiveAppTypes(mPackageManager, getPackageName(resolveInfo));
-            return automotiveAppTypes.contains(TYPE_VIDEO);
-        }
-
-        protected String getPackageName(ResolveInfo resolveInfo) {
-            // A valid ResolveInfo should have exactly one of these set.
-            if (resolveInfo.activityInfo != null) {
-                return resolveInfo.activityInfo.packageName;
-            }
-            if (resolveInfo.serviceInfo != null) {
-                return resolveInfo.serviceInfo.packageName;
-            }
-            if (resolveInfo.providerInfo != null) {
-                return resolveInfo.providerInfo.packageName;
-            }
-            // Unexpected case.
-            return null;
-        }
-    }
-
-
-    /**
-     * Returns whether app identified by {@code packageName} declares itself as a video app.
-     */
-    public static boolean isVideoApp(PackageManager packageManager, String packageName) {
-        return getAutomotiveAppTypes(packageManager, packageName).contains(TYPE_VIDEO);
-    }
-
-    /**
-     * Queries an app manifest and resources to determine the types of AAOS app it declares itself
-     * as.
-     *
-     * @param packageManager {@link PackageManager} to query.
-     * @param packageName App package.
-     * @return List of AAOS app-types from XML resources.
-     */
-    public static List<String> getAutomotiveAppTypes(PackageManager packageManager,
-            String packageName) {
-        ApplicationInfo appInfo;
-        Resources appResources;
-        try {
-            appInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-            appResources = packageManager.getResourcesForApplication(appInfo);
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Unexpected package not found for: " + packageName, e);
-            return new ArrayList<>();
-        }
-
-        int resourceId =
-                appInfo.metaData != null
-                        ? appInfo.metaData.getInt("com.android.automotive", -1) : -1;
-        if (resourceId == -1) {
-            return new ArrayList<>();
-        }
-        try (XmlResourceParser parser = appResources.getXml(resourceId)) {
-            return parseAutomotiveAppTypes(parser);
-        }
-    }
-
-    @VisibleForTesting
-    static List<String> parseAutomotiveAppTypes(XmlPullParser parser) {
-        try {
-            // This pattern for parsing can be seen in Javadocs for XmlPullParser.
-            List<String> appTypes = new ArrayList<>();
-            ArrayDeque<String> tagStack = new ArrayDeque<>();
-            int eventType = parser.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    String tag = parser.getName();
-                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "Start tag " + tag);
-                    }
-                    tagStack.addFirst(tag);
-                    if (!validTagStack(tagStack)) {
-                        Log.w(TAG, "Invalid XML; tagStack: " + tagStack);
-                        return new ArrayList<>();
-                    }
-                    if (TAG_USES.equals(tag)) {
-                        String nameValue =
-                                parser.getAttributeValue(/* namespace= */ null, ATTRIBUTE_NAME);
-                        if (TextUtils.isEmpty(nameValue)) {
-                            Log.w(TAG, "Invalid XML; uses tag with missing/empty name attribute");
-                            return new ArrayList<>();
-                        }
-                        appTypes.add(nameValue);
-                        if (appTypes.size() > MAX_APP_TYPES) {
-                            Log.w(TAG, "Too many uses tags in automotiveApp tag");
-                            return new ArrayList<>();
-                        }
-                        if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                            Log.v(TAG, "Found appType: " + nameValue);
-                        }
-                    }
-                } else if (eventType == XmlPullParser.END_TAG) {
-                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                        Log.v(TAG, "End tag " + parser.getName());
-                    }
-                    tagStack.removeFirst();
-                }
-                eventType = parser.next();
-            }
-            return appTypes;
-        } catch (XmlPullParserException | IOException e) {
-            Log.w(TAG, "Unexpected exception whiling parsing XML resource", e);
-            return new ArrayList<>();
-        }
-    }
-
-    private static boolean validTagStack(ArrayDeque<String> tagStack) {
-        // Expected to be called after a new tag is pushed on this stack.
-        // Ensures that XML is of form:
-        // <automotiveApp>
-        //     <uses/>
-        //     <uses/>
-        //     ....
-        // </automotiveApp>
-        switch (tagStack.size()) {
-            case 1:
-                return TAG_AUTOMOTIVE_APP.equals(tagStack.peekFirst());
-            case 2:
-                return TAG_USES.equals(tagStack.peekFirst());
-            default:
-                return false;
-        }
-    }
-
     private static List<ResolveInfo> getDisabledActivities(Context context,
             PackageManager packageManager, Set<String> enabledPackages) {
         ContentResolver contentResolverForUser = context.createContextAsUser(
@@ -731,7 +618,8 @@ public class AppLauncherUtils {
         return disabledActivities;
     }
 
-    private static boolean shouldAddToLaunchables(@NonNull ComponentName componentName,
+    private static boolean shouldAddToLaunchables(PackageManager packageManager,
+            @NonNull ComponentName componentName,
             @NonNull Set<String> appsToHide,
             @NonNull Set<String> customMediaComponents,
             @AppTypes int appTypesToShow,
@@ -745,11 +633,23 @@ public class AppLauncherUtils {
                 // For a media service in customMediaComponents, if its application's launcher
                 // activity will be shown in the Launcher, don't show the service's icon in the
                 // Launcher.
-                if (customMediaComponents.contains(componentName.flattenToString())
-                        && (appTypesToShow & APP_TYPE_LAUNCHABLES) != 0) {
-                    return false;
+                if (customMediaComponents.contains(componentName.flattenToString())) {
+                    if ((appTypesToShow & APP_TYPE_LAUNCHABLES) != 0) {
+                        if (Log.isLoggable(TAG, Log.DEBUG)) {
+                            Log.d(TAG, "MBS for custom media app " + componentName
+                                    + " is skipped in app launcher");
+                        }
+                        return false;
+                    }
+                    // Media switcher use case should still show
+                    if (Log.isLoggable(TAG, Log.DEBUG)) {
+                        Log.d(TAG, "MBS for custom media app " + componentName
+                                + " is included in media switcher");
+                    }
+                    return true;
                 }
-                return true;
+                // Only Keep MBS that is a media template
+                return isMediaTemplate(packageManager, componentName);
             // Process activities
             case APP_TYPE_LAUNCHABLES:
                 return true;

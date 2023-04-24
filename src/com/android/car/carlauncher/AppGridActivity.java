@@ -109,7 +109,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private boolean mShowAllApps = true;
     private boolean mShowToolbar = true;
     private final Set<String> mHiddenApps = new HashSet<>();
-    private final Set<String> mCustomMediaComponents = new HashSet<>();
     private PackageManager mPackageManager;
     private UsageStatsManager mUsageStatsManager;
     private AppInstallUninstallReceiver mInstallUninstallReceiver;
@@ -256,13 +255,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
             Set<String> appsToHide = mShowAllApps ? Collections.emptySet() : mHiddenApps;
             mAppsInfo = AppLauncherUtils.getLauncherApps(getApplicationContext(),
                     appsToHide,
-                    mCustomMediaComponents,
                     mMode.mAppTypes,
                     mMode.mOpenMediaCenter,
                     getSystemService(LauncherApps.class),
                     mCarPackageManager,
                     mPackageManager,
-                    new AppLauncherUtils.VideoAppPredicate(mPackageManager),
                     mCarMediaManager,
                     AppGridActivity.this,
                     mMirroringPackageName,
@@ -303,8 +300,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         );
         mCar = Car.createCar(this, mCarConnectionListener);
         mHiddenApps.addAll(Arrays.asList(getResources().getStringArray(R.array.hidden_apps)));
-        mCustomMediaComponents.addAll(
-                Arrays.asList(getResources().getStringArray(R.array.custom_media_packages)));
         setContentView(R.layout.app_grid_activity);
         updateMode();
 
