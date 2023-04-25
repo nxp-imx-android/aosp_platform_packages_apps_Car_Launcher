@@ -17,23 +17,34 @@
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageView
+        android:id="@+id/task_dismiss_button"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/task_thumbnail"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        android:src="@drawable/ic_recent_dismiss"
+        android:visibility="gone"
+        style="@style/RecentTaskDismissButton"/>
 
     <ImageView
         android:id="@+id/task_icon"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/task_thumbnail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/task_thumbnail"
         app:layout_constraintVertical_chainStyle="packed"
         style="@style/RecentTaskIcon"/>
     <ImageView
         android:id="@+id/task_thumbnail"
         app:layout_constrainedHeight="true"
+        app:layout_constraintTop_toBottomOf="@id/task_icon"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/task_icon"
         style="@style/RecentTaskThumbnail"/>
 </merge>

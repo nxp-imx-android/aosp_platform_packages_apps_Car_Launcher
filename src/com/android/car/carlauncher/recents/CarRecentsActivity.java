@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.view.WindowMetrics;
 import android.widget.Toast;
@@ -58,6 +59,8 @@ public class CarRecentsActivity extends AppCompatActivity implements
     private Animator mClearAllAnimator;
     private NonDOHiddenPackageProvider mNonDOHiddenPackageProvider;
     private Set<String> mPackagesToHideFromRecents;
+    private TaskSnapHelper mTaskSnapHelper;
+    private ViewTreeObserver.OnTouchModeChangeListener mOnTouchModeChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,9 +118,19 @@ public class CarRecentsActivity extends AppCompatActivity implements
                 getResources().getFloat(R.dimen.recent_task_swiped_threshold)));
         itemTouchHelper.attachToRecyclerView(mRecentsRecyclerView);
 
-        TaskSnapHelper snapHelper = new TaskSnapHelper(gridSpanCount,
+        mTaskSnapHelper = new TaskSnapHelper(gridSpanCount,
                 getResources().getInteger(R.integer.config_recents_columns_per_page));
-        snapHelper.attachToRecyclerView(mRecentsRecyclerView);
+        mTaskSnapHelper.attachToRecyclerView(mRecentsRecyclerView);
+
+        mOnTouchModeChangeListener = isInTouchMode -> {
+            if (isInTouchMode) {
+                mTaskSnapHelper.attachToRecyclerView(mRecentsRecyclerView);
+            } else {
+                mTaskSnapHelper.attachToRecyclerView(null);
+            }
+        };
+        mRecentsRecyclerView.getViewTreeObserver()
+                .addOnTouchModeChangeListener(mOnTouchModeChangeListener);
 
         mRecentsRecyclerView.setAdapter(new RecentTasksAdapter(this, getLayoutInflater(),
                 itemTouchHelper));
@@ -159,7 +172,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
     protected void onStop() {
         super.onStop();
         mRecentTasksViewModel.clearCache();
-        mRecentsRecyclerView.resetPadding();
     }
 
     @Override
@@ -169,6 +181,8 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mRecentTasksViewModel.terminate();
         mClearAllAnimator.end();
         mClearAllAnimator.removeAllListeners();
+        mRecentsRecyclerView.getViewTreeObserver()
+                .removeOnTouchModeChangeListener(mOnTouchModeChangeListener);
     }
 
     @Override
