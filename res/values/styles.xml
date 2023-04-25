@@ -44,23 +44,35 @@
         <item name="android:background">@*android:color/car_list_divider</item>
     </style>
 
-    <style name="RecentTasksList">
+    <style name="RecentTasksListFocusArea">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">0dp</item>
+    </style>
+
+    <style name="RecentTasksList">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:paddingTop">37dp</item>
-        <item name="android:paddingBottom">52dp</item>
+        <item name="android:paddingBottom">32dp</item>
         <item name="android:scrollbars">none</item>
         <item name="android:clipToPadding">false</item>
+    </style>
+
+    <style name="ClearAllRecentTasksButtonFocusArea">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
     </style>
 
     <style name="ClearAllRecentTasksButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">45dp</item>
+        <item name="android:layout_marginBottom">25dp</item>
+        <item name="android:paddingVertical">20dp</item>
+        <item name="android:paddingHorizontal">48dp</item>
         <item name="android:textSize">24sp</item>
         <item name="android:letterSpacing">0.03</item>
         <item name="android:textColor">@color/clear_all_recents_text_color</item>
-        <item name="android:background">@android:color/transparent</item>
+        <item name="android:background">@drawable/recent_clear_all_button_background</item>
     </style>
 
     <style name="RecentTaskIcon">
@@ -77,5 +89,12 @@
         <item name="android:clipToOutline">true</item>
         <item name="android:scaleType">centerCrop</item>
         <item name="android:adjustViewBounds">false</item>
+    </style>
+
+    <style name="RecentTaskDismissButton">
+        <item name="android:layout_width">@dimen/recent_task_dismiss_button_size</item>
+        <item name="android:layout_height">@dimen/recent_task_dismiss_button_size</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">@drawable/recent_dismiss_button_background</item>
     </style>
 </resources>

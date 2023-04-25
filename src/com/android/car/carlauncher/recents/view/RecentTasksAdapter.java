@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -70,7 +71,13 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
 
     public RecentTasksAdapter(Context context, LayoutInflater layoutInflater,
             ItemTouchHelper itemTouchHelper) {
-        mRecentTasksViewModel = RecentTasksViewModel.getInstance();
+        this(context, layoutInflater, itemTouchHelper, RecentTasksViewModel.getInstance());
+    }
+
+    @VisibleForTesting
+    public RecentTasksAdapter(Context context, LayoutInflater layoutInflater,
+            ItemTouchHelper itemTouchHelper, RecentTasksViewModel recentTasksViewModel) {
+        mRecentTasksViewModel = recentTasksViewModel;
         mRecentTasksViewModel.addRecentTasksChangeListener(this);
         mLayoutInflater = layoutInflater;
         mItemTouchHelper = itemTouchHelper;
@@ -108,13 +115,13 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
             Drawable taskIcon = mRecentTasksViewModel.getRecentTaskIconAt(position);
             Bitmap taskThumbnail = mRecentTasksViewModel.getRecentTaskThumbnailAt(position);
             boolean isDisabled = mRecentTasksViewModel.isRecentTaskDisabled(position);
-            View.OnClickListener onClickListener =
+            View.OnClickListener openTaskClickListener =
                     isDisabled ? mRecentTasksViewModel.getDisabledTaskClickListener(position)
                             : new TaskClickListener(position);
-            View.OnTouchListener taskTouchListener = new TaskTouchListener(mStartSwipeThreshold,
-                    mItemTouchHelper, holder);
-            taskViewHolder.bind(taskIcon, taskThumbnail, isDisabled, onClickListener,
-                    taskTouchListener);
+            taskViewHolder.bind(taskIcon, taskThumbnail, isDisabled, openTaskClickListener,
+                    /* dismissTaskClickListener= */ new DismissTaskClickListener(position),
+                    /* taskTouchListener= */
+                    new TaskTouchListener(mStartSwipeThreshold, mItemTouchHelper, holder));
             return;
         }
         holder.bind(mHiddenTaskIcon, mHiddenThumbnail);
@@ -140,6 +147,22 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
                 }
             }
         });
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull BaseViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        if (holder instanceof TaskViewHolder) {
+            ((TaskViewHolder) holder).attachedToWindow();
+        }
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull BaseViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        if (holder instanceof TaskViewHolder) {
+            ((TaskViewHolder) holder).detachedFromWindow();
+        }
     }
 
     @Override
@@ -206,8 +229,7 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
                 mSpanCount, mColumnsPerPage);
         int emptyViewHolderCountChange = newEmptyViewHolderCount - mEmptyViewHolderCount;
         if (emptyViewHolderCountChange > 0) {
-            notifyItemRangeInserted(getItemCount(),
-                    emptyViewHolderCountChange);
+            notifyItemRangeInserted(getItemCount(), emptyViewHolderCountChange);
         } else if (emptyViewHolderCountChange < 0) {
             notifyItemRangeRemoved(mRecentTasksViewModel.getRecentTasksSize(),
                     Math.abs(emptyViewHolderCountChange));
@@ -224,6 +246,11 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
         int itemsPerPage = colPerPage * spanSize;
         int lastPageItems = (listLength % itemsPerPage);
         return lastPageItems == 0 ? 0 : itemsPerPage - lastPageItems;
+    }
+
+    @VisibleForTesting
+    void setEmptyViewHolderCount(int emptyViewHolderCount) {
+        mEmptyViewHolderCount = emptyViewHolderCount;
     }
 }
 
