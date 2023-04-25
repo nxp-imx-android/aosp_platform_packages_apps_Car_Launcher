@@ -24,16 +24,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.carlauncher.recents.RecentTasksViewModel;
 
-import org.jetbrains.annotations.NotNull;
-
 public class TaskTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
     private final RecentTasksViewModel mRecentTasksViewModel;
     private final float mSwipeThreshold;
 
     public TaskTouchHelperCallback(int dragDirs, int swipeDirs, float swipeThreshold) {
         super(dragDirs, swipeDirs);
-        mRecentTasksViewModel = RecentTasksViewModel.getInstance();
         mSwipeThreshold = swipeThreshold;
+        mRecentTasksViewModel = RecentTasksViewModel.getInstance();
     }
 
     @Override
@@ -43,9 +41,9 @@ public class TaskTouchHelperCallback extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
-    public boolean onMove(@NotNull RecyclerView recyclerView,
-            @NotNull RecyclerView.ViewHolder viewHolder,
-            @NotNull RecyclerView.ViewHolder viewHolder1) {
+    public boolean onMove(@NonNull RecyclerView recyclerView,
+            @NonNull RecyclerView.ViewHolder viewHolder,
+            @NonNull RecyclerView.ViewHolder viewHolder1) {
         // no op
         return false;
     }

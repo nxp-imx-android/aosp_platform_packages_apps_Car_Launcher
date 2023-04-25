@@ -21,7 +21,7 @@
       (Ex: date time temp) -->
     <item name="contextual_screen_percentage" type="dimen" format="float">.6</item>
 
-     <!--Used for the space between the top, and bottom of the screen and the content -->
+    <!--Used for the space between the top, and bottom of the screen and the content -->
     <dimen name="vertical_border_size">@*android:dimen/car_padding_1</dimen>
     <!-- Used for the space between the start, and end of the screen and the content -->
     <dimen name="horizontal_border_size">@*android:dimen/car_padding_1</dimen>
@@ -119,7 +119,6 @@
     <dimen name="recent_task_icon_size">48dp</dimen>
     <dimen name="recent_task_thumbnail_radius">8dp</dimen>
     <dimen name="recent_task_col_space">64dp</dimen>
-    <dimen name="recent_task_row_space">12dp</dimen>
     <!-- The fraction that a recent task should move(from its original position) to
          be considered as swiped -->
     <item name="recent_task_swiped_threshold" type="dimen" format="float">0.3</item>
@@ -128,4 +127,10 @@
          other handlers. -->
     <item name="recent_task_start_swipe_threshold" type="dimen" format="float">5</item>
     <item name="disabled_recent_task_alpha" type="dimen" format="float">0.35</item>
+
+    <!--  task width can be calculated using the following formula:
+      available height of thumbnail * width of screen / height of screen between the insets
+      This will allow most task thumbnails to be displayed without cropping. -->
+    <dimen name="recent_task_width_first">860dp</dimen>
+    <dimen name="recent_task_width">343dp</dimen>
 </resources>
