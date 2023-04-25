@@ -16,65 +16,120 @@
 
 package com.android.car.carlauncher.recents.view;
 
+import android.annotation.IntDef;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.recents.RecentTasksViewModel;
 
-import org.jetbrains.annotations.NotNull;
-
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
-public class RecentTasksAdapter extends RecyclerView.Adapter<TaskViewHolder> implements
+/**
+ * Adapter that is used to display the list of Recent tasks.
+ * ViewTypes in this adapter:
+ * - FIRST_ITEM_VIEW_TYPE:  First task has special handling since it is takes up more area.
+ * - HIDDEN_ITEM_VIEW_TYPE: Hidden ViewHolders are added to/removed from the end to always maintain
+ *                          complete pages.
+ * - DEFAULT_ITEM_VIEW_TYPE: all other view holders that hold a recent task.
+ */
+public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> implements
         RecentTasksViewModel.RecentTasksChangeListener {
+    @IntDef({RecentsItemViewType.DEFAULT_ITEM_VIEW_TYPE, RecentsItemViewType.FIRST_ITEM_VIEW_TYPE,
+            RecentsItemViewType.HIDDEN_ITEM_VIEW_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface RecentsItemViewType {
+        int DEFAULT_ITEM_VIEW_TYPE = 0;
+        int FIRST_ITEM_VIEW_TYPE = 1;
+        int HIDDEN_ITEM_VIEW_TYPE = 2;
+    }
+
     private static final byte THUMBNAIL_UPDATED = 0x1; // 00000001
     private static final byte ICON_UPDATED = 0x2; // 00000010
     private final RecentTasksViewModel mRecentTasksViewModel;
     private final LayoutInflater mLayoutInflater;
     private final ItemTouchHelper mItemTouchHelper;
+    private final float mStartSwipeThreshold;
+    private final int mColumnsPerPage;
+    private final Drawable mHiddenTaskIcon;
+    private final Bitmap mHiddenThumbnail;
+    private int mEmptyViewHolderCount;
+    private int mSpanCount;
 
-    public RecentTasksAdapter(LayoutInflater layoutInflater, ItemTouchHelper itemTouchHelper) {
+    public RecentTasksAdapter(Context context, LayoutInflater layoutInflater,
+            ItemTouchHelper itemTouchHelper) {
         mRecentTasksViewModel = RecentTasksViewModel.getInstance();
         mRecentTasksViewModel.addRecentTasksChangeListener(this);
         mLayoutInflater = layoutInflater;
         mItemTouchHelper = itemTouchHelper;
+        mColumnsPerPage = context.getResources().getInteger(
+                R.integer.config_recents_columns_per_page);
+        mStartSwipeThreshold = context.getResources().getFloat(
+                R.dimen.recent_task_start_swipe_threshold);
+        mHiddenTaskIcon = context.getResources().getDrawable(
+                R.drawable.recent_task_hidden_icon, /* theme= */ null);
+        mHiddenThumbnail = mRecentTasksViewModel.createThumbnail(
+                Color.argb(/* alpha= */ 0, /* red= */ 0, /* green= */ 0, /* blue= */ 0));
     }
 
-    @NotNull
+    @NonNull
     @Override
-    public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
-                        /* attachToRoot= */ false), mItemTouchHelper);
+    public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+            @RecentsItemViewType int viewType) {
+        switch (viewType) {
+            case RecentsItemViewType.FIRST_ITEM_VIEW_TYPE:
+                return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view_first,
+                        parent, /* attachToRoot= */ false));
+            case RecentsItemViewType.HIDDEN_ITEM_VIEW_TYPE:
+                return new BaseViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
+                        /* attachToRoot= */ false));
+            default:
+                return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
+                        /* attachToRoot= */ false));
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Drawable taskIcon = mRecentTasksViewModel.getRecentTaskIconAt(position);
-        Bitmap taskThumbnail = mRecentTasksViewModel.getRecentTaskThumbnailAt(position);
-        boolean isDisabled = mRecentTasksViewModel.isRecentTaskDisabled(position);
-        View.OnClickListener onClickListener =
-                isDisabled ? mRecentTasksViewModel.getDisabledTaskClickListener(position)
-                        : new TaskClickListener(position);
-        holder.bind(taskIcon, taskThumbnail, isDisabled, onClickListener);
+    public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
+        if (holder instanceof TaskViewHolder) {
+            TaskViewHolder taskViewHolder = (TaskViewHolder) holder;
+            Drawable taskIcon = mRecentTasksViewModel.getRecentTaskIconAt(position);
+            Bitmap taskThumbnail = mRecentTasksViewModel.getRecentTaskThumbnailAt(position);
+            boolean isDisabled = mRecentTasksViewModel.isRecentTaskDisabled(position);
+            View.OnClickListener onClickListener =
+                    isDisabled ? mRecentTasksViewModel.getDisabledTaskClickListener(position)
+                            : new TaskClickListener(position);
+            View.OnTouchListener taskTouchListener = new TaskTouchListener(mStartSwipeThreshold,
+                    mItemTouchHelper, holder);
+            taskViewHolder.bind(taskIcon, taskThumbnail, isDisabled, onClickListener,
+                    taskTouchListener);
+            return;
+        }
+        holder.bind(mHiddenTaskIcon, mHiddenThumbnail);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TaskViewHolder holder, int position,
+    public void onBindViewHolder(@NonNull BaseViewHolder holder, int position,
             @NonNull List<Object> payloads) {
         if (payloads.isEmpty()) {
             super.onBindViewHolder(holder, position, payloads);
             return;
         }
         payloads.forEach(payload -> {
-            if (payload instanceof Byte updateType) {
+            if (payload instanceof Byte) {
+                byte updateType = (Byte) payload;
                 if ((updateType & THUMBNAIL_UPDATED) > 0) {
                     Bitmap taskThumbnail = mRecentTasksViewModel.getRecentTaskThumbnailAt(position);
                     holder.updateThumbnail(taskThumbnail);
@@ -89,12 +144,39 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<TaskViewHolder> imp
 
     @Override
     public int getItemCount() {
-        return mRecentTasksViewModel.getRecentTasksSize();
+        return mRecentTasksViewModel.getRecentTasksSize() + mEmptyViewHolderCount;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == 0) {
+            return RecentsItemViewType.FIRST_ITEM_VIEW_TYPE;
+        }
+        if (position >= mRecentTasksViewModel.getRecentTasksSize()) {
+            return RecentsItemViewType.HIDDEN_ITEM_VIEW_TYPE;
+        }
+        return RecentsItemViewType.DEFAULT_ITEM_VIEW_TYPE;
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        if (recyclerView.getLayoutManager() instanceof GridLayoutManager) {
+            GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+            mSpanCount = layoutManager.getSpanCount();
+        }
     }
 
     @Override
     public void onRecentTasksFetched() {
-        this.notifyDataSetChanged();
+        int tasksCount = mRecentTasksViewModel.getRecentTasksSize();
+        if (tasksCount <= 0) {
+            return;
+        }
+        mEmptyViewHolderCount = calculateEmptyItemsNeededToCompletePages(
+                mRecentTasksViewModel.getRecentTasksSize() - 1,
+                mSpanCount, mColumnsPerPage);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -109,13 +191,39 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<TaskViewHolder> imp
 
     @Override
     public void onAllRecentTasksRemoved(int countRemoved) {
+        countRemoved += mEmptyViewHolderCount;
+        mEmptyViewHolderCount = 0;
         this.notifyItemRangeRemoved(0, countRemoved);
     }
 
     @Override
     public void onRecentTaskRemoved(int position) {
         notifyItemRemoved(position);
-        notifyItemRangeChanged(position, getItemCount() - position);
+        notifyItemRangeChanged(position, mRecentTasksViewModel.getRecentTasksSize() - position);
+
+        int newEmptyViewHolderCount = calculateEmptyItemsNeededToCompletePages(
+                mRecentTasksViewModel.getRecentTasksSize() - 1,
+                mSpanCount, mColumnsPerPage);
+        int emptyViewHolderCountChange = newEmptyViewHolderCount - mEmptyViewHolderCount;
+        if (emptyViewHolderCountChange > 0) {
+            notifyItemRangeInserted(getItemCount(),
+                    emptyViewHolderCountChange);
+        } else if (emptyViewHolderCountChange < 0) {
+            notifyItemRangeRemoved(mRecentTasksViewModel.getRecentTasksSize(),
+                    Math.abs(emptyViewHolderCountChange));
+        }
+        mEmptyViewHolderCount = newEmptyViewHolderCount;
+    }
+
+    private int calculateEmptyItemsNeededToCompletePages(int listLength, int spanSize,
+            int colPerPage) {
+        if (listLength <= 0) {
+            return 0;
+        }
+
+        int itemsPerPage = colPerPage * spanSize;
+        int lastPageItems = (listLength % itemsPerPage);
+        return lastPageItems == 0 ? 0 : itemsPerPage - lastPageItems;
     }
 }
 
