@@ -19,6 +19,7 @@ package com.android.car.carlauncher.recents.view;
 import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.WindowMetrics;
 
 import androidx.annotation.NonNull;
@@ -76,6 +77,52 @@ public class RecentsRecyclerView extends RecyclerView {
     }
 
     /**
+     * Handles {@link View.FOCUS_FORWARD} and {@link View.FOCUS_BACKWARD} events.
+     * For the 2 elements, A and B, the focus should go forward from A's dismiss button to
+     * A's thumbnail to B's dismiss button to B's thumbnail and backward in the inverted order.
+     */
+    @Override
+    public View focusSearch(View focused, int direction) {
+        if (direction != View.FOCUS_FORWARD && direction != View.FOCUS_BACKWARD) {
+            return super.focusSearch(focused, direction);
+        }
+        boolean goForward = direction == View.FOCUS_FORWARD;
+        if (shouldBeReversed()) {
+            goForward = !goForward;
+        }
+        ViewHolder focusedViewHolder = findContainingViewHolder(focused);
+        if (focusedViewHolder == null) {
+            return null;
+        }
+
+        View taskDismissButton = focusedViewHolder.itemView.findViewById(R.id.task_dismiss_button);
+        View taskThumbnail = focusedViewHolder.itemView.findViewById(R.id.task_thumbnail);
+        if (focused == taskDismissButton && goForward) {
+            return taskThumbnail;
+        }
+        if (focused == taskThumbnail && !goForward) {
+            return taskDismissButton;
+        }
+
+        int position = focusedViewHolder.getAbsoluteAdapterPosition();
+        if (position == NO_POSITION) {
+            return null;
+        }
+        if (goForward) {
+            ++position;
+        } else {
+            --position;
+        }
+
+        ViewHolder nextFocusViewHolder = findViewHolderForAdapterPosition(position);
+        if (nextFocusViewHolder == null) {
+            return null;
+        }
+        return goForward ? nextFocusViewHolder.itemView.findViewById(R.id.task_dismiss_button)
+                : nextFocusViewHolder.itemView.findViewById(R.id.task_thumbnail);
+    }
+
+    /**
      * Resets the RecyclerView's start and end padding based on the Task list size,
      * recent task view width and window width where Recents activity is drawn.
      */
@@ -118,16 +165,19 @@ public class RecentsRecyclerView extends RecyclerView {
      * @param lastItemPadding  padding set to recyclerView to fit the last item.
      */
     private void setPadding(@Px int firstItemPadding, @Px int lastItemPadding) {
-        boolean isReverseLayout = false;
-        if (getLayoutManager() instanceof LinearLayoutManager) {
-            LinearLayoutManager lm = (LinearLayoutManager) getLayoutManager();
-            isReverseLayout = lm.getReverseLayout();
-        }
-        boolean shouldBeReversed = isLayoutRtl() ^ isReverseLayout;
+        boolean shouldBeReversed = shouldBeReversed();
         setPaddingRelative(
                 /* start= */ shouldBeReversed ? lastItemPadding : firstItemPadding,
                 getPaddingTop(),
                 /* end= */ shouldBeReversed ? firstItemPadding : lastItemPadding,
                 getPaddingBottom());
+    }
+
+    private boolean shouldBeReversed() {
+        boolean isLayoutReversed = false;
+        if (getLayoutManager() instanceof LinearLayoutManager) {
+            isLayoutReversed = ((LinearLayoutManager) getLayoutManager()).getReverseLayout();
+        }
+        return isLayoutRtl() ^ isLayoutReversed;
     }
 }

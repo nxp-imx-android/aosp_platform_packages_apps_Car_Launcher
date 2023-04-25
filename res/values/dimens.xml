@@ -117,6 +117,7 @@
 
     <!-- Recent task -->
     <dimen name="recent_task_icon_size">48dp</dimen>
+    <dimen name="recent_task_dismiss_button_size">@dimen/recent_task_icon_size</dimen>
     <dimen name="recent_task_thumbnail_radius">8dp</dimen>
     <dimen name="recent_task_col_space">64dp</dimen>
     <!-- The fraction that a recent task should move(from its original position) to
@@ -131,6 +132,6 @@
     <!--  task width can be calculated using the following formula:
       available height of thumbnail * width of screen / height of screen between the insets
       This will allow most task thumbnails to be displayed without cropping. -->
-    <dimen name="recent_task_width_first">860dp</dimen>
-    <dimen name="recent_task_width">343dp</dimen>
+    <dimen name="recent_task_width_first">894dp</dimen>
+    <dimen name="recent_task_width">359dp</dimen>
 </resources>
