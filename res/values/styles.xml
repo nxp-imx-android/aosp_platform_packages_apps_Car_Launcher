@@ -47,8 +47,8 @@
     <style name="RecentTasksList">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">0dp</item>
-        <item name="android:paddingTop">51dp</item>
-        <item name="android:layout_marginBottom">52dp</item>
+        <item name="android:paddingTop">37dp</item>
+        <item name="android:paddingBottom">52dp</item>
         <item name="android:scrollbars">none</item>
         <item name="android:clipToPadding">false</item>
     </style>
@@ -66,16 +66,16 @@
     <style name="RecentTaskIcon">
         <item name="android:layout_width">@dimen/recent_task_icon_size</item>
         <item name="android:layout_height">@dimen/recent_task_icon_size</item>
+        <item name="android:layout_marginTop">14dp</item>
+        <item name="android:layout_marginBottom">14dp</item>
     </style>
 
     <style name="RecentTaskThumbnail">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">0dp</item>
-        <item name="android:layout_marginTop">14dp</item>
         <item name="android:background">@drawable/recent_task_shape</item>
         <item name="android:clipToOutline">true</item>
-        <item name="android:scaleType">fitXY</item>
-        <item name="android:adjustViewBounds">true</item>
+        <item name="android:scaleType">centerCrop</item>
+        <item name="android:adjustViewBounds">false</item>
     </style>
-
 </resources>

@@ -94,19 +94,20 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="launcher_card_corner_radius"/>
       <item type="dimen" name="main_screen_widget_margin"/>
       <item type="dimen" name="media_top_margin"/>
+      <item type="dimen" name="page_indicator_edge_corner_radius"/>
+      <item type="dimen" name="page_indicator_height"/>
       <item type="dimen" name="page_snap_threshold"/>
       <item type="dimen" name="panel_margin"/>
       <item type="dimen" name="playback_controls_margin"/>
-      <item type="dimen" name="page_indicator_edge_corner_radius"/>
-      <item type="dimen" name="page_indicator_height"/>
       <item type="dimen" name="recent_apps_divider_margin"/>
       <item type="dimen" name="recent_apps_row_height"/>
       <item type="dimen" name="recent_task_col_space"/>
       <item type="dimen" name="recent_task_icon_size"/>
-      <item type="dimen" name="recent_task_row_space"/>
       <item type="dimen" name="recent_task_start_swipe_threshold"/>
       <item type="dimen" name="recent_task_swiped_threshold"/>
       <item type="dimen" name="recent_task_thumbnail_radius"/>
+      <item type="dimen" name="recent_task_width"/>
+      <item type="dimen" name="recent_task_width_first"/>
       <item type="dimen" name="search_bar_drawable_text_padding"/>
       <item type="dimen" name="search_bar_margin"/>
       <item type="dimen" name="search_box_height"/>
@@ -136,6 +137,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="ic_mute_activatable"/>
       <item type="drawable" name="ic_search_black"/>
       <item type="drawable" name="page_indicator_bar"/>
+      <item type="drawable" name="recent_task_hidden_icon"/>
       <item type="drawable" name="recent_task_shape"/>
       <item type="id" name="app_icon"/>
       <item type="id" name="app_item"/>
@@ -197,6 +199,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="integer" name="config_msg_register_mirroring_pkg_code"/>
       <item type="integer" name="config_msg_send_mirroring_pkg_code"/>
       <item type="integer" name="config_msg_unregister_mirroring_pkg_code"/>
+      <item type="integer" name="config_recents_columns_per_page"/>
       <item type="integer" name="ms_background_highlight_duration"/>
       <item type="integer" name="ms_drop_animation_delay"/>
       <item type="integer" name="ms_long_press_animation_duration"/>
@@ -223,6 +226,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="optional_seek_bar_with_times"/>
       <item type="layout" name="recent_apps_row"/>
       <item type="layout" name="recent_task_view"/>
+      <item type="layout" name="recent_task_view_first"/>
+      <item type="layout" name="recent_task_view_inner"/>
       <item type="layout" name="recents_activity"/>
       <item type="layout" name="tap_for_more_text"/>
       <item type="layout" name="text_block"/>
