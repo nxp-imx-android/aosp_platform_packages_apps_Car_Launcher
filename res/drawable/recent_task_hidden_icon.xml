@@ -14,16 +14,11 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/test_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#3d3d3d"
-        android:clipToPadding="false"
-    />
-</FrameLayout>
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:shape="oval">
+    <solid android:color="@android:color/transparent" />
+    <size
+        android:width="@dimen/recent_task_icon_size"
+        android:height="@dimen/recent_task_icon_size"/>
+</shape>

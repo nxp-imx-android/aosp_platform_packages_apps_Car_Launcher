@@ -77,6 +77,9 @@ public class RecentTasksViewModel {
     private Bitmap mDefaultThumbnail;
     private boolean isInitialised;
     private int mDisplayId = DEFAULT_DISPLAY;
+    private int mWindowWidth;
+    private int mWindowHeight;
+    private Rect mWindowInsets;
 
     private RecentTasksViewModel() {
         mDataStore = RecentTasksProvider.getInstance();
@@ -104,7 +107,10 @@ public class RecentTasksViewModel {
         isInitialised = true;
         mDataStore.setRecentsDataChangeListener(mRecentsDataChangeListener);
         mDisplayId = displayId;
-        createDefaultThumbnail(windowWidth, windowHeight, windowInsets, defaultThumbnailColor);
+        mWindowWidth = windowWidth;
+        mWindowHeight = windowHeight;
+        mWindowInsets = windowInsets;
+        mDefaultThumbnail = createThumbnail(defaultThumbnailColor);
     }
 
     /**
@@ -300,12 +306,20 @@ public class RecentTasksViewModel {
                 /* height= */ bitmap.getHeight() - insets.top - insets.bottom);
     }
 
-    private void createDefaultThumbnail(int width, int height, @NonNull Rect insets,
+    /**
+     * @return a new {@link Bitmap} with aspect ratio of the current window and the given
+     * {@code color}.
+     */
+    public Bitmap createThumbnail(@ColorInt Integer color) {
+        return createThumbnail(mWindowWidth, mWindowHeight, mWindowInsets, color);
+    }
+
+    private Bitmap createThumbnail(int width, int height, @NonNull Rect insets,
             @ColorInt Integer color) {
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawColor(color);
-        mDefaultThumbnail = cropInsets(bitmap, insets);
+        return cropInsets(bitmap, insets);
     }
 
     private boolean safeCheckIndex(List<?> list, int index) {
