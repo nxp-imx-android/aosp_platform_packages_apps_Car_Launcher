@@ -23,13 +23,24 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.content.Context;
+import android.filterfw.geometry.Point;
+import android.graphics.Insets;
+import android.graphics.Rect;
+import android.os.SystemClock;
+import android.util.Size;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowMetrics;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -50,6 +61,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(AndroidJUnit4.class)
 public class AppGridPageSnapperTest {
@@ -296,6 +308,94 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 1))).check(matches(isCompletelyDisplayed()));
     }
 
+    @Test
+    public void testOnFlingRight() {
+        mActivityRule.getScenario().onActivity(
+                activity -> activity.setContentView(R.xml.empty_test_activity));
+        onView(withId(R.id.list)).check(matches(isDisplayed()));
+        TestAdapter adapter = new TestAdapter(100);
+
+        mActivityRule.getScenario().onActivity(activity -> {
+            Context testableContext = mock(Context.class);
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(testableContext, mRowNo,
+                    GridLayoutManager.HORIZONTAL, false);
+            rv.setLayoutManager(gridLayoutManager);
+            rv.setAdapter(adapter);
+        });
+
+        // Check if first item on the first page is displayed
+        onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
+        mActivityRule.getScenario().onActivity(activity -> {
+            Context testableContext = (Context) spy(activity);
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            mAppGridPageSnapCallback = mock(AppGridPageSnapper.AppGridPageSnapCallback.class);
+            mPageSnapper = spy(new AppGridPageSnapper(
+                    testableContext,
+                    mColNo,
+                    mRowNo,
+                    mAppGridPageSnapCallback));
+            mPageSnapper.attachToRecyclerView(rv);
+        });
+
+        // Check if first item on the first page is displayed
+        onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
+        // Check if last item on the first page is displayed
+        onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
+        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        simulateFling(Direction.Right);
+        verify(mPageSnapper, times(1)).findFirstItemOnNextPage(anyInt());
+
+        // Check if first item on the second page is displayed
+        onView(withText(getItemText(0, 1))).check(matches(isCompletelyDisplayed()));
+    }
+
+    @Test
+    public void testOnFlingLeft() {
+        mActivityRule.getScenario().onActivity(
+                activity -> activity.setContentView(R.xml.empty_test_activity));
+        onView(withId(R.id.list)).check(matches(isDisplayed()));
+        TestAdapter adapter = new TestAdapter(100);
+
+        mActivityRule.getScenario().onActivity(activity -> {
+            Context testableContext = mock(Context.class);
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(testableContext, mRowNo,
+                    GridLayoutManager.HORIZONTAL, false);
+            rv.setLayoutManager(gridLayoutManager);
+            rv.setAdapter(adapter);
+        });
+
+        // Check if first item on the first page is displayed
+        onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
+        mActivityRule.getScenario().onActivity(activity -> {
+            Context testableContext = (Context) spy(activity);
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            mAppGridPageSnapCallback = mock(AppGridPageSnapper.AppGridPageSnapCallback.class);
+            mPageSnapper = spy(new AppGridPageSnapper(
+                    testableContext,
+                    mColNo,
+                    mRowNo,
+                    mAppGridPageSnapCallback));
+            mPageSnapper.attachToRecyclerView(rv);
+        });
+
+        // Check if first item on the first page is displayed
+        onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
+        // Check if last item on the first page is displayed
+        onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
+        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        simulateFling(Direction.Right);
+        simulateFling(Direction.Left);
+
+        verify(mPageSnapper, times(1)).findFirstItemOnNextPage(anyInt());
+        verify(mPageSnapper, times(1)).findFirstItemOnPrevPage(anyInt());
+
+
+        // Check if first item on the first page is displayed
+        onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
+    }
+
     private static class TestAdapter extends RecyclerView.Adapter<TestViewHolder> {
 
         protected final List<String> mData;
@@ -406,5 +506,72 @@ public class AppGridPageSnapperTest {
     private String getItemText(int order, int page) {
         int itemNo = order + page * mItemPerPage;
         return "test " + itemNo;
+    }
+
+    public enum Direction {
+        Left, Right;
+    }
+
+    protected void simulateFling(Direction direction) {
+        Point size = new Point();
+        AtomicReference<Size> legacySize = new AtomicReference<>();
+        float height; // height will be at top of the screen
+        float width; // width will be rightmost location of the screen
+        mActivityRule.getScenario().onActivity(activity -> {
+            final WindowMetrics metrics = activity.getWindowManager().getCurrentWindowMetrics();
+            // Gets all excluding insets
+            final WindowInsets windowInsets = metrics.getWindowInsets();
+            final Insets insets = windowInsets.getInsetsIgnoringVisibility(
+                    WindowInsets.Type.navigationBars()
+                            | WindowInsets.Type.displayCutout());
+
+            int insetsWidth = insets.right + insets.left;
+            int insetsHeight = insets.top + insets.bottom;
+
+            // Legacy size that Display#getSize reports
+            final Rect bounds = metrics.getBounds();
+            legacySize.set(new Size(bounds.width() - insetsWidth,
+                    bounds.height() - insetsHeight));
+        });
+        height = size.y; // height will be at top of the screen
+        width = size.x; // width will be rightmost location of the screen
+
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+
+        float finalXStart;
+        float finalYStart;
+        float finalXEnd;
+        float finalYEnd;
+        if (direction == Direction.Right) {
+            finalXStart = width - 50;
+            finalXEnd = width - 150;
+        } else {
+            finalXStart = width - 150;
+            finalXEnd = width - 50;
+        }
+        finalYStart = height - 50;
+        finalYEnd = height - 50;
+
+        final AtomicReference<MotionEvent>[] event = new AtomicReference[]{new AtomicReference<>()};
+
+        mActivityRule.getScenario().onActivity(activity -> {
+            event[0].set(MotionEvent.obtain(downTime, eventTime,
+                    MotionEvent.ACTION_DOWN, finalXStart / 2, finalYStart / 2, 0));
+            activity.findViewById(R.id.list).dispatchTouchEvent(event[0].get());
+            int stepCount = 5;
+            for (int i = 0; i < stepCount; i++) {
+                event[0].set(MotionEvent.obtain(downTime,
+                        eventTime + i,
+                        MotionEvent.ACTION_MOVE,
+                        finalXStart + (finalXEnd - finalXStart) * (i + 1) / stepCount,
+                        finalYStart + (finalYEnd - finalYStart) * (i + 1) / stepCount,
+                        0));
+                activity.findViewById(R.id.list).dispatchTouchEvent(event[0].get());
+            }
+            event[0].set(MotionEvent.obtain(downTime, eventTime + stepCount + 1,
+                    MotionEvent.ACTION_UP, finalXEnd, finalYEnd, 0));
+            activity.findViewById(R.id.list).dispatchTouchEvent(event[0].get());
+        });
     }
 }
