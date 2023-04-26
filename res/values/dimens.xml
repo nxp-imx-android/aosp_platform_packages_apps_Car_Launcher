@@ -111,6 +111,9 @@
     trigger page snap to the next page -->
     <item name="page_snap_threshold" format="float" type="dimen">0.3</item>
 
+    <!-- Velocity value of a swipe to trigger a fling to the next page -->
+    <item name="fling_threshold" format="float" type="dimen">1000</item>
+
     <!-- distance that users must drag (hold and attempt to move the app icon) to initiate
     drag and drop for reordering app icons. -->
     <dimen name="threshold_to_start_drag_drop">8dp</dimen>
