@@ -88,6 +88,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="descriptive_text_only_top_margin"/>
       <item type="dimen" name="descriptive_text_with_controls_top_margin"/>
       <item type="dimen" name="disabled_recent_task_alpha"/>
+      <item type="dimen" name="fling_threshold"/>
       <item type="dimen" name="home_card_button_size"/>
       <item type="dimen" name="horizontal_border_size"/>
       <item type="dimen" name="icon_size"/>
