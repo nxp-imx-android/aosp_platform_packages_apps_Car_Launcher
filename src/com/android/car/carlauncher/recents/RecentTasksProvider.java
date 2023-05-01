@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -50,6 +51,8 @@ import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.wm.shell.recents.IRecentTasks;
 import com.android.wm.shell.util.GroupedRecentTaskInfo;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,17 +64,19 @@ import java.util.concurrent.Executors;
 public class RecentTasksProvider implements RecentTasksProviderInterface {
     private static final String TAG = "RecentTasksProviderInterface";
     private static final boolean DEBUG = Build.IS_DEBUGGABLE;
-    private static final Executor RECENTS_MODEL_EXECUTOR = Executors.newSingleThreadExecutor();
-    private static final Handler UI_THREAD_HANDLER = new Handler(Looper.getMainLooper());
+    private static Executor sRecentsModelExecutor = Executors.newSingleThreadExecutor();
+    private static Handler sMainHandler = new Handler(Looper.getMainLooper());
     private static RecentTasksProvider sInstance;
-    private final ActivityManagerWrapper mActivityManagerWrapper;
-    private final PackageManagerWrapper mPackageManagerWrapper;
     private Context mContext;
     private IRecentTasks mRecentTasksProxy;
+    private ActivityManagerWrapper mActivityManagerWrapper;
+    private PackageManagerWrapper mPackageManagerWrapper;
+    private Drawable mDefaultIcon;
     private List<Integer> mRecentTaskIds;
-    private Map<Integer, Task> mRecentTaskIdToTaskMap;
+    @VisibleForTesting
+    Map<Integer, Task> mRecentTaskIdToTaskMap;
     private RecentsDataChangeListener mRecentsDataChangeListener;
-    private boolean isInitialised;
+    private boolean mIsInitialised;
     private final TaskStackChangeListener mTaskStackChangeListener = new TaskStackChangeListener() {
         @Override
         public boolean onTaskSnapshotChanged(int taskId, ThumbnailData snapshot) {
@@ -80,7 +85,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             }
             mRecentTaskIdToTaskMap.get(taskId).thumbnail = snapshot;
             if (mRecentsDataChangeListener != null) {
-                UI_THREAD_HANDLER.post(
+                sMainHandler.post(
                         () -> mRecentsDataChangeListener.recentTaskThumbnailChange(taskId));
             }
             return true;
@@ -97,7 +102,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             }
             mRecentTaskIdToTaskMap.get(taskInfo.taskId).icon = icon;
             if (mRecentsDataChangeListener != null) {
-                UI_THREAD_HANDLER.post(
+                sMainHandler.post(
                         () -> mRecentsDataChangeListener.recentTaskIconChange(taskInfo.taskId));
             }
         }
@@ -108,6 +113,8 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
         mPackageManagerWrapper = PackageManagerWrapper.getInstance();
         mRecentTaskIds = new ArrayList<>();
         mRecentTaskIdToTaskMap = new HashMap<>();
+        mDefaultIcon = Objects.requireNonNull(Resources.getSystem().getDrawable(
+                android.R.drawable.sym_def_app_icon, /* theme= */ null));
     }
 
     public static RecentTasksProvider getInstance() {
@@ -118,10 +125,10 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
     }
 
     public void init(Context context, IRecentTasks recentTasksProxy) {
-        if (isInitialised) {
+        if (mIsInitialised) {
             return;
         }
-        isInitialised = true;
+        mIsInitialised = true;
         mContext = context;
         mRecentTasksProxy = recentTasksProxy;
         TaskStackChangeListeners.getInstance().registerTaskStackListener(mTaskStackChangeListener);
@@ -131,7 +138,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
      * Terminates connections and sets shared service variables to {@code null}.
      */
     public void terminate() {
-        isInitialised = false;
+        mIsInitialised = false;
         mContext = null;
         mRecentTasksProxy = null;
         TaskStackChangeListeners.getInstance().unregisterTaskStackListener(
@@ -144,7 +151,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
         if (mRecentTasksProxy == null) {
             return;
         }
-        RECENTS_MODEL_EXECUTOR.execute(() -> {
+        sRecentsModelExecutor.execute(() -> {
             GroupedRecentTaskInfo[] groupedRecentTasks;
             try {
                 // todo: b/271498799 use ActivityManagerWrapper.getInstance().getCurrentUserId()
@@ -194,7 +201,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
                 Log.d(TAG, "Automotive doesn't support TYPE_SPLIT and TYPE_FREEFORM tasks");
             }
             if (mRecentsDataChangeListener != null) {
-                UI_THREAD_HANDLER.post(() -> mRecentsDataChangeListener.recentTasksFetched());
+                sMainHandler.post(() -> mRecentsDataChangeListener.recentTasksFetched());
             }
         });
     }
@@ -210,6 +217,13 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
     public ComponentName getRecentTaskComponentName(int taskId) {
         return mRecentTaskIdToTaskMap.containsKey(taskId)
                 ? mRecentTaskIdToTaskMap.get(taskId).getTopComponent() : null;
+    }
+
+    @Nullable
+    @Override
+    public Intent getRecentTaskBaseIntent(int taskId) {
+        return mRecentTaskIdToTaskMap.containsKey(taskId)
+                ? mRecentTaskIdToTaskMap.get(taskId).getKey().baseIntent : null;
     }
 
     @Nullable
@@ -255,7 +269,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
     public boolean openTopRunningTask(@NonNull Class<? extends Activity> recentsActivity,
             int displayId) {
         ActivityManager.RunningTaskInfo[] runningTasks = mActivityManagerWrapper.getRunningTasks(
-                /* filterOnlyVisibleRecents= */false, displayId);
+                /* filterOnlyVisibleRecents= */ false, displayId);
         boolean foundRecentsTask = false;
         for (ActivityManager.RunningTaskInfo runningTask : runningTasks) {
             if (runningTask == null) {
@@ -263,7 +277,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             }
             if (foundRecentsTask) {
                 // this is the running task after recents task, attempt to open
-                return ActivityManagerWrapper.getInstance().startActivityFromRecents(
+                return mActivityManagerWrapper.startActivityFromRecents(
                         runningTask.taskId, /* options= */ null);
             }
             String topComponent = runningTask.topActivity != null
@@ -305,7 +319,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
     }
 
     private void getRecentTaskThumbnailAsync(int taskId) {
-        RECENTS_MODEL_EXECUTOR.execute(() -> {
+        sRecentsModelExecutor.execute(() -> {
             ThumbnailData thumbnailData = mActivityManagerWrapper.getTaskThumbnail(
                     taskId, /* isLowResolution= */ false);
             if (!mRecentTaskIdToTaskMap.containsKey(taskId)) {
@@ -313,14 +327,15 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             }
             mRecentTaskIdToTaskMap.get(taskId).thumbnail = thumbnailData;
             if (mRecentsDataChangeListener != null) {
-                UI_THREAD_HANDLER.post(
+                sMainHandler.post(
                         () -> mRecentsDataChangeListener.recentTaskThumbnailChange(taskId));
             }
         });
     }
 
-    private void getRecentTaskIconAsync(int taskId) {
-        RECENTS_MODEL_EXECUTOR.execute(() -> {
+    @VisibleForTesting
+    void getRecentTaskIconAsync(int taskId) {
+        sRecentsModelExecutor.execute(() -> {
             Task task = mRecentTaskIdToTaskMap.get(taskId);
             Task.TaskKey key = task.key;
             Drawable drawableIcon = getIconFromTaskDescription(task.taskDescription);
@@ -332,8 +347,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
                     drawableIcon = activityInfo.loadIcon(mContext.getPackageManager());
                 } else {
                     // set it a default icon
-                    drawableIcon = Objects.requireNonNull(Resources.getSystem().getDrawable(
-                            android.R.drawable.sym_def_app_icon, /* theme= */ null));
+                    drawableIcon = mDefaultIcon;
                 }
             }
             if (!mRecentTaskIdToTaskMap.containsKey(taskId)) {
@@ -341,7 +355,7 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
             }
             mRecentTaskIdToTaskMap.get(taskId).icon = drawableIcon;
             if (mRecentsDataChangeListener != null) {
-                UI_THREAD_HANDLER.post(
+                sMainHandler.post(
                         () -> mRecentsDataChangeListener.recentTaskIconChange(taskId));
             }
         });
@@ -360,5 +374,30 @@ public class RecentTasksProvider implements RecentTasksProviderInterface {
                     taskDescription.getIconFilename(), mContext.getUserId());
         }
         return icon != null ? new BitmapDrawable(mContext.getResources(), icon) : null;
+    }
+
+    @VisibleForTesting
+    static void setExecutor(Executor executor) {
+        sRecentsModelExecutor = executor;
+    }
+
+    @VisibleForTesting
+    static void setHandler(Handler handler) {
+        sMainHandler = handler;
+    }
+
+    @VisibleForTesting
+    void setActivityManagerWrapper(ActivityManagerWrapper activityManagerWrapper) {
+        mActivityManagerWrapper = activityManagerWrapper;
+    }
+
+    @VisibleForTesting
+    void setPackageManagerWrapper(PackageManagerWrapper packageManagerWrapper) {
+        mPackageManagerWrapper = packageManagerWrapper;
+    }
+
+    @VisibleForTesting
+    void setDefaultIcon(Drawable icon) {
+        mDefaultIcon = icon;
     }
 }
