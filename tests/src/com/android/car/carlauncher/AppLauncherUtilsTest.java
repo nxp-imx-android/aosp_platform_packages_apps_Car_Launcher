@@ -113,6 +113,11 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         mParserFactory.setNamespaceAware(true);
     }
 
+    @Override
+    protected void onSessionBuilder(CustomMockitoSessionBuilder session) {
+        session.spyStatic(Settings.Secure.class);
+    }
+
     @Test
     public void testGetLauncherAppsWithEnableAndLaunchDisabledApps() {
         mockSettingsStringCalls();
@@ -434,7 +439,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         doReturn(TEST_DISABLED_APP_1 + PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR
                 + TEST_DISABLED_APP_2)
                 .when(() -> Settings.Secure.getString(any(ContentResolver.class),
-                eq(KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE)));
+                        eq(KEY_PACKAGES_DISABLED_ON_RESOURCE_OVERUSE)));
     }
 
     private void launchAllApps(List<AppMetaData> appMetaData) {
