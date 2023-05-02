@@ -74,6 +74,9 @@ public class MediaViewModelTest {
     private MutableLiveData<PlaybackViewModel.PlaybackStateWrapper> mLivePlaybackState =
             new MutableLiveData<>();
 
+    private MutableLiveData<PlaybackViewModel.PlaybackController> mPlaybackController =
+            new MutableLiveData<>();
+
     @Mock
     private MediaSourceViewModel mSourceViewModel;
     @Mock
@@ -105,6 +108,7 @@ public class MediaViewModelTest {
         when(mPlaybackViewModel.getMediaSourceColors()).thenReturn(mLiveColors);
         when(mPlaybackViewModel.getProgress()).thenReturn(mLiveProgress);
         when(mPlaybackViewModel.getPlaybackStateWrapper()).thenReturn(mLivePlaybackState);
+        when(mPlaybackViewModel.getPlaybackController()).thenReturn(mPlaybackController);
         mMediaViewModel.setPresenter(mPresenter);
         mMediaViewModel.onCreate(ApplicationProvider.getApplicationContext());
         mSeekBarMax = ApplicationProvider.getApplicationContext().getResources().getInteger(
@@ -209,7 +213,7 @@ public class MediaViewModelTest {
         mLiveProgress.setValue(mProgress);
         mLiveColors.setValue(mColors);
 
-        verify(mPresenter, times(2)).onModelUpdated(mMediaViewModel, IS_TIME_AVAILABLE);
+        verify(mPresenter, times(1)).onModelUpdated(mMediaViewModel, false);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
         SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
