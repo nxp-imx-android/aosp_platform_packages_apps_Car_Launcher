@@ -30,7 +30,7 @@ import java.util.List;
  * For the audio card, the {@link AudioFragment} implements the View and displays information on
  * media from a {@link MediaViewModel}.
  */
-public class HomeAudioCardPresenter extends CardPresenter {
+public class HomeAudioCardPresenter extends CardPresenter implements AudioPresenter {
 
     private HomeCardInterface.Model mCurrentModel;
     private List<HomeCardInterface.Model> mModelList;
@@ -39,6 +39,14 @@ public class HomeAudioCardPresenter extends CardPresenter {
     @Override
     public void setModels(List<HomeCardInterface.Model> models) {
         mModelList = models;
+    }
+
+    protected List<HomeCardInterface.Model> getModels() {
+        return mModelList;
+    }
+
+    protected HomeCardInterface.Model getCurrentModel() {
+        return mCurrentModel;
     }
 
     /**
@@ -112,12 +120,8 @@ public class HomeAudioCardPresenter extends CardPresenter {
         super.onModelUpdated(model);
     }
 
-    void initializeControlsActionBar(View actionBar) {
-        // TODO(b/159452592): implement media control bar instead of using PlaybackControlsActionBar
-        // The PlaybackControlsActionBar requires direct access to the PlaybackViewModel, which
-        // directly connects a View to a Model. To fit the design of the home app, interactions
-        // should be mediated by the HomeAudioCardPresenter instead. Using these existing classes
-        // for now until the logic can be brought into the MediaViewModel.
+    @Override
+    public void initializeControlsActionBar(View actionBar) {
         ((PlaybackControlsActionBar) actionBar).setModel(mMediaViewModel.getPlaybackViewModel(),
                 getFragment().getViewLifecycleOwner());
     }
