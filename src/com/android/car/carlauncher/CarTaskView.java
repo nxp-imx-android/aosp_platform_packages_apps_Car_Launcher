@@ -28,7 +28,6 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
@@ -54,7 +53,7 @@ public class CarTaskView extends TaskView {
     private WindowContainerToken mTaskToken;
     private final SyncTransactionQueue mSyncQueue;
     private final Binder mInsetsOwner = new Binder();
-    private final SparseArray<InsetsFrameProvider> mInsets = new SparseArray<>();
+    private final SparseArray<Rect> mInsets = new SparseArray<>();
     private boolean mTaskViewReadySent;
     private TaskViewTaskController mTaskViewTaskController;
 
@@ -157,9 +156,7 @@ public class CarTaskView extends TaskView {
      * @param frame The rectangle area of the insets source.
      */
     public void addInsets(int index, int type, @NonNull Rect frame) {
-        InsetsFrameProvider p =
-                new InsetsFrameProvider(mInsetsOwner, index, type).setArbitraryRectangle(frame);
-        mInsets.append(InsetsSource.createId(mInsetsOwner, index, type), p);
+        mInsets.append(InsetsSource.createId(mInsetsOwner, index, type), frame);
 
         if (mTaskToken == null) {
             // The insets will be applied later as part of onTaskAppeared.
@@ -167,8 +164,7 @@ public class CarTaskView extends TaskView {
             return;
         }
         WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.addInsetsSource(mTaskToken,
-                p.getOwner(), p.getIndex(), p.getType(), p.getArbitraryRectangle());
+        wct.addInsetsSource(mTaskToken, mInsetsOwner, index, type, frame);
         mSyncQueue.queue(wct);
     }
 
@@ -212,9 +208,10 @@ public class CarTaskView extends TaskView {
         }
         WindowContainerTransaction wct = new WindowContainerTransaction();
         for (int i = 0; i < mInsets.size(); i++) {
-            final InsetsFrameProvider p = mInsets.valueAt(i);
-            wct.addInsetsSource(mTaskToken,
-                    p.getOwner(), p.getIndex(), p.getType(), p.getArbitraryRectangle());
+            final int id = mInsets.keyAt(i);
+            final Rect frame = mInsets.valueAt(i);
+            wct.addInsetsSource(mTaskToken, mInsetsOwner, InsetsSource.getIndex(id),
+                    InsetsSource.getType(id), frame);
         }
         mSyncQueue.queue(wct);
     }
