@@ -49,7 +49,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="color" name="recent_apps_line_divider_color"/>
       <item type="color" name="recents_background_color"/>
       <item type="color" name="seek_bar_color"/>
-      <item type="color" name="stop_caution_icon_color"/>
+      <item type="color" name="shortcuts_icon_color"/>
       <item type="color" name="tap_for_more_text_color"/>
       <item type="dimen" name="app_bar_height"/>
       <item type="dimen" name="app_grid_header_margin"/>
@@ -127,6 +127,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="control_bar_image_background"/>
       <item type="drawable" name="default_audio_background"/>
       <item type="drawable" name="dialer_button_active_state_circle"/>
+      <item type="drawable" name="ic_app_info"/>
       <item type="drawable" name="ic_apps_black"/>
       <item type="drawable" name="ic_arrow_back_black"/>
       <item type="drawable" name="ic_call_end"/>
@@ -239,6 +240,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="recents_activity"/>
       <item type="layout" name="tap_for_more_text"/>
       <item type="layout" name="text_block"/>
+      <item type="string" name="app_launcher_app_info_action"/>
       <item type="string" name="app_launcher_stop_app_action"/>
       <item type="string" name="app_launcher_stop_app_cant_stop_text"/>
       <item type="string" name="app_launcher_stop_app_dialog_text"/>
