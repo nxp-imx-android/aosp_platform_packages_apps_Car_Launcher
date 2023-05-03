@@ -39,6 +39,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.net.Uri;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -97,6 +98,7 @@ public class AppLauncherUtils {
     // Max no. of uses tags in automotiveApp XML. This is an arbitrary limit to be defensive
     // to bad input.
     private static final int MAX_APP_TYPES = 64;
+    private static final String PACKAGE_URI_PREFIX = "package:";
 
     private AppLauncherUtils() {
     }
@@ -379,31 +381,71 @@ public class AppLauncherUtils {
             CharSequence displayName, ShortcutsListener shortcutsListener) {
         return pair -> {
             CarUiShortcutsPopup carUiShortcutsPopup = new CarUiShortcutsPopup.Builder()
-                    .addShortcut(new CarUiShortcutsPopup.ShortcutItem() {
-                        @Override
-                        public CarUiShortcutsPopup.ItemData data() {
-                            return new CarUiShortcutsPopup.ItemData(
-                                    R.drawable.ic_force_stop_caution_icon,
-                                    pair.first.getResources().getString(
-                                            R.string.app_launcher_stop_app_action));
-                        }
-
-                        @Override
-                        public boolean onClick() {
-                            shortcutsListener.onShortcutsItemClick(packageName, displayName,
-                                    /* allowStopApp= */ true);
-                            return true;
-                        }
-
-                        @Override
-                        public boolean isEnabled() {
-                            return shouldAllowStopApp(packageName, pair.first);
-                        }
-                    }).build(pair.first,
-                            pair.second);
+                    .addShortcut(
+                            buildForceStopShortcut(packageName, displayName, pair.first,
+                                    shortcutsListener)
+                    )
+                    .addShortcut(buildAppInfoShortcut(packageName, pair.first))
+                    .build(pair.first,
+                            pair.second
+                    );
 
             carUiShortcutsPopup.show();
             shortcutsListener.onShortcutsShow(carUiShortcutsPopup);
+        };
+    }
+
+    private static CarUiShortcutsPopup.ShortcutItem buildForceStopShortcut(String packageName,
+            CharSequence displayName,
+            Context context,
+            ShortcutsListener shortcutsListener) {
+        return new CarUiShortcutsPopup.ShortcutItem() {
+            @Override
+            public CarUiShortcutsPopup.ItemData data() {
+                return new CarUiShortcutsPopup.ItemData(
+                        R.drawable.ic_force_stop_caution_icon,
+                        context.getResources().getString(
+                                R.string.app_launcher_stop_app_action));
+            }
+
+            @Override
+            public boolean onClick() {
+                shortcutsListener.onShortcutsItemClick(packageName, displayName,
+                        /* allowStopApp= */ true);
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return shouldAllowStopApp(packageName, context);
+            }
+        };
+    }
+
+    private static CarUiShortcutsPopup.ShortcutItem buildAppInfoShortcut(String packageName,
+            Context context) {
+        return new CarUiShortcutsPopup.ShortcutItem() {
+            @Override
+            public CarUiShortcutsPopup.ItemData data() {
+                return new CarUiShortcutsPopup.ItemData(
+                        R.drawable.ic_app_info,
+                        context.getResources().getString(
+                                R.string.app_launcher_app_info_action));
+            }
+
+            @Override
+            public boolean onClick() {
+                Uri packageURI = Uri.parse(PACKAGE_URI_PREFIX + packageName);
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        packageURI);
+                context.startActivity(intent);
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
         };
     }
 
