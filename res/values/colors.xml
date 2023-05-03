@@ -23,7 +23,7 @@
     <color name="dialer_button_icon_color">#FFFFFF</color>
     <color name="dialer_end_call_button_color">#EE675C</color>
     <color name="minimized_progress_bar_background">#5CFFFFFF</color>
-    <color name="stop_caution_icon_color">@*android:color/white</color>
+    <color name="shortcuts_icon_color">@*android:color/white</color>
     <color name="launcher_home_icon_color">@*android:color/car_accent_light</color>
     <color name="seek_bar_color">@*android:color/car_accent</color>
     <color name="page_indicator_bar_color">@*android:color/car_accent_light</color>
