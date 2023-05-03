@@ -47,6 +47,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Recents activity to display list of recent tasks in Car.
+ */
 public class CarRecentsActivity extends AppCompatActivity implements
         RecentTasksViewModel.RecentTasksChangeListener {
     public static final String OPEN_RECENT_TASK_ACTION =
@@ -210,7 +213,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
         }
     }
 
-    private void launchHomeIntent() {
+    /**
+     * Launches the Home Activity.
+     */
+    protected void launchHomeIntent() {
         Intent homeActivityIntent = new Intent(Intent.ACTION_MAIN);
         homeActivityIntent.addCategory(Intent.CATEGORY_HOME);
         homeActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
