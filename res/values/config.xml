@@ -76,4 +76,10 @@
     <string name="config_msg_mirroring_redirect_uri_key" translatable="false">msg_mirroring_redirect_uri_key</string>
     <!-- Number of columns in recents that should be included in a page when snapping -->
     <integer name="config_recents_columns_per_page">2</integer>
+
+    <!--
+        The Activity to use as a passenger Launcher, if empty, it assumes CarLauncher can do
+        the passenger Launcher role too.
+    -->
+    <string name="config_passengerLauncherComponent">com.android.car.multidisplay/.launcher.LauncherActivity</string>
 </resources>
