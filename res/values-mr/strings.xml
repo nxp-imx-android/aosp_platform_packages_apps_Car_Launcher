@@ -43,15 +43,11 @@
     <string name="hide_debug_apps" msgid="6128313544379622475">"डीबग केलेली ॲप्स लपवा"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"डीबग केलेली ॲप्स दाखवा"</string>
     <string name="times_separator" msgid="6180368193321715816">"/"</string>
-    <!-- no translation found for user_tos_activity_intent (6097193356935501673) -->
-    <skip />
+    <string name="user_tos_activity_intent" msgid="6097193356935501673">"intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end"</string>
     <string name="recents_empty_state_text" msgid="6703106170272215731">"कोणतेही अलीकडील आयटम नाहीत"</string>
     <string name="recents_clear_all_text" msgid="2088678071417053923">"सर्व साफ करा"</string>
     <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"अ‍ॅप उपलब्ध नाही"</string>
-    <!-- no translation found for banner_title_text (8769404950674630387) -->
-    <skip />
-    <!-- no translation found for banner_review_button_text (8263234087487949865) -->
-    <skip />
-    <!-- no translation found for banner_dismiss_button_text (333850829842822963) -->
-    <skip />
+    <string name="banner_title_text" msgid="8769404950674630387">"वापरकर्ता ToS बंद केलेली अ‍ॅप्स वापरण्यासाठी, वापरकर्ता ToS ला सहमती द्या"</string>
+    <string name="banner_review_button_text" msgid="8263234087487949865">"पुनरावलोकन करा"</string>
+    <string name="banner_dismiss_button_text" msgid="333850829842822963">"आता नाही"</string>
 </resources>
