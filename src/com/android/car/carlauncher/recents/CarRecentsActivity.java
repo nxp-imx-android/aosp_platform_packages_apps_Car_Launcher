@@ -60,7 +60,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     private Group mRecentTasksGroup;
     private View mEmptyStateView;
     private Animator mClearAllAnimator;
-    private NonDOHiddenPackageProvider mNonDOHiddenPackageProvider;
+    private NonDODisabledTaskProvider mNonDODisabledTaskProvider;
     private Set<String> mPackagesToHideFromRecents;
     private TaskSnapHelper mTaskSnapHelper;
     private ViewTreeObserver.OnTouchModeChangeListener mOnTouchModeChangeListener;
@@ -77,9 +77,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mRecentTasksViewModel = RecentTasksViewModel.getInstance();
         mRecentTasksViewModel.addRecentTasksChangeListener(this);
         mRecentTasksViewModel.addHiddenTaskProvider(
-                (packageName, className) -> mPackagesToHideFromRecents.contains(packageName));
-        mNonDOHiddenPackageProvider = new NonDOHiddenPackageProvider(this);
-        mRecentTasksViewModel.setDisabledTaskProvider(mNonDOHiddenPackageProvider);
+                (packageName, className, baseIntent) ->
+                        mPackagesToHideFromRecents.contains(packageName));
+        mNonDODisabledTaskProvider = new NonDODisabledTaskProvider(this);
+        mRecentTasksViewModel.setDisabledTaskProvider(mNonDODisabledTaskProvider);
         WindowMetrics windowMetrics = this.getWindowManager().getCurrentWindowMetrics();
         mRecentTasksViewModel.init(
                 /* displayId= */ getDisplay().getDisplayId(),
@@ -180,7 +181,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mNonDOHiddenPackageProvider.terminate();
+        mNonDODisabledTaskProvider.terminate();
         mRecentTasksViewModel.terminate();
         mClearAllAnimator.end();
         mClearAllAnimator.removeAllListeners();
