@@ -31,9 +31,15 @@ import android.widget.Toast;
 
 import com.android.car.carlauncher.R;
 
-public class NonDOHiddenPackageProvider implements RecentTasksViewModel.DisabledTaskProvider,
+import com.google.common.annotations.VisibleForTesting;
+
+/**
+ * {@link RecentTasksViewModel.DisabledTaskProvider} to disable non Driving Optimised activities
+ * when driving.
+ */
+public class NonDODisabledTaskProvider implements RecentTasksViewModel.DisabledTaskProvider,
         CarUxRestrictionsManager.OnUxRestrictionsChangedListener {
-    private static final String TAG = "NonDOHiddenPackageProvider";
+    private static final String TAG = "NonDODisabledTaskProvider";
     private static final boolean DEBUG = Build.IS_DEBUGGABLE;
     private final Car mCar;
     private final CarUxRestrictionsManager mCarUxRestrictionsManager;
@@ -42,18 +48,28 @@ public class NonDOHiddenPackageProvider implements RecentTasksViewModel.Disabled
     private final RecentTasksViewModel mRecentTasksViewModel;
     private boolean mIsDistractionOptimizationRequired;
 
-    public NonDOHiddenPackageProvider(Context context) {
-        mCar = Car.createCar(context);
+    public NonDODisabledTaskProvider(Context context) {
+        this(context, Car.createCar(context), RecentTasksViewModel.getInstance());
+    }
+
+    @VisibleForTesting
+    NonDODisabledTaskProvider(Context context, Car car,
+            RecentTasksViewModel recentTasksViewModel) {
+        mCar = car;
         mCarUxRestrictionsManager = (CarUxRestrictionsManager) mCar.getCarManager(
                 Car.CAR_UX_RESTRICTION_SERVICE);
-        mCarUxRestrictionsManager.registerListener(NonDOHiddenPackageProvider.this);
+        mCarUxRestrictionsManager.registerListener(NonDODisabledTaskProvider.this);
         mCarPackageManager = (CarPackageManager) mCar.getCarManager(Car.PACKAGE_SERVICE);
         mPackageManager = context.getPackageManager();
-        mRecentTasksViewModel = RecentTasksViewModel.getInstance();
+        mRecentTasksViewModel = recentTasksViewModel;
         mIsDistractionOptimizationRequired = isDistractionOptimizationRequired(
                 mCarUxRestrictionsManager.getCurrentCarUxRestrictions());
     }
 
+
+    /**
+     * Should be called before destroying this Provider.
+     */
     public void terminate() {
         if (mCar != null && mCar.isConnected()) {
             mCarUxRestrictionsManager.unregisterListener();
@@ -70,7 +86,7 @@ public class NonDOHiddenPackageProvider implements RecentTasksViewModel.Disabled
 
     @Override
     public View.OnClickListener getDisabledTaskClickListener(ComponentName componentName) {
-        if(!mCar.isConnected()){
+        if (!mCar.isConnected()) {
             return null;
         }
         return v -> {
@@ -102,5 +118,15 @@ public class NonDOHiddenPackageProvider implements RecentTasksViewModel.Disabled
 
     private boolean isDistractionOptimizationRequired(CarUxRestrictions carUxRestrictions) {
         return carUxRestrictions != null && carUxRestrictions.isRequiresDistractionOptimization();
+    }
+
+    @VisibleForTesting
+    boolean getIsDistractionOptimizationRequired() {
+        return mIsDistractionOptimizationRequired;
+    }
+
+    @VisibleForTesting
+    void setIsDistractionOptimizationRequired(boolean isDistractionOptimizationRequired) {
+        mIsDistractionOptimizationRequired = isDistractionOptimizationRequired;
     }
 }
