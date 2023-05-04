@@ -18,6 +18,7 @@ package com.android.car.carlauncher.recents;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -46,6 +47,12 @@ public interface RecentTasksProviderInterface {
      */
     @Nullable
     ComponentName getRecentTaskComponentName(int taskId);
+
+    /**
+     * @return the base intent used to launch the task for the requested {@code taskId} or null.
+     */
+    @Nullable
+    Intent getRecentTaskBaseIntent(int taskId);
 
     /**
      * @return {@link Drawable} icon for the requested {@code taskId} or null.
