@@ -20,6 +20,7 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.app.TaskStackListener;
 import android.car.Car;
 import android.car.app.CarActivityManager;
@@ -29,10 +30,13 @@ import android.car.app.ControlledRemoteCarTaskView;
 import android.car.app.ControlledRemoteCarTaskViewCallback;
 import android.car.app.ControlledRemoteCarTaskViewConfig;
 import android.car.user.CarUserManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
@@ -116,7 +120,41 @@ public class CarLauncher extends FragmentActivity {
         super.onCreate(savedInstanceState);
 
         if (DEBUG) {
-            Log.d(TAG, "onCreate(" + getUserId() + ")");
+            Log.d(TAG, "onCreate(" + getUserId() + ") displayId=" + getDisplayId());
+        }
+        // Since MUMD is introduced, CarLauncher can be called in the main display of visible users.
+        // In ideal shape, CarLauncher should handle both driver and passengers together.
+        // But, in the mean time, we have separate launchers for driver and passengers, so
+        // CarLauncher needs to reroute the request to Passenger launcher if it is invoked from
+        // the main display of passengers (not driver).
+        // For MUPAND, PassengerLauncher should be the default launcher.
+        // For non-main displays, ATM will invoke SECONDARY_HOME Intent, so the secondary launcher
+        // should handle them.
+        UserManager um = getSystemService(UserManager.class);
+        boolean isPassengerDisplay = getDisplayId() != Display.DEFAULT_DISPLAY
+                || um.isVisibleBackgroundUsersOnDefaultDisplaySupported();
+        if (isPassengerDisplay) {
+            String passengerLauncherName = getString(R.string.config_passengerLauncherComponent);
+            Intent passengerHomeIntent;
+            if (!passengerLauncherName.isEmpty()) {
+                ComponentName component = ComponentName.unflattenFromString(passengerLauncherName);
+                if (component == null) {
+                    throw new IllegalStateException(
+                            "Invalid passengerLauncher name=" + passengerLauncherName);
+                }
+                passengerHomeIntent = new Intent(Intent.ACTION_MAIN)
+                        .setComponent(component);
+            } else {
+                // No passenger launcher is specified, then use AppsGrid as a fallback.
+                passengerHomeIntent = CarLauncherUtils.getAppsGridIntent();
+            }
+            ActivityOptions options = ActivityOptions
+                    // No animation for the trampoline.
+                    .makeCustomAnimation(this, /* enterResId=*/ 0, /* exitResId= */ 0)
+                    .setLaunchDisplayId(getDisplayId());
+            startActivity(passengerHomeIntent, options.toBundle());
+            finish();
+            return;
         }
 
         mUseSmallCanvasOptimizedMap =
