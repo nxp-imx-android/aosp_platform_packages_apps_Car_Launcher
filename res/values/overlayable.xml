@@ -274,6 +274,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="config_msg_mirroring_service_pkg_name"/>
       <item type="string" name="config_passengerLauncherComponent"/>
       <item type="string" name="config_smallCanvasOptimizedMapIntent"/>
+      <item type="string" name="config_tosMapIntent"/>
       <item type="string" name="default_media_song_title"/>
       <item type="string" name="dialing_call_text"/>
       <item type="string" name="driving_toast_text"/>

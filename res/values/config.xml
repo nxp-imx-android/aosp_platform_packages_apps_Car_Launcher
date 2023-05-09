@@ -46,6 +46,12 @@
     -->
     <string name="config_smallCanvasOptimizedMapIntent" translatable="false"></string>
 
+    <!-- An intent to start tos map activity when user has not accepted terms of service
+         URI, for example:
+         "intent:#Intent;component=com.android.car.carlauncher/com.android.car.carlauncher.homescreen.MapActivityTos;action=android.intent.action.MAIN;end"
+    -->
+    <string name="config_tosMapIntent" translatable="false"></string>
+
     <!--
         A list of package names that will prompt a restart of the Task inside TaskView,
         when the package is updated.
