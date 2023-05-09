@@ -295,17 +295,15 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     @VisibleForTesting
     void updateModelWithContact(TelecomUtils.PhoneNumberInfo phoneNumberInfo,
             @Call.CallState int callState) {
-        // If call has been removed, return.
-        if (mCurrentCall == null) {
-            return;
-        }
-
-        // Use the caller display name or contact display name from call details first.
-        String contactName = mCurrentCall.getDetails().getCallerDisplayName();
-        if (TextUtils.isEmpty(contactName)) {
-            contactName = mCurrentCall.getDetails().getContactDisplayName();
-        }
+        String contactName = null;
         String initials = null;
+        // If current call details exist, use the caller display name or contact display name first.
+        if (mCurrentCall != null) {
+            contactName = mCurrentCall.getDetails().getCallerDisplayName();
+            if (TextUtils.isEmpty(contactName)) {
+                contactName = mCurrentCall.getDetails().getContactDisplayName();
+            }
+        }
         if (TextUtils.isEmpty(contactName)) {
             contactName = phoneNumberInfo.getDisplayName();
             initials = phoneNumberInfo.getInitials();
