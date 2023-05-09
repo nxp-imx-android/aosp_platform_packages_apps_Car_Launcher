@@ -23,6 +23,8 @@
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Todas las aplicaciones"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Aplicaciones multimedia"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Detener aplicación"</string>
+    <!-- no translation found for app_launcher_app_info_action (6388181061002827660) -->
+    <skip />
     <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> se ha detenido."</string>
     <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"¿Detener la aplicación?"</string>
     <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"Si fuerzas la detención de una aplicación, puede que no funcione correctamente."</string>
@@ -43,15 +45,11 @@
     <string name="hide_debug_apps" msgid="6128313544379622475">"Ocultar aplicaciones de depuración"</string>
     <string name="show_debug_apps" msgid="4521073121286325786">"Mostrar aplicaciones de depuración"</string>
     <string name="times_separator" msgid="6180368193321715816">"/"</string>
-    <!-- no translation found for user_tos_activity_intent (6097193356935501673) -->
-    <skip />
+    <string name="user_tos_activity_intent" msgid="6097193356935501673">"intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end"</string>
     <string name="recents_empty_state_text" msgid="6703106170272215731">"No hay elementos recientes"</string>
     <string name="recents_clear_all_text" msgid="2088678071417053923">"Borrar todo"</string>
     <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"La aplicación no está disponible"</string>
-    <!-- no translation found for banner_title_text (8769404950674630387) -->
-    <skip />
-    <!-- no translation found for banner_review_button_text (8263234087487949865) -->
-    <skip />
-    <!-- no translation found for banner_dismiss_button_text (333850829842822963) -->
-    <skip />
+    <string name="banner_title_text" msgid="8769404950674630387">"Para usar las aplicaciones inhabilitadas por los términos del servicio del usuario, acepta estos términos"</string>
+    <string name="banner_review_button_text" msgid="8263234087487949865">"Revisar"</string>
+    <string name="banner_dismiss_button_text" msgid="333850829842822963">"Ahora no"</string>
 </resources>

@@ -23,6 +23,8 @@
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"सर्व अ‍ॅप्स"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"मीडिया अ‍ॅप्स"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"अ‍ॅप थांबवा"</string>
+    <!-- no translation found for app_launcher_app_info_action (6388181061002827660) -->
+    <skip />
     <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> थांबवले आहे."</string>
     <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"अ‍ॅप थांबवायचे आहे का?"</string>
     <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"तुम्ही अ‍ॅप सक्तीने थांबवल्यास, ते गैरवर्तन करू शकते."</string>
