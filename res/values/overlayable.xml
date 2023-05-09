@@ -23,8 +23,13 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="array" name="hidden_apps"/>
       <item type="array" name="packages_hidden_from_recents"/>
       <item type="attr" name="cardCornerRadius"/>
+      <item type="attr" name="cornerFamily"/>
+      <item type="attr" name="cornerSize"/>
       <item type="attr" name="first_button_text"/>
       <item type="attr" name="second_button_text"/>
+      <item type="attr" name="shapeAppearanceOverlay"/>
+      <item type="attr" name="strokeColor"/>
+      <item type="attr" name="strokeWidth"/>
       <item type="bool" name="car_app_show_recent_apps"/>
       <item type="bool" name="car_app_show_toolbar"/>
       <item type="bool" name="config_allow_reordering"/>
@@ -116,7 +121,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="recent_task_icon_size"/>
       <item type="dimen" name="recent_task_start_swipe_threshold"/>
       <item type="dimen" name="recent_task_swiped_threshold"/>
-      <item type="dimen" name="recent_task_thumbnail_radius"/>
       <item type="dimen" name="recent_task_width"/>
       <item type="dimen" name="recent_task_width_first"/>
       <item type="dimen" name="search_bar_drawable_text_padding"/>
@@ -154,7 +158,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="recent_clear_all_button_background"/>
       <item type="drawable" name="recent_dismiss_button_background"/>
       <item type="drawable" name="recent_task_hidden_icon"/>
-      <item type="drawable" name="recent_task_shape"/>
       <item type="id" name="app_icon"/>
       <item type="id" name="app_item"/>
       <item type="id" name="app_name"/>
@@ -252,6 +255,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="recent_apps_row"/>
       <item type="layout" name="recent_task_view"/>
       <item type="layout" name="recent_task_view_first"/>
+      <item type="layout" name="recent_task_view_hidden"/>
       <item type="layout" name="recent_task_view_inner"/>
       <item type="layout" name="recents_activity"/>
       <item type="layout" name="tap_for_more_text"/>
@@ -304,10 +308,12 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="style" name="ClearAllRecentTasksButton"/>
       <item type="style" name="ClearAllRecentTasksButtonFocusArea"/>
       <item type="style" name="ContextualSpace"/>
+      <item type="style" name="HiddenRecentTaskThumbnail"/>
       <item type="style" name="HorizontalLineDivider"/>
       <item type="style" name="RecentTaskDismissButton"/>
       <item type="style" name="RecentTaskIcon"/>
       <item type="style" name="RecentTaskThumbnail"/>
+      <item type="style" name="RecentTaskThumbnail.RoundedBorder"/>
       <item type="style" name="RecentTasksList"/>
       <item type="style" name="RecentTasksListFocusArea"/>
       <item type="style" name="Theme.Launcher"/>

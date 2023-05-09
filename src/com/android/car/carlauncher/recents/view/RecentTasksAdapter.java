@@ -100,8 +100,8 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
                 return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view_first,
                         parent, /* attachToRoot= */ false));
             case RecentsItemViewType.HIDDEN_ITEM_VIEW_TYPE:
-                return new BaseViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
-                        /* attachToRoot= */ false));
+                return new BaseViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view_hidden,
+                        parent, /* attachToRoot= */ false));
             default:
                 return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
                         /* attachToRoot= */ false));
