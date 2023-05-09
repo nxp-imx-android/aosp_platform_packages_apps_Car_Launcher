@@ -85,10 +85,13 @@
     <style name="RecentTaskThumbnail">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">0dp</item>
-        <item name="android:background">@drawable/recent_task_shape</item>
         <item name="android:clipToOutline">true</item>
         <item name="android:scaleType">centerCrop</item>
         <item name="android:adjustViewBounds">false</item>
+        <item name="shapeAppearanceOverlay">@style/RecentTaskThumbnail.RoundedBorder</item>
+    </style>
+
+    <style name="HiddenRecentTaskThumbnail" parent="RecentTaskThumbnail">
     </style>
 
     <style name="RecentTaskDismissButton">
@@ -96,5 +99,10 @@
         <item name="android:layout_height">@dimen/recent_task_dismiss_button_size</item>
         <item name="android:scaleType">fitCenter</item>
         <item name="android:background">@drawable/recent_dismiss_button_background</item>
+    </style>
+
+    <style name="RecentTaskThumbnail.RoundedBorder">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
     </style>
 </resources>
