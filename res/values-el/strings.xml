@@ -23,6 +23,8 @@
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Όλες οι εφαρμογές"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Εφαρμογές μέσων"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Διακοπή εφαρμογής"</string>
+    <!-- no translation found for app_launcher_app_info_action (6388181061002827660) -->
+    <skip />
     <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> διακόπηκε."</string>
     <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"Διακοπή εφαρμογής;"</string>
     <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"Αν κάνετε αναγκαστική διακοπή μιας εφαρμογής, ενδέχεται να μην λειτουργεί σωστά."</string>
