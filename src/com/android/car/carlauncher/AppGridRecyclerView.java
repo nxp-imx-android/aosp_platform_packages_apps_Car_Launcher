@@ -131,9 +131,9 @@ public class AppGridRecyclerView extends RecyclerView implements DimensionUpdate
         layoutParams.width = pageDimens.recyclerViewWidthPx;
         layoutParams.height = pageDimens.recyclerViewHeightPx;
 
-        Rect gridBounds = new Rect();
-        getGlobalVisibleRect(gridBounds);
-        mAdapter.updateViewHolderDimensions(gridBounds, gridDimens.cellWidthPx,
+        Rect pageBounds = new Rect();
+        getGlobalVisibleRect(pageBounds);
+        mAdapter.updateViewHolderDimensions(pageBounds, gridDimens.cellWidthPx,
                 gridDimens.cellHeightPx);
         mAdapter.notifyDataSetChanged();
 
