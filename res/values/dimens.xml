@@ -121,7 +121,6 @@
     <!-- Recent task -->
     <dimen name="recent_task_icon_size">48dp</dimen>
     <dimen name="recent_task_dismiss_button_size">@dimen/recent_task_icon_size</dimen>
-    <dimen name="recent_task_thumbnail_radius">8dp</dimen>
     <dimen name="recent_task_col_space">64dp</dimen>
     <!-- The fraction that a recent task should move(from its original position) to
          be considered as swiped -->
