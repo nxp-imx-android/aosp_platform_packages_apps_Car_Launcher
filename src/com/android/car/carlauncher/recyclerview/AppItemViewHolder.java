@@ -66,9 +66,9 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     private final TextView mAppName;
     private final AppItemDragCallback mDragCallback;
     private final AppGridPageSnapCallback mSnapCallback;
-    private final Rect mPageBound;
     private final boolean mConfigReorderAllowed;
     private final int mThresholdToStartDragDrop;
+    private Rect mPageBound;
 
     @PageOrientation
     private int mPageOrientation;
@@ -84,8 +84,23 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     private boolean mIsTargeted;
     private boolean mCanStartDragAction;
 
+    /**
+     * Information describing state of the recyclerview when this view holder was last rebinded.
+     *
+     * {@param isDistractionOptimizationRequired} true if driving restriction should be required.
+     * {@param pageBound} the bounds of the recyclerview containing this view holder.
+     */
+    public static class BindInfo {
+        private final boolean mIsDistractionOptimizationRequired;
+        private final Rect mPageBound;
+        public BindInfo(boolean isDistractionOptimizationRequired, Rect pageBound) {
+            this.mIsDistractionOptimizationRequired = isDistractionOptimizationRequired;
+            this.mPageBound = pageBound;
+        }
+    }
+
     public AppItemViewHolder(View view, Context context, AppItemDragCallback dragCallback,
-            AppGridPageSnapCallback snapCallback, Rect pageBound) {
+            AppGridPageSnapCallback snapCallback) {
         super(view);
         mContext = context;
         mAppItemView = view.findViewById(R.id.app_item);
@@ -93,7 +108,6 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         mAppName = mAppItemView.findViewById(R.id.app_name);
         mDragCallback = dragCallback;
         mSnapCallback = snapCallback;
-        mPageBound = pageBound;
 
         mIconSize = context.getResources().getDimensionPixelSize(R.dimen.app_icon_size);
         mConfigReorderAllowed = context.getResources().getBoolean(R.bool.config_allow_reordering);
@@ -125,11 +139,13 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
      *
      * @param app AppMetaData to be displayed. Pass {@code null} will empty out the viewHolder.
      */
-    public void bind(@Nullable AppMetaData app, boolean isDistractionOptimizationRequired) {
+    public void bind(@Nullable AppMetaData app, @NonNull BindInfo bindInfo) {
         resetViewHolder();
         if (app == null) {
             return;
         }
+        boolean isDistractionOptimizationRequired = bindInfo.mIsDistractionOptimizationRequired;
+        mPageBound = bindInfo.mPageBound;
 
         mHasAppMetadata = true;
         mAppItemView.setFocusable(true);
@@ -432,6 +448,12 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         return mSnapCallback.getScrollState() == RecyclerView.SCROLL_STATE_IDLE;
     }
 
+    /**
+     * Returns whether this view holder's icon is visible to the user.
+     *
+     * Since the edge of the view holder from the previous/next may also receive drop events, a
+     * valid drop target should have its app icon be visible to the user.
+     */
     private boolean isTargetIconVisible() {
         if (mAppIcon == null || mAppIcon.getMeasuredWidth() == 0) {
             return false;
