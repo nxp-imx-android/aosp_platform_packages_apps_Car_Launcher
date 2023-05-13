@@ -64,8 +64,10 @@ public class RecentAppsRowViewHolder extends RecyclerView.ViewHolder {
                     LayoutInflater.from(mContext).inflate(R.layout.app_item, mRecentAppsRow, false);
 
             AppItemViewHolder holder = new AppItemViewHolder(view, mContext,
-                    /* dragCallback */ null, /* snapCallback */ null, /* pageBound */ null);
-            holder.bind(apps.get(i), isDistractionOptimizationRequired);
+                    /* dragCallback */ null, /* snapCallback */ null);
+            holder.bind(apps.get(i), new AppItemViewHolder.BindInfo(
+                    /* isDistractionOptimizationRequired */ isDistractionOptimizationRequired,
+                    /* pageBound */ null));
 
             LinearLayout.LayoutParams params =
                     (LinearLayout.LayoutParams) view.getLayoutParams();
