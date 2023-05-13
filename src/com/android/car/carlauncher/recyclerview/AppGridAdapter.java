@@ -66,7 +66,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private boolean mIsDistractionOptimizationRequired;
     private int mPageScrollDestination;
     // the global bounding rect of the app grid including margins (excluding page indicator bar)
-    private Rect mGridBound;
+    private Rect mPageBound;
 
     public AppGridAdapter(Context context, int numOfCols, int numOfRows,
             LauncherViewModel dataModel, AppItemViewHolder.AppItemDragCallback dragCallback,
@@ -100,8 +100,8 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      * To dispatch the UI changes, the recyclerview needs to call {@link RecyclerView#setAdapter}
      * after calling this method to recreate the view holders.
      */
-    public void updateViewHolderDimensions(Rect gridBound, int appItemWidth, int appItemHeight) {
-        mGridBound = gridBound;
+    public void updateViewHolderDimensions(Rect pageBound, int appItemWidth, int appItemHeight) {
+        mPageBound = pageBound;
         mAppItemWidth = appItemWidth;
         mAppItemHeight = appItemHeight;
     }
@@ -150,8 +150,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                     mAppItemWidth, mAppItemHeight);
             view.setLayoutParams(layoutParams);
-            return new AppItemViewHolder(view, mContext, mDragCallback, mSnapCallback,
-                    mGridBound);
+            return new AppItemViewHolder(view, mContext, mDragCallback, mSnapCallback);
         }
     }
 
@@ -161,14 +160,17 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                 mAppItemWidth, mAppItemHeight);
         holder.itemView.setLayoutParams(layoutParams);
+
+        AppItemViewHolder.BindInfo bindInfo = new AppItemViewHolder.BindInfo(
+                mIsDistractionOptimizationRequired, mPageBound);
         int adapterIndex = mIndexingHelper.gridPositionToAdaptorIndex(position);
         if (adapterIndex >= mLauncherItems.size()) {
             // the current view holder is an empty item used to pad the last page.
-            viewHolder.bind(null, mIsDistractionOptimizationRequired);
+            viewHolder.bind(null, bindInfo);
             return;
         }
         AppItem item = (AppItem) mLauncherItems.get(adapterIndex);
-        viewHolder.bind(item.getAppMetaData(), mIsDistractionOptimizationRequired);
+        viewHolder.bind(item.getAppMetaData(), bindInfo);
     }
 
     /**
