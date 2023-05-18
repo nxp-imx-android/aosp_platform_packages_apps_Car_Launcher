@@ -203,7 +203,7 @@ public final class TaskViewManager {
         this(context, mainHandler, handlerExecutor, taskOrganizer,
                 transactionPool,
                 shellinit,
-                new ShellController(shellinit, shellCommandHandler, handlerExecutor),
+                new ShellController(context, shellinit, shellCommandHandler, handlerExecutor),
                 new DisplayController(context,
                         WindowManagerGlobal.getWindowManagerService(), shellinit, handlerExecutor)
         );
@@ -283,17 +283,6 @@ public final class TaskViewManager {
      */
     void setCarUserManager(CarUserManager carUserManager) {
         mCarUserManager = carUserManager;
-    }
-
-    private ShellController initShellController(ShellInit shellInit, TransactionPool txPool) {
-        ShellCommandHandler shellCommandHandler = new ShellCommandHandler();
-        ShellController shellController = new ShellController(shellInit, shellCommandHandler,
-                mShellExecutor);
-        // StartingWindowController needs to be initialized so that splash screen is displayed.
-        new StartingWindowController(mContext, shellInit, shellController, mTaskOrganizer,
-                mShellExecutor, new PhoneStartingWindowTypeAlgorithm(), new IconProvider(mContext),
-                txPool);
-        return shellController;
     }
 
     private Transitions initTransitions(ShellInit shellInit, TransactionPool txPool,
