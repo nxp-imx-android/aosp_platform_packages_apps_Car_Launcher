@@ -270,6 +270,10 @@ public class LauncherViewModel extends ViewModel {
         } finally {
             try {
                 if (mOutputStream != null) {
+                    mOutputStream.flush();
+                    if (mOutputStream instanceof FileOutputStream) {
+                        ((FileOutputStream) mOutputStream).getFD().sync();
+                    }
                     mOutputStream.close();
                     mOutputStream = null;
                 }
