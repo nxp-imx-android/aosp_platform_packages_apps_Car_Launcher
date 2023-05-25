@@ -83,6 +83,7 @@ public class CarLauncher extends FragmentActivity {
     private boolean mIsReadyLogged;
     private boolean mUseSmallCanvasOptimizedMap;
     private boolean mUseRemoteCarTaskView;
+    private ViewGroup mMapsCard;
 
     private final TaskStackListener mTaskStackListener = new TaskStackListener() {
         @Override
@@ -109,7 +110,8 @@ public class CarLauncher extends FragmentActivity {
     @VisibleForTesting
     void setCarUserManager(CarUserManager carUserManager) {
         if (mTaskViewManager == null) {
-            Log.w(TAG, "Task view manager is null, cannot set CarUserManager");
+            Log.w(TAG, "Task view manager is null, cannot set CarUserManager on taskview "
+                    + "manager");
             return;
         }
         mTaskViewManager.setCarUserManager(carUserManager);
@@ -179,12 +181,12 @@ public class CarLauncher extends FragmentActivity {
             setContentView(R.layout.car_launcher);
             // We don't want to show Map card unnecessarily for the headless user 0.
             if (!UserHelperLite.isHeadlessSystemUser(getUserId())) {
-                ViewGroup mapsCard = findViewById(R.id.maps_card);
-                if (mapsCard != null) {
+                mMapsCard = findViewById(R.id.maps_card);
+                if (mMapsCard != null) {
                     if (mUseRemoteCarTaskView) {
-                        setupRemoteCarTaskView(mapsCard);
+                        setupRemoteCarTaskView(mMapsCard);
                     } else {
-                        setUpTaskView(mapsCard);
+                        setUpTaskView(mMapsCard);
                     }
                 }
             }
@@ -270,6 +272,17 @@ public class CarLauncher extends FragmentActivity {
                         return taskViewPackages;
                     }
                 });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // The TaskViewManager might have been released if the user was switched to some other user
+        // and then switched back to the previous user before the previous user is stopped.
+        // In such a case, the TaskViewManager should be recreated.
+        if (!mUseRemoteCarTaskView && mMapsCard != null && mTaskViewManager.isReleased()) {
+            setUpTaskView(mMapsCard);
+        }
     }
 
     @Override
