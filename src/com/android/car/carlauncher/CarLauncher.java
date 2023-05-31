@@ -193,10 +193,6 @@ public class CarLauncher extends FragmentActivity {
     }
 
     private void setupRemoteCarTaskView(ViewGroup parent) {
-        Intent mapIntent = mUseSmallCanvasOptimizedMap
-                ? CarLauncherUtils.getSmallCanvasOptimizedMapIntent(this)
-                : CarLauncherUtils.getMapsIntent(this);
-
         Car.createCar(/* context= */ this, /* handler= */ null,
                 Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
                 (car, ready) -> {
@@ -216,7 +212,7 @@ public class CarLauncher extends FragmentActivity {
                                         CarTaskViewController carTaskViewController) {
                                     carTaskViewController.createControlledRemoteCarTaskView(
                                             new ControlledRemoteCarTaskViewConfig.Builder()
-                                                    .setActivityIntent(mapIntent)
+                                                    .setActivityIntent(getMapsIntent())
                                                     .setShouldAutoRestartOnTaskRemoval(true)
                                                     .build(),
                                             getMainExecutor(),
@@ -250,15 +246,10 @@ public class CarLauncher extends FragmentActivity {
                 R.array.config_taskViewPackages));
         mTaskViewManager = new TaskViewManager(this, getMainThreadHandler());
 
-        Intent mapIntent = mUseSmallCanvasOptimizedMap
-                ? CarLauncherUtils.getSmallCanvasOptimizedMapIntent(this)
-                : CarLauncherUtils.getMapsIntent(this);
-        // Don't want to show this Activity in Recents.
-        mapIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         mTaskViewManager.createControlledCarTaskView(
                 getMainExecutor(),
                 ControlledCarTaskViewConfig.builder()
-                        .setActivityIntent(mapIntent)
+                        .setActivityIntent(getMapsIntent())
                         // TODO(b/263876526): Enable auto restart after ensuring no CTS failure.
                         .setAutoRestartOnCrash(false)
                         .build(),
@@ -378,5 +369,14 @@ public class CarLauncher extends FragmentActivity {
         if (mCarLauncherTaskId != INVALID_TASK_ID) {
             mActivityManager.moveTaskToFront(mCarLauncherTaskId,  /* flags= */ 0);
         }
+    }
+
+    private Intent getMapsIntent() {
+        Intent mapIntent = mUseSmallCanvasOptimizedMap
+                ? CarLauncherUtils.getSmallCanvasOptimizedMapIntent(this)
+                : CarLauncherUtils.getMapsIntent(this);
+        // Don't want to show this Activity in Recents.
+        mapIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        return mapIntent;
     }
 }
