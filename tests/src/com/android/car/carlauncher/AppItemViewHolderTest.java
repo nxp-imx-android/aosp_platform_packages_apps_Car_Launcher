@@ -63,7 +63,7 @@ public class AppItemViewHolderTest {
         setupMocksTosDisabledApps();
 
         AppItemViewHolder appItemViewHolder =
-                new AppItemViewHolder(mView, mContext, mDragCallback, mSnapCallback, null);
+                new AppItemViewHolder(mView, mContext, mDragCallback, mSnapCallback);
 
         ComponentName componentName =
                 new ComponentName(TEST_APP_PACKAGE_NAME, TEST_TOS_DISABLED_APP_CLASS_NAME);
@@ -79,7 +79,7 @@ public class AppItemViewHolderTest {
                         null,
                         null);
 
-        appItemViewHolder.bind(metaData, false);
+        appItemViewHolder.bind(metaData, new AppItemViewHolder.BindInfo(false, null));
 
         verify(mAppIcon).setAlpha(0.46f);
     }
