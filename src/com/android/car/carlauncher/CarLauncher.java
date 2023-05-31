@@ -202,8 +202,6 @@ public class CarLauncher extends FragmentActivity {
     }
 
     private void setupRemoteCarTaskView(ViewGroup parent) {
-        Intent mapIntent = getMapsIntent();
-
         Car.createCar(/* context= */ this, /* handler= */ null,
                 Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
                 (car, ready) -> {
@@ -223,7 +221,7 @@ public class CarLauncher extends FragmentActivity {
                                         CarTaskViewController carTaskViewController) {
                                     carTaskViewController.createControlledRemoteCarTaskView(
                                             new ControlledRemoteCarTaskViewConfig.Builder()
-                                                    .setActivityIntent(mapIntent)
+                                                    .setActivityIntent(getMapsIntent())
                                                     .setShouldAutoRestartOnTaskRemoval(true)
                                                     .build(),
                                             getMainExecutor(),
@@ -257,13 +255,10 @@ public class CarLauncher extends FragmentActivity {
                 R.array.config_taskViewPackages));
         mTaskViewManager = new TaskViewManager(this, getMainThreadHandler());
 
-        Intent mapIntent = getMapsIntent();
-        // Don't want to show this Activity in Recents.
-        mapIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         mTaskViewManager.createControlledCarTaskView(
                 getMainExecutor(),
                 ControlledCarTaskViewConfig.builder()
-                        .setActivityIntent(mapIntent)
+                        .setActivityIntent(getMapsIntent())
                         // TODO(b/263876526): Enable auto restart after ensuring no CTS failure.
                         .setAutoRestartOnCrash(false)
                         .build(),
@@ -408,6 +403,8 @@ public class CarLauncher extends FragmentActivity {
             mapIntent = CarLauncherUtils.getTosMapIntent(this);
             Log.i(TAG, "Launching tos activity in task view");
         }
+        // Don't want to show this Activity in Recents.
+        mapIntent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         return mapIntent;
     }
 
