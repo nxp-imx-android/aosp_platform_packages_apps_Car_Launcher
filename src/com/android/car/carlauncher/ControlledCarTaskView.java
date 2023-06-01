@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.UserManager;
 import android.util.Log;
@@ -135,11 +136,15 @@ final class ControlledCarTaskView extends CarTaskView {
             Log.d(TAG, "Starting (" + mConfig.mActivityIntent.getComponent() + ") on "
                     + launchBounds);
         }
+        Intent fillInIntent = null;
+        if ((mConfig.mActivityIntent.getFlags() & Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS) != 0) {
+            fillInIntent = new Intent().addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        }
         startActivity(
                 PendingIntent.getActivity(mContext, /* requestCode= */ 0,
                         mConfig.mActivityIntent,
                         PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT),
-                /* fillInIntent= */ null, options, launchBounds);
+                fillInIntent, options, launchBounds);
     }
 
     /** Gets the config used to build this controlled car task view. */
