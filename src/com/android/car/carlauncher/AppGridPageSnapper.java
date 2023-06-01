@@ -84,19 +84,19 @@ public class AppGridPageSnapper extends LinearSnapHelper {
 
         View currentPosView = getFirstMostVisibleChild(orientationHelper);
         int adapterPos = findAdapterPosition(currentPosView);
-        int posToReturn = mPrevFirstVisiblePos;
+        int posToReturn;
 
         // In the case of swiping left, the current adapter position is smaller than the previous
         // first visible position. In the case of swiping right, the current adapter position is
         // greater than the previous first visible position. In this case, if the swipe is
         // by only 1 column, the page should remain the same since we want to demonstrate some
         // stickiness
-        if (adapterPos < mPrevFirstVisiblePos) {
-            posToReturn = findFirstItemOnPrevPage(adapterPos);
-        } else if (adapterPos > mPrevFirstVisiblePos
-                && (float) adapterPos % mBlockSize / mBlockSize >= mPageSnapThreshold) {
+        if (adapterPos <= mPrevFirstVisiblePos
+                || (float) adapterPos % mBlockSize / mBlockSize < mPageSnapThreshold) {
+            posToReturn = adapterPos - adapterPos % mBlockSize;
+        } else {
             // Snap to next page
-            posToReturn = findFirstItemOnNextPage(adapterPos);
+            posToReturn = (adapterPos / mBlockSize + 1) * mBlockSize + mBlockSize - 1;
         }
         handleScrollToPos(posToReturn, orientationHelper);
         return null;
@@ -231,8 +231,7 @@ public class AppGridPageSnapper extends LinearSnapHelper {
             return;
         }
 
-        // Disable the current fling behavior. When a fling happens, try to find the target
-        // snap view and go there.
+        // When a fling happens, try to find the target snap view and go there.
         mOnFlingListener = new RecyclerView.OnFlingListener() {
             @Override
             public boolean onFling(int velocityX, int velocityY) {
