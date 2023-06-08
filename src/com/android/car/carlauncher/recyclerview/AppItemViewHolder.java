@@ -44,6 +44,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.carlauncher.AppGridActivity;
 import com.android.car.carlauncher.AppGridPageSnapper.AppGridPageSnapCallback;
 import com.android.car.carlauncher.AppItemDragShadowBuilder;
 import com.android.car.carlauncher.AppMetaData;
@@ -93,9 +94,17 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     public static class BindInfo {
         private final boolean mIsDistractionOptimizationRequired;
         private final Rect mPageBound;
-        public BindInfo(boolean isDistractionOptimizationRequired, Rect pageBound) {
+        private final AppGridActivity.Mode mMode;
+        public BindInfo(boolean isDistractionOptimizationRequired,
+                Rect pageBound,
+                AppGridActivity.Mode mode) {
             this.mIsDistractionOptimizationRequired = isDistractionOptimizationRequired;
             this.mPageBound = pageBound;
+            this.mMode = mode;
+        }
+
+        public BindInfo(boolean isDistractionOptimizationRequired, Rect pageBound) {
+            this(isDistractionOptimizationRequired, pageBound, AppGridActivity.Mode.ALL_APPS);
         }
     }
 
@@ -146,6 +155,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         }
         boolean isDistractionOptimizationRequired = bindInfo.mIsDistractionOptimizationRequired;
         mPageBound = bindInfo.mPageBound;
+        AppGridActivity.Mode mode = bindInfo.mMode;
 
         mHasAppMetadata = true;
         mAppItemView.setFocusable(true);
@@ -215,7 +225,10 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                             mActionDownY = event.getY();
                             mCanStartDragAction = false;
                         } else if (action == MotionEvent.ACTION_MOVE
-                                && shouldStartDragAndDrop(event, mActionDownX, mActionDownY)) {
+                                && shouldStartDragAndDrop(event,
+                                mActionDownX,
+                                mActionDownY,
+                                mode)) {
                             startDragAndDrop(event.getX(), event.getY());
                             mCanStartDragAction = false;
                         } else if (action == MotionEvent.ACTION_UP
@@ -357,7 +370,11 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
 
 
     private boolean shouldStartDragAndDrop(MotionEvent event, float actionDownX,
-            float actionDownY) {
+            float actionDownY, AppGridActivity.Mode mode) {
+        // If App Grid is not in all apps mode, we should not allow drag and drop
+        if (mode != AppGridActivity.Mode.ALL_APPS) {
+            return false;
+        }
         // the move event should be with in the bounds of the app icon
         boolean isEventWithinIcon = event.getX() >= 0 && event.getY() >= 0
                 && event.getX() < mIconScaledSize && event.getY() < mIconScaledSize;

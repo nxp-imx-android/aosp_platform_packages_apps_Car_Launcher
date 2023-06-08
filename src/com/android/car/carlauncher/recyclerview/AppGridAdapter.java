@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.car.carlauncher.AppGridActivity.Mode;
 import com.android.car.carlauncher.AppGridPageSnapper;
 import com.android.car.carlauncher.AppItem;
 import com.android.car.carlauncher.LauncherItem;
@@ -67,6 +68,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private int mPageScrollDestination;
     // the global bounding rect of the app grid including margins (excluding page indicator bar)
     private Rect mPageBound;
+    private Mode mAppGridMode;
 
     public AppGridAdapter(Context context, int numOfCols, int numOfRows,
             LauncherViewModel dataModel, AppItemViewHolder.AppItemDragCallback dragCallback,
@@ -82,6 +84,15 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             LayoutInflater layoutInflater, LauncherViewModel dataModel,
             AppItemViewHolder.AppItemDragCallback dragCallback,
             AppGridPageSnapper.AppGridPageSnapCallback snapCallback) {
+        this(context, numOfCols, numOfRows, pageOrientation, layoutInflater,
+                dataModel, dragCallback, snapCallback, Mode.ALL_APPS);
+    }
+
+    public AppGridAdapter(Context context, int numOfCols, int numOfRows,
+            @PageOrientation int pageOrientation,
+            LayoutInflater layoutInflater, LauncherViewModel dataModel,
+            AppItemViewHolder.AppItemDragCallback dragCallback,
+            AppGridPageSnapper.AppGridPageSnapCallback snapCallback, Mode mode) {
         mContext = context;
         mInflater = layoutInflater;
         mNumOfCols = numOfCols;
@@ -92,6 +103,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         mIndexingHelper = new PageIndexingHelper(numOfCols, numOfRows, pageOrientation);
         mGridOrderedLauncherItems = new ArrayList<>();
         mDataModel = dataModel;
+        mAppGridMode = mode;
     }
 
     /**
@@ -115,6 +127,16 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         // notifyDataSetChanged will rebind distraction optimization to all app items
         notifyDataSetChanged();
     }
+
+    /**
+     * Updates the current app grid mode to {@code mode}, then
+     * rebind the view holders.
+     */
+    public void setMode(Mode mode) {
+        mAppGridMode = mode;
+        notifyDataSetChanged();
+    }
+
     /**
      * Sets a new list of launcher items to be displayed in the app grid.
      * This should only be called by onChanged() in the observer as a response to data change in the
@@ -162,7 +184,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         holder.itemView.setLayoutParams(layoutParams);
 
         AppItemViewHolder.BindInfo bindInfo = new AppItemViewHolder.BindInfo(
-                mIsDistractionOptimizationRequired, mPageBound);
+                mIsDistractionOptimizationRequired, mPageBound, mAppGridMode);
         int adapterIndex = mIndexingHelper.gridPositionToAdaptorIndex(position);
         if (adapterIndex >= mLauncherItems.size()) {
             // the current view holder is an empty item used to pad the last page.
