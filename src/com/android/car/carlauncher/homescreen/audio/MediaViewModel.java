@@ -170,6 +170,8 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
         mUseMediaSourceColor = resources.getBoolean(R.bool.use_media_source_color_for_seek_bar);
         mTimesSeparator = resources.getString(com.android.car.carlauncher.R.string.times_separator);
         mAudioPresenter.onModelUpdated(/* model = */ this);
+
+        updateModel(); // Make sure the name of the media source properly reflects the locale.
     }
 
     @Override
@@ -252,9 +254,10 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
                     && !AppLauncherUtils.isVideoApp(mContext.getPackageManager(),
                     mediaSource.getPackageName())) {
                 if (Log.isLoggable(TAG, Log.INFO)) {
-                    Log.i(TAG, "Setting Media view to source " + mediaSource.getDisplayName());
+                    Log.i(TAG, "Setting Media view to source "
+                            + mediaSource.getDisplayName(mContext));
                 }
-                mAppName = mediaSource.getDisplayName();
+                mAppName = mediaSource.getDisplayName(mContext);
                 mAppIcon = mediaSource.getIcon();
                 mCardHeader = new CardHeader(mAppName, mAppIcon);
                 updateMetadata();
@@ -354,7 +357,7 @@ public class MediaViewModel extends AndroidViewModel implements HomeCardInterfac
             }
             return true;
         }
-        if (mediaSource != null && (mAppName != mediaSource.getDisplayName()
+        if (mediaSource != null && (mAppName != mediaSource.getDisplayName(mContext)
                 || mAppIcon != mediaSource.getIcon())) {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Log.d(TAG, "new media source is " + mediaSource.toString());
