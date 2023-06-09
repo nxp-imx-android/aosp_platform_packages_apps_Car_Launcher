@@ -252,8 +252,13 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
             seekBar.setVisibility(shouldUseSeekBar ? View.VISIBLE : View.GONE);
             progressBar.setVisibility(shouldUseSeekBar ? View.GONE : View.VISIBLE);
         }
-        getOptionalTimes().setText(seekBarViewModel.getTimes());
 
+        if (seekBarViewModel.getTimes() == null || seekBarViewModel.getTimes().length() == 0) {
+            getOptionalTimes().setVisibility(View.GONE);
+        } else {
+            getOptionalTimes().setText(seekBarViewModel.getTimes());
+            getOptionalTimes().setVisibility(View.VISIBLE);
+        }
     }
 
     private void updateProgressBar(ProgressBar progressBar, SeekBarViewModel seekBarViewModel) {
