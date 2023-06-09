@@ -144,7 +144,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
     @Test
     public void changeSourceAndMetadata_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
         when(mMetadata.getSubtitle()).thenReturn(ARTIST_NAME);
         when(mMetadata.getTitle()).thenReturn(SONG_TITLE);
@@ -173,7 +173,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
     @Test
     public void changeSourceOnly_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
 
         when(mMediaSource.getBrowseServiceComponentName())
@@ -198,7 +198,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
     @Test
     public void changeSourceOnlyNonLegacyMediaApp_doesNotCallPresenter() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
 
         when(mMediaSource.getBrowseServiceComponentName())
@@ -217,7 +217,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
     }
     @Test
     public void changeSourceToCustomMediaComponentApp_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
 
         // Radio is a custom component app
