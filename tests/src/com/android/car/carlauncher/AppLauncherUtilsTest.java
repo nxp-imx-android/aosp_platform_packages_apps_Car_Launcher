@@ -63,6 +63,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,16 +102,32 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     private CarMediaManager mCarMediaManager;
     private CarPackageManager mCarPackageManager;
     private XmlPullParserFactory mParserFactory;
+    private Car mCar;
 
     @Before
     public void setUp() throws Exception {
-        Car car = Car.createCar(mMockContext);
-        mCarPackageManager = (CarPackageManager) car.getCarManager(Car.PACKAGE_SERVICE);
-        mCarMediaManager = (CarMediaManager) car.getCarManager(Car.CAR_MEDIA_SERVICE);
-        when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
+        mCar = Car.createCar(mMockContext, /* handler = */ null, Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
+                (car, ready) -> {
+                    if (!ready) {
+                        mCarPackageManager = null;
+                        mCarMediaManager = null;
+                        return;
+                    }
+                    mCarPackageManager = (CarPackageManager) car.getCarManager(Car.PACKAGE_SERVICE);
+                    mCarMediaManager = (CarMediaManager) car.getCarManager(Car.CAR_MEDIA_SERVICE);
+                    when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
+                });
 
         mParserFactory = XmlPullParserFactory.newInstance();
         mParserFactory.setNamespaceAware(true);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (mCar != null && mCar.isConnected()) {
+            mCar.disconnect();
+            mCar = null;
+        }
     }
 
     @Override
