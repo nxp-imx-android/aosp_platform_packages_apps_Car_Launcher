@@ -23,8 +23,7 @@
     <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Vse aplikacije"</string>
     <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Aplikacije za predstavnost"</string>
     <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Ustavi aplikacijo"</string>
-    <!-- no translation found for app_launcher_app_info_action (6388181061002827660) -->
-    <skip />
+    <string name="app_launcher_app_info_action" msgid="6388181061002827660">"Podatki o aplikacijah"</string>
     <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je ustavljena."</string>
     <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"Želite ustaviti aplikacijo?"</string>
     <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"Če boste vsilili zaustavitev aplikacije, morda ne bo pravilno delovala."</string>
