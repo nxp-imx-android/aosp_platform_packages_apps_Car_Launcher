@@ -104,6 +104,7 @@ public final class TaskViewManager {
     private CarUserManager mCarUserManager;
     private Activity mContext;
     private Car mCar;
+    private boolean mReleased = false;
 
     private final TaskStackListener mTaskStackListener = new TaskStackListener() {
         @Override
@@ -232,7 +233,7 @@ public final class TaskViewManager {
             ShellTaskOrganizer shellTaskOrganizer, SyncTransactionQueue syncQueue,
             Transitions transitions, ShellInit shellInit, ShellController shellController,
             StartingWindowController startingWindowController) {
-        if (DBG) Slog.d(TAG, "TaskViewManager(): " + context);
+        if (DBG) Slog.d(TAG, "TaskViewManager(), u=" + context.getUserId());
         mContext = context;
         mShellExecutor = handlerExecutor;
         mTaskOrganizer = shellTaskOrganizer;
@@ -372,9 +373,9 @@ public final class TaskViewManager {
      * Releases {@link TaskViewManager} and unregisters the underlying {@link ShellTaskOrganizer}.
      * It also removes all TaskViews which are created by this {@link TaskViewManager}.
      */
-    private void release() {
+    void release() {
         mShellExecutor.execute(() -> {
-            if (DBG) Slog.d(TAG, "TaskViewManager.release");
+            if (DBG) Slog.d(TAG, "TaskViewManager.release, u=" + mContext.getUser());
 
             if (mCarUserManager != null) {
                 mCarUserManager.removeListener(mUserLifecycleListener);
@@ -410,6 +411,7 @@ public final class TaskViewManager {
             if (mCar != null) {
                 mCar.disconnect();
             }
+            mReleased = true;
         });
     }
 
@@ -519,5 +521,9 @@ public final class TaskViewManager {
     public ActivityManager.RunningTaskInfo getTopTaskInLaunchRootTask() {
         return mLaunchRootCarTaskView != null
                 ? mLaunchRootCarTaskView.getTopTaskInLaunchRootTask() : null;
+    }
+
+    boolean isReleased() {
+        return mReleased;
     }
 }
