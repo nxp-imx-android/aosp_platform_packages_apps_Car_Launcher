@@ -405,6 +405,9 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
                     R.id.optional_image);
             mDescriptiveTextOnlyTapForMore = mDescriptiveTextOnlyLayoutView.findViewById(
                     R.id.tap_for_more_text);
+
+            // Configs
+            setSingleLineSecondaryDescriptiveText();
         }
         return mDescriptiveTextOnlyLayoutView;
     }
@@ -443,5 +446,11 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     @VisibleForTesting
     void setControlBarLeftButton(ImageButton controlBarLeftButton) {
         mControlBarLeftButton = controlBarLeftButton;
+    }
+
+    private void setSingleLineSecondaryDescriptiveText() {
+        mDescriptiveTextOnlySubtitle
+                .setSingleLine(getResources()
+                        .getBoolean(R.bool.config_homecard_single_line_secondary_descriptive_text));
     }
 }
