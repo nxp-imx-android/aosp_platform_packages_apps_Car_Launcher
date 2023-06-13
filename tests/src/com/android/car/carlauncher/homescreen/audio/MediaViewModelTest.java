@@ -133,7 +133,7 @@ public class MediaViewModelTest {
 
     @Test
     public void changeSourceAndMetadata_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
         when(mMetadata.getSubtitle()).thenReturn(ARTIST_NAME);
         when(mMetadata.getTitle()).thenReturn(SONG_TITLE);
@@ -155,7 +155,7 @@ public class MediaViewModelTest {
 
     @Test
     public void changeSourceOnly_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
 
         mLiveMediaSource.setValue(mMediaSource);
