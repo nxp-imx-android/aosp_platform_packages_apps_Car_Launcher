@@ -18,19 +18,23 @@ package com.android.car.carlauncher.homescreen.audio;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.car.test.mocks.AbstractExtendedMockitoTestCase;
+import android.content.ComponentName;
 import android.graphics.drawable.Drawable;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.car.apps.common.testutils.InstantTaskExecutorRule;
+import com.android.car.carlauncher.AppLauncherUtils;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
@@ -41,18 +45,18 @@ import com.android.car.media.common.playback.PlaybackViewModel;
 import com.android.car.media.common.source.MediaSource;
 import com.android.car.media.common.source.MediaSourceColors;
 import com.android.car.media.common.source.MediaSourceViewModel;
+import com.android.dx.mockito.inline.extended.ExtendedMockito;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-@RunWith(JUnit4.class)
-public class MediaViewModelTest {
+@RunWith(AndroidJUnit4.class)
+public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
     private static final CharSequence APP_NAME = "test app name";
     private static final Drawable APP_ICON = null;
@@ -92,11 +96,18 @@ public class MediaViewModelTest {
     @Mock
     private HomeCardInterface.Presenter mPresenter;
 
+
     // The tests use the MediaViewModel's observers. To avoid errors with invoking observeForever
     // on a background thread, this rule configures LiveData to execute each task synchronously.
     @Rule
     public final InstantTaskExecutorRule mTaskExecutorRule = new InstantTaskExecutorRule();
     private int mSeekBarMax;
+
+    @Override
+    protected void onSessionBuilder(
+            AbstractExtendedMockitoTestCase.CustomMockitoSessionBuilder session) {
+        session.spyStatic(AppLauncherUtils.class);
+    }
 
     @Before
     public void setUp() {
@@ -138,6 +149,13 @@ public class MediaViewModelTest {
         when(mMetadata.getSubtitle()).thenReturn(ARTIST_NAME);
         when(mMetadata.getTitle()).thenReturn(SONG_TITLE);
 
+        when(mMediaSource.getBrowseServiceComponentName())
+                .thenReturn(ComponentName.createRelative("com.test", ".mbs"));
+
+        // ensure media source is considered a legacy media app
+        ExtendedMockito.doReturn(Boolean.TRUE)
+                .when(() -> AppLauncherUtils.isMediaTemplate(any(), any()));
+
         mLiveMediaSource.setValue(mMediaSource);
         mLiveMetadata.setValue(mMetadata);
 
@@ -157,6 +175,58 @@ public class MediaViewModelTest {
     public void changeSourceOnly_updatesModel() {
         when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
+
+        when(mMediaSource.getBrowseServiceComponentName())
+                .thenReturn(ComponentName.createRelative("com.test", ".mbs"));
+
+        // ensure media source is considered a legacy media app
+        ExtendedMockito.doReturn(Boolean.TRUE)
+                .when(() -> AppLauncherUtils.isMediaTemplate(any(), any()));
+
+        mLiveMediaSource.setValue(mMediaSource);
+
+        verify(mPresenter).onModelUpdated(mMediaViewModel);
+        CardHeader header = mMediaViewModel.getCardHeader();
+        assertEquals(header.getCardTitle(), APP_NAME);
+        assertNull(header.getCardIcon());
+        DescriptiveTextWithControlsView content =
+                (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
+        assertEquals(content.getTitle().toString(), "");
+        assertEquals(content.getTitle().toString(), "");
+
+    }
+
+    @Test
+    public void changeSourceOnlyNonLegacyMediaApp_doesNotCallPresenter() {
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
+        when(mMediaSource.getIcon()).thenReturn(APP_ICON);
+
+        when(mMediaSource.getBrowseServiceComponentName())
+                .thenReturn(ComponentName.createRelative("com.test", ".mbs"));
+
+        // not a legacy media app
+        ExtendedMockito.doReturn(Boolean.FALSE)
+                .when(() -> AppLauncherUtils.isMediaTemplate(any(), any()));
+
+        mLiveMediaSource.setValue(mMediaSource);
+
+        verify(mPresenter, never()).onModelUpdated(any());
+        // Card does not get updated.
+        assertNull(mMediaViewModel.getCardHeader());
+
+    }
+    @Test
+    public void changeSourceToCustomMediaComponentApp_updatesModel() {
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
+        when(mMediaSource.getIcon()).thenReturn(APP_ICON);
+
+        // Radio is a custom component app
+        when(mMediaSource.getBrowseServiceComponentName())
+                .thenReturn(ComponentName.createRelative("com.android.car.radio", ".service"));
+
+        // not legacy media app
+        ExtendedMockito.doReturn(Boolean.TRUE)
+                .when(() -> AppLauncherUtils.isMediaTemplate(any(), any()));
 
         mLiveMediaSource.setValue(mMediaSource);
 
