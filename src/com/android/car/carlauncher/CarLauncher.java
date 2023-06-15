@@ -145,6 +145,9 @@ public class CarLauncher extends FragmentActivity {
                             "Invalid passengerLauncher name=" + passengerLauncherName);
                 }
                 passengerHomeIntent = new Intent(Intent.ACTION_MAIN)
+                        // passenger launcher should be launched in home task in order to
+                        // fix TaskView layering issue
+                        .addCategory(Intent.CATEGORY_HOME)
                         .setComponent(component);
             } else {
                 // No passenger launcher is specified, then use AppsGrid as a fallback.
