@@ -70,11 +70,14 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
                 Car.CAR_WAIT_TIMEOUT_DO_NOT_WAIT,
                 (Car car, boolean ready) -> {
                     if (ready) {
-                        mCarProjectionManager = (CarProjectionManager)
-                                car.getCarManager(Car.PROJECTION_SERVICE);
-                        mCarProjectionManager.registerProjectionStatusListener(this);
+                        mCarProjectionManager = car.getCarManager(CarProjectionManager.class);
                     } else {
                         mCarProjectionManager = null;
+                    }
+
+                    if (mCarProjectionManager != null) {
+                        mCarProjectionManager.registerProjectionStatusListener(this);
+                    } else {
                         onProjectionStatusChanged(
                                 ProjectionStatus.PROJECTION_STATE_INACTIVE, null, null);
                     }
