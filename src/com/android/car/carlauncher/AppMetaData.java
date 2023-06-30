@@ -56,7 +56,7 @@ public final class AppMetaData {
      * @param alternateLaunchCallback  temporary alternative action to execute (e.g.: for media apps
      *                               this allows opening their own UI).
      */
-    AppMetaData(
+    public AppMetaData(
             CharSequence displayName,
             ComponentName componentName,
             Drawable icon,
@@ -111,7 +111,7 @@ public final class AppMetaData {
         return mIsDisabledByTos;
     }
 
-    boolean getIsMirroring() {
+    public boolean getIsMirroring() {
         return mIsMirroring;
     }
 

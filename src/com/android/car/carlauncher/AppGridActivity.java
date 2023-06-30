@@ -211,7 +211,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 });
                 mCarPackageManager = (CarPackageManager) mCar.getCarManager(Car.PACKAGE_SERVICE);
                 mCarMediaManager = (CarMediaManager) mCar.getCarManager(Car.CAR_MEDIA_SERVICE);
-                initializeLauncherModel();
+                reinitializeLauncherModel();
             } catch (CarNotConnectedException e) {
                 Log.e(TAG, "Car not connected in CarConnectionListener", e);
             }
@@ -240,15 +240,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         }
     }
 
-    private void initializeLauncherModel() {
+    private void reinitializeLauncherModel() {
         ExecutorService fetchOrderExecutorService = Executors.newSingleThreadExecutor();
         fetchOrderExecutorService.execute(() -> {
-            //If the order file is deleted, we need to reset the flag
-            if (!mLauncherModel.doesFileExist() && mLauncherModel.isCustomized()) {
-                mLauncherModel.setCustomized(false);
-                mLauncherModel.setAppOrderRead(false);
-            }
-            mLauncherModel.updateAppsOrder();
+            // first, we fetch apps order from data store file into memory
+            mLauncherModel.loadAppsOrderFromFile();
             fetchOrderExecutorService.shutdown();
         });
         ExecutorService alphabetizeExecutorService = Executors.newSingleThreadExecutor();
@@ -265,7 +261,8 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                     AppGridActivity.this,
                     mMirroringPackageName,
                     mMirroringIntentRedirect);
-            mLauncherModel.generateAlphabetizedAppOrder(mAppsInfo);
+            // then, we ingest all apps info
+            mLauncherModel.processAppsInfoFromPlatform(mAppsInfo);
             alphabetizeExecutorService.shutdown();
         });
     }
@@ -294,7 +291,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                         mNextScrollDestination = mSnapCallback.getSnapPosition();
                         updateScrollState();
                         if (mMode == Mode.ALL_APPS) {
-                            mLauncherModel.maybeSaveAppsOrder();
+                            mLauncherModel.handleAppListChange();
                         }
                     }
                 }
@@ -446,7 +443,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         setIntent(intent);
         updateMode();
         if (mCar.isConnected()) {
-            initializeLauncherModel();
+            reinitializeLauncherModel();
         }
     }
 
@@ -501,7 +498,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     @Override
     protected void onResume() {
         super.onResume();
-
         updateTosBannerVisibility();
         updateScrollState();
         mAdapter.setLayoutDirection(getResources().getConfiguration().getLayoutDirection());
@@ -775,7 +771,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 return;
             }
             // TODO b/256684061: find better way to get AppInfo from package name.
-            initializeLauncherModel();
+            reinitializeLauncherModel();
         }
     }
 
