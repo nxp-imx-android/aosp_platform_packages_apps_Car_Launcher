@@ -45,6 +45,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.R;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.core.app.ActivityScenario;
@@ -101,6 +102,7 @@ public class AppGridPageSnapperTest {
                     GridLayoutManager.HORIZONTAL, false);
             rv.setLayoutManager(gridLayoutManager);
             rv.setAdapter(adapter);
+            RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         });
         // Check if first item on the first page is displayed
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
@@ -120,15 +122,16 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the first page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
             rv.smoothScrollBy(rv.getWidth() / 2, 0);
         });
 
-        // Check if first item on the second page is displayed
+        // Check if first 3 items on the second page is displayed
         onView(withText(getItemText(0, 1))).check(matches(isDisplayed()));
+        onView(withText(getItemText(1, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(2, 1))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the second page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 1))).check(matches(isDisplayed()));
     }
@@ -149,6 +152,7 @@ public class AppGridPageSnapperTest {
                     false);
             rv.setLayoutManager(gridLayoutManager);
             rv.setAdapter(adapter);
+            RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         });
 
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
@@ -169,7 +173,6 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the first page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
@@ -199,6 +202,7 @@ public class AppGridPageSnapperTest {
                     false);
             rv.setLayoutManager(gridLayoutManager);
             rv.setAdapter(adapter);
+            RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         });
 
         // Check if first item on the first page is displayed
@@ -219,14 +223,16 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the first page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
             rv.smoothScrollBy(rv.getWidth() / 2, 0);
         });
-        // Check if first item on the second page is displayed
+        // Check if first 3 items on the second page is displayed
         onView(withText(getItemText(0, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(1, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(2, 1))).check(matches(isCompletelyDisplayed()));
+
         // Check if last item on the second page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 1))).check(matches(isCompletelyDisplayed()));
 
@@ -245,8 +251,11 @@ public class AppGridPageSnapperTest {
             RecyclerView rv = activity.requireViewById(R.id.list);
             rv.smoothScrollBy(-rv.getWidth() / 2, 0);
         });
-        // Check if last item on the second page is displayed
+        // Check if last 3 items on the second page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(mItemPerPage - 2, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(mItemPerPage - 3, 1))).check(matches(isCompletelyDisplayed()));
+
         // Check if first item on the second page is displayed
         onView(withText(getItemText(0, 1))).check(matches(isCompletelyDisplayed()));
     }
@@ -265,6 +274,7 @@ public class AppGridPageSnapperTest {
                     GridLayoutManager.HORIZONTAL, false);
             rv.setLayoutManager(gridLayoutManager);
             rv.setAdapter(adapter);
+            RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         });
 
         // Check if first item on the first page is displayed
@@ -285,7 +295,6 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the first page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
@@ -302,8 +311,11 @@ public class AppGridPageSnapperTest {
             RecyclerView rv = activity.requireViewById(R.id.list);
             rv.smoothScrollBy(rv.getWidth() / 10, 0);
         });
-        // Check if last item on the second page is displayed
+        // Check if last 3 items on the second page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(mItemPerPage - 2, 1))).check(matches(isCompletelyDisplayed()));
+        onView(withText(getItemText(mItemPerPage - 3, 1))).check(matches(isCompletelyDisplayed()));
+
         // Check if first item on the second page is displayed
         onView(withText(getItemText(0, 1))).check(matches(isCompletelyDisplayed()));
     }
@@ -322,6 +334,8 @@ public class AppGridPageSnapperTest {
                     GridLayoutManager.HORIZONTAL, false);
             rv.setLayoutManager(gridLayoutManager);
             rv.setAdapter(adapter);
+            RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+
         });
 
         // Check if first item on the first page is displayed
@@ -342,7 +356,6 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the first page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         simulateFling(Direction.Right);
         verify(mPageSnapper, times(1)).findFirstItemOnNextPage(anyInt());
 
@@ -364,6 +377,8 @@ public class AppGridPageSnapperTest {
                     GridLayoutManager.HORIZONTAL, false);
             rv.setLayoutManager(gridLayoutManager);
             rv.setAdapter(adapter);
+            RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+
         });
 
         // Check if first item on the first page is displayed
@@ -384,14 +399,10 @@ public class AppGridPageSnapperTest {
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
         // Check if last item on the first page is displayed
         onView(withText(getItemText(mItemPerPage - 1, 0))).check(matches(isCompletelyDisplayed()));
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         simulateFling(Direction.Right);
         simulateFling(Direction.Left);
 
         verify(mPageSnapper, times(1)).findFirstItemOnNextPage(anyInt());
-        verify(mPageSnapper, times(1)).findFirstItemOnPrevPage(anyInt());
-
-
         // Check if first item on the first page is displayed
         onView(withText(getItemText(0, 0))).check(matches(isCompletelyDisplayed()));
     }
@@ -449,18 +460,16 @@ public class AppGridPageSnapperTest {
     }
 
     public static class RecyclerViewIdlingResource implements IdlingResource, AutoCloseable {
-        private final RecyclerView mRecyclerView;
+        private boolean mIdle = true;
         private ResourceCallback mResourceCallback;
 
         public RecyclerViewIdlingResource(RecyclerView rv) {
-            mRecyclerView = rv;
             rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(@NonNull @NotNull RecyclerView recyclerView,
                         int newState) {
-                    if ((newState == RecyclerView.SCROLL_STATE_IDLE
-                            || newState == RecyclerView.SCROLL_STATE_DRAGGING)
-                            && mResourceCallback != null) {
+                    mIdle = newState == RecyclerView.SCROLL_STATE_IDLE;
+                    if (mIdle && mResourceCallback != null) {
                         mResourceCallback.onTransitionToIdle();
                     }
                 }
@@ -479,7 +488,7 @@ public class AppGridPageSnapperTest {
 
         @Override
         public boolean isIdleNow() {
-            return mRecyclerView.getScrollState() == mRecyclerView.SCROLL_STATE_IDLE;
+            return mIdle;
         }
 
         @Override
