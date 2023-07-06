@@ -17,7 +17,6 @@
 package com.android.car.carlauncher.homescreen.assistive;
 
 import android.content.Context;
-import android.content.res.Resources;
 
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
@@ -28,7 +27,7 @@ import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
 /**
  * Displays static weather information to provide default content for the assistive card.
  */
-public class FakeWeatherModel implements HomeCardInterface.Model {
+public class FakeWeatherModel implements AssistiveModel {
 
     private HomeCardInterface.Presenter mPresenter;
     private CardHeader mCardHeader;
