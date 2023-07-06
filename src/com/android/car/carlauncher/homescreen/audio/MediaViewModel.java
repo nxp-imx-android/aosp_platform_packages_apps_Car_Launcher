@@ -60,7 +60,7 @@ import java.util.List;
  * ViewModel for media. Uses both a {@link MediaSourceViewModel} and a {@link PlaybackViewModel}
  * for data on the audio source and audio metadata (such as song title), respectively.
  */
-public class MediaViewModel extends AndroidViewModel implements HomeCardInterface.Model {
+public class MediaViewModel extends AndroidViewModel implements AudioModel {
 
     private static final String TAG = "MediaViewModel";
 
