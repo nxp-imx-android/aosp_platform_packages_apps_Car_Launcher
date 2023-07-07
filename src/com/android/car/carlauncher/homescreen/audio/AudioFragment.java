@@ -29,9 +29,9 @@ import com.android.car.apps.common.BitmapUtils;
 import com.android.car.apps.common.ImageUtils;
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.homescreen.HomeCardFragment;
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
+import com.android.car.media.common.PlaybackControlsActionBar;
 
 
 /**
@@ -40,7 +40,17 @@ import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView
  */
 public class AudioFragment extends HomeCardFragment {
 
-    private AudioPresenter mPresenter;
+    /**
+     * Interface definition for a callback to be invoked when a media layout is inflated.
+     */
+    public interface OnMediaViewInitializedListener {
+
+        /**
+         * Called when a media layout is inflated.
+         */
+        void onMediaViewInitialized();
+    }
+
     private Chronometer mChronometer;
     private View mChronometerSeparator;
     private float mBlurRadius;
@@ -48,16 +58,13 @@ public class AudioFragment extends HomeCardFragment {
 
     // Views from card_content_media.xml, which is used only for the media card
     private View mMediaLayoutView;
+    private View mMediaControlBarView;
     private TextView mMediaTitle;
     private TextView mMediaSubtitle;
 
     private boolean mShowSeekBar;
 
-    @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        super.setPresenter(presenter);
-        mPresenter = (AudioPresenter) presenter;
-    }
+    private OnMediaViewInitializedListener mOnMediaViewInitializedListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -113,11 +120,15 @@ public class AudioFragment extends HomeCardFragment {
             mMediaLayoutView = stub.inflate();
             mMediaTitle = mMediaLayoutView.findViewById(R.id.primary_text);
             mMediaSubtitle = mMediaLayoutView.findViewById(R.id.secondary_text);
-            View mediaControlBarView = mMediaLayoutView.findViewById(
+            mMediaControlBarView = mMediaLayoutView.findViewById(
                     R.id.media_playback_controls_bar);
-            mPresenter.initializeControlsActionBar(mediaControlBarView);
+            mOnMediaViewInitializedListener.onMediaViewInitialized();
         }
         return mMediaLayoutView;
+    }
+
+    public PlaybackControlsActionBar getPlaybackControlsActionBar() {
+        return (PlaybackControlsActionBar) mMediaControlBarView;
     }
 
     private void updateBackgroundImage(CardContent.CardBackgroundImage cardBackgroundImage) {
@@ -167,5 +178,10 @@ public class AudioFragment extends HomeCardFragment {
             getChronometer().setVisibility(View.GONE);
             mChronometerSeparator.setVisibility(View.GONE);
         }
+    }
+
+    public void setOnMediaViewInitializedListener(
+            OnMediaViewInitializedListener onMediaViewInitializedListener) {
+        mOnMediaViewInitializedListener = onMediaViewInitializedListener;
     }
 }

@@ -58,7 +58,6 @@ import com.android.internal.util.ArrayUtils;
  */
 public class HomeCardFragment extends Fragment implements HomeCardInterface.View {
 
-    private HomeCardInterface.Presenter mPresenter;
     private Size mSize;
     private View mCardBackground;
     private CrossfadeImageView mCardBackgroundImage;
@@ -95,6 +94,10 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
 
     private boolean mTrackingTouch;
     private PlaybackCallback mPlaybackCallback;
+
+    private OnViewLifecycleChangeListener mOnViewLifecycleChangeListener;
+
+    private OnViewClickListener mOnViewClickListener;
     private SeekBar.OnSeekBarChangeListener mOnSeekBarChangeListener =
             new SeekBar.OnSeekBarChangeListener() {
                 @Override
@@ -115,9 +118,31 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
                 }
             };
 
-    @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    /**
+     * Interface definition for a callback to be invoked for a view lifecycle changes.
+     */
+    public interface OnViewLifecycleChangeListener {
+
+        /**
+         * Called when a view has been Created.
+         */
+        void onViewCreated();
+
+        /**
+         * Called when a view has been destroyed.
+         */
+        void onViewDestroyed();
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when a view is clicked.
+     */
+    public interface OnViewClickListener {
+
+        /**
+         * Called when a view has been clicked.
+         */
+        void onViewClicked();
     }
 
     @Override
@@ -132,22 +157,39 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mPresenter.onViewCreated();
-        mRootView.setOnClickListener(v -> mPresenter.onViewClicked(v));
+        mOnViewLifecycleChangeListener.onViewCreated();
+        mRootView.setOnClickListener(v -> mOnViewClickListener.onViewClicked());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mPresenter != null) {
-            mPresenter.onViewDestroyed();
-        }
+        mOnViewLifecycleChangeListener.onViewDestroyed();
         mSize = null;
     }
 
     @Override
     public Fragment getFragment() {
         return this;
+    }
+
+    /**
+     * Register a callback to be invoked when this view lifecycle changes.
+     *
+     * @param onViewLifecycleChangeListener The callback that will run
+     */
+    public void setOnViewLifecycleChangeListener(
+            OnViewLifecycleChangeListener onViewLifecycleChangeListener) {
+        mOnViewLifecycleChangeListener = onViewLifecycleChangeListener;
+    }
+
+    /**
+     * Register a callback to be invoked when this view is clicked.
+     *
+     * @param onViewClickListener The callback that will run
+     */
+    public void setOnViewClickListener(OnViewClickListener onViewClickListener) {
+        mOnViewClickListener = onViewClickListener;
     }
 
     /**

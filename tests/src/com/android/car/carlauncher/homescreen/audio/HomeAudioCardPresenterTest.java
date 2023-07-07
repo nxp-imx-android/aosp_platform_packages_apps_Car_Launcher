@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 import android.view.View;
 
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
@@ -49,7 +48,7 @@ public class HomeAudioCardPresenterTest {
     @Mock
     private View mFragmentView;
     @Mock
-    private HomeCardInterface.View mView;
+    private AudioFragment mView;
     @Mock
     private AudioModel mModel;
     @Mock
@@ -67,11 +66,9 @@ public class HomeAudioCardPresenterTest {
     @Test
     public void onModelUpdated_updatesFragment() {
         mPresenter.onModelUpdated(mModel);
-        mPresenter.onViewClicked(mFragmentView);
 
         verify(mView).updateHeaderView(CARD_HEADER);
         verify(mView).updateContentView(CARD_CONTENT);
-        verify(mModel).onClick(mFragmentView);
     }
 
     @Test
@@ -81,13 +78,10 @@ public class HomeAudioCardPresenterTest {
         reset(mView);
 
         mPresenter.onModelUpdated(mOtherModel);
-        mPresenter.onViewClicked(mFragmentView);
 
         verify(mView, never()).hideCard();
         verify(mView, never()).updateHeaderView(any());
         verify(mView, never()).updateContentView(any());
-        verify(mModel).onClick(mFragmentView);
-        verify(mOtherModel, never()).onClick(any());
     }
 
     @Test
