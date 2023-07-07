@@ -16,6 +16,8 @@
 
 package com.android.car.carlauncher.homescreen.assistive;
 
+import android.content.Intent;
+
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
 
 /**
@@ -23,7 +25,9 @@ import com.android.car.carlauncher.homescreen.HomeCardInterface;
  */
 public interface AssistiveModel extends HomeCardInterface.Model {
     /**
-     * Called by the Presenter to handle when the View is clicked
+     * Called by the Presenter to getIntent when the View is clicked
      */
-    default void onClick(android.view.View view) {}
+    default Intent getIntent() {
+        return null;
+    }
 }

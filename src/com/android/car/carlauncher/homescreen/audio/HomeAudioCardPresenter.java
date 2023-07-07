@@ -16,11 +16,13 @@
 
 package com.android.car.carlauncher.homescreen.audio;
 
-import android.view.View;
+import android.app.ActivityOptions;
+import android.content.Intent;
+import android.view.Display;
 
 import com.android.car.carlauncher.homescreen.CardPresenter;
+import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
-import com.android.car.media.common.PlaybackControlsActionBar;
 
 import java.util.List;
 
@@ -30,11 +32,69 @@ import java.util.List;
  * For the audio card, the {@link AudioFragment} implements the View and displays information on
  * media from a {@link MediaViewModel}.
  */
-public class HomeAudioCardPresenter extends CardPresenter implements AudioPresenter {
+public class HomeAudioCardPresenter extends CardPresenter {
+
+    private AudioFragment mAudioFragment;
 
     private AudioModel mCurrentModel;
     private List<HomeCardInterface.Model> mModelList;
     private MediaViewModel mMediaViewModel;
+
+    private HomeCardFragment.OnViewClickListener mOnViewClickListener =
+            new HomeCardFragment.OnViewClickListener() {
+                @Override
+                public void onViewClicked() {
+                    Intent intent = mCurrentModel.getIntent();
+                    if (intent != null) {
+                        ActivityOptions options = ActivityOptions.makeBasic();
+                        options.setLaunchDisplayId(Display.DEFAULT_DISPLAY);
+                        mAudioFragment.getContext().startActivity(intent, options.toBundle());
+                    }
+                }
+            };
+
+    private HomeCardFragment.OnViewLifecycleChangeListener mOnViewLifecycleChangeListener =
+            new HomeCardFragment.OnViewLifecycleChangeListener() {
+                @Override
+                public void onViewCreated() {
+                    for (HomeCardInterface.Model model : mModelList) {
+                        if (model.getClass() == MediaViewModel.class) {
+                            mMediaViewModel = (MediaViewModel) model;
+                        }
+                        model.setPresenter(HomeAudioCardPresenter.this);
+                        model.onCreate(getFragment().requireContext());
+                    }
+                }
+
+                @Override
+                public void onViewDestroyed() {
+                    if (mModelList != null) {
+                        for (HomeCardInterface.Model model : mModelList) {
+                            model.onDestroy(getFragment().requireContext());
+                        }
+                    }
+                }
+            };
+
+    private AudioFragment.OnMediaViewInitializedListener mOnMediaViewInitializedListener =
+            new AudioFragment.OnMediaViewInitializedListener() {
+                @Override
+                public void onMediaViewInitialized() {
+                    // set playbackviewmodel on playback control actions view
+                    mAudioFragment.getPlaybackControlsActionBar().setModel(
+                            mMediaViewModel.getPlaybackViewModel(),
+                            mAudioFragment.getViewLifecycleOwner());
+                }
+            };
+
+    @Override
+    public void setView(HomeCardInterface.View view) {
+        super.setView(view);
+        mAudioFragment = (AudioFragment) view;
+        mAudioFragment.setOnViewLifecycleChangeListener(mOnViewLifecycleChangeListener);
+        mAudioFragment.setOnViewClickListener(mOnViewClickListener);
+        mAudioFragment.setOnMediaViewInitializedListener(mOnMediaViewInitializedListener);
+    }
 
     @Override
     public void setModels(List<HomeCardInterface.Model> models) {
@@ -47,40 +107,6 @@ public class HomeAudioCardPresenter extends CardPresenter implements AudioPresen
 
     protected AudioModel getCurrentModel() {
         return mCurrentModel;
-    }
-
-    /**
-     * Called when the View is created
-     */
-    @Override
-    public void onViewCreated() {
-        for (HomeCardInterface.Model model : mModelList) {
-            if (model.getClass() == MediaViewModel.class) {
-                mMediaViewModel = (MediaViewModel) model;
-            }
-            model.setPresenter(this);
-            model.onCreate(getFragment().requireContext());
-        }
-    }
-
-    /**
-     * Called when the View is destroyed
-     */
-    @Override
-    public void onViewDestroyed() {
-        if (mModelList != null) {
-            for (HomeCardInterface.Model model : mModelList) {
-                model.onDestroy(getFragment().requireContext());
-            }
-        }
-    }
-
-    /**
-     * Called when the View is clicked
-     */
-    @Override
-    public void onViewClicked(View v) {
-        mCurrentModel.onClick(v);
     }
 
     /**
@@ -118,11 +144,5 @@ public class HomeAudioCardPresenter extends CardPresenter implements AudioPresen
         }
         mCurrentModel = (AudioModel) model;
         super.onModelUpdated(model);
-    }
-
-    @Override
-    public void initializeControlsActionBar(View actionBar) {
-        ((PlaybackControlsActionBar) actionBar).setModel(mMediaViewModel.getPlaybackViewModel(),
-                getFragment().getViewLifecycleOwner());
     }
 }

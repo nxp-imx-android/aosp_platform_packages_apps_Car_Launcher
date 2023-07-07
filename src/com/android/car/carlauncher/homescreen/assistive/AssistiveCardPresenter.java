@@ -16,9 +16,13 @@
 
 package com.android.car.carlauncher.homescreen.assistive;
 
-import android.view.View;
+import android.content.Intent;
+import android.util.Log;
+import android.widget.Toast;
 
+import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.homescreen.CardPresenter;
+import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
 
 import java.util.List;
@@ -28,43 +32,66 @@ import java.util.List;
  */
 public class AssistiveCardPresenter extends CardPresenter {
 
+    private static final String TAG = "AssistiveCardPresenter";
+    private HomeCardFragment mHomeCardFragment;
+
     private AssistiveModel mCurrentModel;
     private List<HomeCardInterface.Model> mModels;
+
+    private HomeCardFragment.OnViewClickListener mOnViewClickListener =
+            new HomeCardFragment.OnViewClickListener() {
+                @Override
+                public void onViewClicked() {
+                    Intent intent = mCurrentModel.getIntent();
+                    if (intent != null && intent.resolveActivity(
+                            mHomeCardFragment.getContext().getPackageManager()) != null) {
+                        mHomeCardFragment.getContext().startActivity(intent);
+                    } else {
+                        Log.e(TAG, "No activity component found to handle intent with action: "
+                                + intent.getAction());
+                        Toast.makeText(mHomeCardFragment.getContext(),
+                                mHomeCardFragment.getContext().getResources().getString(
+                                        R.string.projected_onclick_launch_error_toast_text),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            };
+
+    private HomeCardFragment.OnViewLifecycleChangeListener mOnViewLifecycleChangeListener =
+            new HomeCardFragment.OnViewLifecycleChangeListener() {
+                @Override
+                public void onViewCreated() {
+                    for (HomeCardInterface.Model model : mModels) {
+                        setPresenterInModel(model);
+                        model.onCreate(getFragment().requireContext());
+                    }
+                }
+
+                @Override
+                public void onViewDestroyed() {
+                    if (mModels != null) {
+                        for (HomeCardInterface.Model model : mModels) {
+                            model.onDestroy(getFragment().requireContext());
+                        }
+                    }
+                }
+            };
+
+    @Override
+    public void setView(HomeCardInterface.View view) {
+        super.setView(view);
+        mHomeCardFragment = (HomeCardFragment) view;
+        mHomeCardFragment.setOnViewClickListener(mOnViewClickListener);
+        mHomeCardFragment.setOnViewLifecycleChangeListener(mOnViewLifecycleChangeListener);
+    }
 
     @Override
     public void setModels(List<HomeCardInterface.Model> models) {
         mModels = models;
     }
 
-    /**
-     * Called when the View is created
-     */
-    @Override
-    public void onViewCreated() {
-        for (HomeCardInterface.Model model : mModels) {
-            model.setPresenter(this);
-            model.onCreate(getFragment().requireContext());
-        }
-    }
-
-    /**
-     * Called when the View is destroyed
-     */
-    @Override
-    public void onViewDestroyed() {
-        if (mModels != null) {
-            for (HomeCardInterface.Model model : mModels) {
-                model.onDestroy(getFragment().requireContext());
-            }
-        }
-    }
-
-    /**
-     * Called when the View is clicked
-     */
-    @Override
-    public void onViewClicked(View v) {
-        mCurrentModel.onClick(v);
+    private void setPresenterInModel(HomeCardInterface.Model model) {
+        model.setPresenter(this);
     }
 
     /**
