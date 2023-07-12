@@ -29,10 +29,13 @@ import android.util.Log;
 import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,7 +61,7 @@ final class SemiControlledCarTaskView extends CarTaskView {
     private final SyncTransactionQueue mSyncQueue;
     private final LinkedHashMap<Integer, ActivityManager.RunningTaskInfo> mChildrenTaskStack =
             new LinkedHashMap<>();
-    private final List<ComponentName> mAllowListedActivities;
+    private final ArrayList<ComponentName> mAllowListedActivities;
     private final AtomicReference<CarActivityManager> mCarActivityManagerRef;
 
     private ActivityManager.RunningTaskInfo mRootTask;
@@ -155,7 +158,7 @@ final class SemiControlledCarTaskView extends CarTaskView {
         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewCreated(this));
         mShellTaskOrganizer = organizer;
         mSyncQueue = syncQueue;
-        mAllowListedActivities = allowListedActivities;
+        mAllowListedActivities = new ArrayList<>(allowListedActivities);
         mCarActivityManagerRef = carActivityManager;
     }
 
@@ -208,5 +211,117 @@ final class SemiControlledCarTaskView extends CarTaskView {
 
     private void setRootTask(ActivityManager.RunningTaskInfo taskInfo) {
         mRootTask = taskInfo;
+    }
+
+    /**
+     * Designates the given {@code activities} to be launched in this SemiControlledCarTaskView.
+     * <p>Note: If an activity is already associated with another SemiControlledCarTaskView, it's
+     * designates will be overridden.
+     *
+     * @param activities list of {@link ComponentName} of activities to be designated on the
+     *                   SemiControlledCarTaskView
+     */
+    public void addAllowListedActivities(List<ComponentName> activities) {
+        CarActivityManager carAm = mCarActivityManagerRef.get();
+        if (carAm == null) {
+            Log.wtf(TAG,
+                    "CarActivityManager is null, cannot call setPersistentActivitiesOnRootTask to"
+                            + " add activities");
+            return;
+        }
+        if (mRootTask == null) {
+            Log.wtf(TAG,
+                    "RootTask is null, cannot call setPersistentActivitiesOnRootTask to"
+                            + " add activities");
+            return;
+        }
+        List<ComponentName> activitiesToAdd = new ArrayList<>();
+        for (ComponentName activity : activities) {
+            if (!mAllowListedActivities.contains(activity)) {
+                activitiesToAdd.add(activity);
+            } else {
+                if (DBG) {
+                    Log.d(TAG, "Activity " + activity
+                            + " is already designated to this SemiControlledCarTaskView");
+                }
+            }
+        }
+        mAllowListedActivities.addAll(activitiesToAdd);
+        carAm.setPersistentActivitiesOnRootTask(activitiesToAdd, mRootTask.token.asBinder());
+    }
+
+    /**
+     * Remove the designation of the given {@code activities} to SemiControlledCarTaskView.
+     * <p>Note: If an activity is already associated with another SemiControlledCarTaskView, it's
+     * designates will be overridden.
+     *
+     * @param activities list of {@link ComponentName} of activities to be designated on the
+     *                   SemiControlledCarTaskView
+     */
+    public void removeAllowListedActivities(List<ComponentName> activities) {
+        CarActivityManager carAm = mCarActivityManagerRef.get();
+        if (carAm == null) {
+            Log.wtf(TAG,
+                    "CarActivityManager is null, cannot call setPersistentActivitiesOnRootTask to"
+                            + " remove activities");
+            return;
+        }
+        if (mRootTask == null) {
+            Log.wtf(TAG,
+                    "RootTask is null, cannot call setPersistentActivitiesOnRootTask to"
+                            + " add activities");
+            return;
+        }
+        List<ComponentName> activitiesToRemove = new ArrayList<>();
+        for (ComponentName activity : activities) {
+            if (mAllowListedActivities.contains(activity)) {
+                activitiesToRemove.add(activity);
+            } else {
+                if (DBG) {
+                    Log.d(TAG, "Activity " + activity
+                            + " was not designated to this SemiControlledCarTaskView");
+                }
+            }
+        }
+        mAllowListedActivities.removeAll(activitiesToRemove);
+        carAm.setPersistentActivitiesOnRootTask(activitiesToRemove, /* rootTaskToken= */ null);
+    }
+
+    /**
+     * Sets the designations for SemiControlledCarTaskView. Adds the designation of the given
+     * {@code activities} to SemiControlledCarTaskView and removes the designations of activities
+     * that are not in {@code activities}.
+     *
+     * <p>Note:
+     * If an activity is already associated with another SemiControlledCarTaskView, it's
+     * designates will be overridden.
+     *
+     * @param activities list of {@link ComponentName} of activities to be designated on the
+     *                   SemiControlledCarTaskView
+     */
+    public void setAllowListedActivities(List<ComponentName> activities) {
+        CarActivityManager carAm = mCarActivityManagerRef.get();
+        if (carAm == null) {
+            Log.wtf(TAG,
+                    "CarActivityManager is null, cannot call setPersistentActivitiesOnRootTask to"
+                            + " remove activities");
+            return;
+        }
+        if (mRootTask == null) {
+            Log.wtf(TAG,
+                    "RootTask is null, cannot call setPersistentActivitiesOnRootTask to"
+                            + " add activities");
+            return;
+        }
+        List<ComponentName> activitiesToRemove = new ArrayList<>(mAllowListedActivities);
+        carAm.setPersistentActivitiesOnRootTask(activitiesToRemove, /* rootTaskToken= */ null);
+        carAm.setPersistentActivitiesOnRootTask(activities, mRootTask.token.asBinder());
+        mAllowListedActivities.clear();
+        mAllowListedActivities.addAll(activities);
+    }
+
+    @VisibleForTesting
+    List<ComponentName> getPersistentActivities() {
+        return mAllowListedActivities;
     }
 }
