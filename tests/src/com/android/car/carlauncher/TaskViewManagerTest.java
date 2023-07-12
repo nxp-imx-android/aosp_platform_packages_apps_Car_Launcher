@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -93,6 +94,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -492,6 +494,93 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
     }
 
     @Test
+    public void testAddAllowListedActivities() throws Exception {
+        ComponentName componentName1 = ComponentName.unflattenFromString("com.example/.Activity1");
+        ComponentName componentName2 = ComponentName.unflattenFromString("com.example/.Activity2");
+        List<ComponentName> persistentActivities =
+                List.of(componentName1);
+        SemiControlledCarTaskViewCallbacks mockCallbacks = mock(
+                SemiControlledCarTaskViewCallbacks.class);
+        TaskViewManager taskViewManager = createTaskViewManager();
+        runOnMainAndWait(() -> {});
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
+        AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
+        SemiControlledCarTaskView taskView = setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, persistentActivities, mockCallbacks);
+        runOnMainAndWait(() -> {});
+
+        // Action
+        List<ComponentName> activities = new ArrayList<>(persistentActivities);
+        activities.add(componentName2);
+        taskViewManager.addAllowListedActivities(taskView, activities);
+
+        // Assert
+        verify(mCarActivityManager).setPersistentActivitiesOnRootTask(eq(List.of(componentName2)),
+                any());
+    }
+
+    @Test
+    public void testRemoveAllowListedActivities() throws Exception {
+        List<ComponentName> activities =
+                List.of(ComponentName.unflattenFromString("com.example/.MainActivity"));
+        SemiControlledCarTaskViewCallbacks mockCallbacks = mock(
+                SemiControlledCarTaskViewCallbacks.class);
+        TaskViewManager taskViewManager = createTaskViewManager();
+        runOnMainAndWait(() -> {});
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
+        AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
+        SemiControlledCarTaskView taskView = setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, activities, mockCallbacks);
+        verify(mCarActivityManager).setPersistentActivitiesOnRootTask(eq(activities), any());
+
+        // Action
+        taskViewManager.removeAllowListedActivities(taskView, activities);
+
+        // Assert
+        verify(mCarActivityManager).setPersistentActivitiesOnRootTask(eq(activities), eq(null));
+        assertThat(taskView.getPersistentActivities().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void testSetAllowListedActivities() throws Exception {
+        ComponentName componentName1 = ComponentName.unflattenFromString("com.example/.Activity1");
+        ComponentName componentName2 = ComponentName.unflattenFromString("com.example/.Activity2");
+        ComponentName componentName3 = ComponentName.unflattenFromString("com.example/.Activity3");
+        List<ComponentName> activities1 =
+                List.of(componentName1, componentName2);
+        List<ComponentName> activities2 =
+                List.of(componentName2, componentName3);
+
+        SemiControlledCarTaskViewCallbacks mockCallbacks = mock(
+                SemiControlledCarTaskViewCallbacks.class);
+        TaskViewManager taskViewManager = createTaskViewManager();
+        runOnMainAndWait(() -> {
+        });
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
+        AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
+        SemiControlledCarTaskView taskView = setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, activities1, mockCallbacks);
+        runOnMainAndWait(() -> {
+        });
+        verify(mCarActivityManager).setPersistentActivitiesOnRootTask(eq(activities1), notNull());
+        assertThat(taskView.getPersistentActivities()).isEqualTo(activities1);
+
+        // Action
+        taskViewManager.setAllowListedActivities(taskView, activities2);
+        runOnMainAndWait(() -> {
+        });
+
+        // Assert
+        verify(mCarActivityManager).setPersistentActivitiesOnRootTask(eq(activities1), eq(null));
+        verify(mCarActivityManager, atLeastOnce()).setPersistentActivitiesOnRootTask(
+                eq(activities2), notNull());
+        assertThat(taskView.getPersistentActivities()).isEqualTo(activities2);
+    }
+
+    @Test
     public void testTaskInfoChanged_semiControlledTaskView_topTaskUpdated() throws Exception {
         TaskViewManager taskViewManager = createTaskViewManager();
         runOnMainAndWait(() -> {});
@@ -576,8 +665,9 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
             List<ComponentName> persistentActivities,
             SemiControlledCarTaskViewCallbacks callbacks)
             throws Exception {
+        IBinder taskToken = new Binder();
         ActivityManager.RunningTaskInfo rootTaskInfo =
-                createMultiWindowTask(rootTaskId).getTaskInfo();
+                createMultiWindowTask(rootTaskId, taskToken).getTaskInfo();
         doAnswer(invocation -> {
             listener.set(invocation.getArgument(2));
             listener.get().onTaskAppeared(rootTaskInfo, mLeash);
