@@ -30,26 +30,6 @@ public abstract class CardPresenter implements HomeCardInterface.Presenter {
         mView = view;
     }
 
-    @Override
-    public void onModelUpdated(HomeCardInterface.Model model) {
-        if (model != null && model.getCardHeader() != null) {
-            mView.updateHeaderView(model.getCardHeader());
-            if (model.getCardContent() != null) {
-                mView.updateContentView(model.getCardContent());
-            }
-        } else {
-            mView.hideCard();
-        }
-    }
-
-    @Override
-    public void onModelUpdated(HomeCardInterface.Model model, boolean updateProgress) {
-        if (model == null || model.getCardContent() == null || model.getCardHeader() == null) {
-            return;
-        }
-        mView.updateContentView(model.getCardContent(), updateProgress);
-    }
-
     public Fragment getFragment() {
         return mView.getFragment();
     }

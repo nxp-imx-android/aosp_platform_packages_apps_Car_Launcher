@@ -91,7 +91,7 @@ public class ProjectionModelTest {
     private MockitoSession mSession;
 
     @Mock
-    private HomeCardInterface.Presenter mPresenter;
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
     @Mock
     private Car mMockCar;
     @Mock
@@ -137,7 +137,7 @@ public class ProjectionModelTest {
     public void noChange_doesNotCallPresenter() {
         createModel();
 
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         assertNull(mModel.getCardHeader());
         assertNull(mModel.getCardContent());
     }
@@ -147,7 +147,7 @@ public class ProjectionModelTest {
         createModel();
         sendProjectionStatus(mProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
         assertEquals(PROJECTING_DEVICE_NAME, String.valueOf(content.getSubtitle()));
     }
@@ -157,7 +157,7 @@ public class ProjectionModelTest {
         createModel();
         sendProjectionStatus(mNonProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
         assertEquals(NONPROJECTING_DEVICE_NAME, String.valueOf(content.getSubtitle()));
     }
@@ -167,7 +167,7 @@ public class ProjectionModelTest {
         createModel();
         sendProjectionStatus(mProjectingAndNonProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
         assertEquals(PROJECTING_DEVICE_NAME, String.valueOf(content.getSubtitle()));
     }
@@ -177,7 +177,7 @@ public class ProjectionModelTest {
         createModel();
         sendProjectionStatus(mProjectingMultipleAndNonProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
 
         String formattedPluralString = MessageFormat.format(mContext.getString(
@@ -192,24 +192,24 @@ public class ProjectionModelTest {
     public void changeProjectionStatusToInactive_callsPresenter() {
         createModel();
         sendProjectionStatus(mProjectingDeviceProjectionStatus);
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
 
         sendProjectionStatus(mInactiveProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         assertNull(mModel.getCardHeader());
         assertNull(mModel.getCardContent());
     }
 
     private void createModel() {
         mModel = new ProjectionModel();
-        mModel.setPresenter(mPresenter);
+        mModel.setOnModelUpdateListener(mOnModelUpdateListener);
         mModel.onCreate(mContext);
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
     }
 
     private void sendProjectionStatus(ProjectionStatus status) {
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
         mModel.onProjectionStatusChanged(
                 status.getState(),
                 status.getPackageName(),

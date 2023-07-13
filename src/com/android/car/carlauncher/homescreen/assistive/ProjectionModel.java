@@ -31,7 +31,6 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
@@ -46,8 +45,6 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
         AssistiveModel {
 
     private static final String TAG = "ProjectionModel";
-
-    private HomeCardInterface.Presenter mPresenter;
     @Nullable
     private Car mCar;
     @Nullable
@@ -61,6 +58,8 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
     private CharSequence mStatusMessage;
     private CharSequence mTapToLaunchText;
     private Intent mIntent;
+
+    private OnModelUpdateListener mOnModelUpdateListener;
 
     @Override
     public void onCreate(Context context) {
@@ -116,8 +115,8 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
     }
 
     @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    public void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener) {
+        mOnModelUpdateListener = onModelUpdateListener;
     }
 
     @Override
@@ -129,7 +128,7 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
         if (state == ProjectionStatus.PROJECTION_STATE_INACTIVE || packageName == null) {
             if (mAppName != null) {
                 mAppName = null;
-                mPresenter.onModelUpdated(this);
+                mOnModelUpdateListener.onModelUpdate(this);
             }
             return;
         }
@@ -146,7 +145,7 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
         mAppIcon = applicationInfo.loadIcon(mPackageManager);
         mStatusMessage = getStatusMessage(packageName, details);
         mIntent = mPackageManager.getLaunchIntentForPackage(packageName);
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
     @Nullable

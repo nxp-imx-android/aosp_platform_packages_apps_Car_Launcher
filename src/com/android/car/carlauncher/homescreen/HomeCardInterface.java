@@ -85,23 +85,10 @@ public interface HomeCardInterface {
          */
         void setView(View view);
 
-
         /**
          * Sets the list of {@link Model} that the Presenter will use as sources of content.
          */
         void setModels(List<Model> models);
-
-        /**
-         * Called by one of the Presenter's models when it has updated information to display on
-         * the card.
-         */
-        void onModelUpdated(Model model);
-
-        /**
-         * Called by one of the Presenter's models when it has updated progress related information
-         * to display on the card.
-         */
-        default void onModelUpdated(Model model, boolean updateProgress) {}
     }
 
     /**
@@ -114,21 +101,19 @@ public interface HomeCardInterface {
     interface Model {
 
         /**
-         * Gets the {@link CardHeader} to display for the model.
-         * If there is no content to display, this returns null.
+         * Interface definition for a callback to be invoked for when model has updates.
          */
-        CardHeader getCardHeader();
+        interface OnModelUpdateListener {
+            /**
+             * Called when model is updated.
+             */
+            void onModelUpdate(HomeCardInterface.Model model);
+        }
 
         /**
-         * Gets the {@link CardContent} to display for the model
+         * Registers OnModelUpdateListener on the model.
          */
-        CardContent getCardContent();
-
-        /**
-         * Sets the Presenter for the model. The model updates its presenter of changes and the
-         * presenter manages updating the UI.
-         */
-        void setPresenter(HomeCardInterface.Presenter presenter);
+        void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener);
 
         /**
          * Called by the Presenter to create the Model when the View is created.

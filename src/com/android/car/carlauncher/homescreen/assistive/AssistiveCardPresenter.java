@@ -24,6 +24,7 @@ import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.homescreen.CardPresenter;
 import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class AssistiveCardPresenter extends CardPresenter {
                 @Override
                 public void onViewCreated() {
                     for (HomeCardInterface.Model model : mModels) {
-                        setPresenterInModel(model);
+                        model.setOnModelUpdateListener(mOnModelUpdateListener);
                         model.onCreate(getFragment().requireContext());
                     }
                 }
@@ -74,6 +75,35 @@ public class AssistiveCardPresenter extends CardPresenter {
                             model.onDestroy(getFragment().requireContext());
                         }
                     }
+                }
+            };
+
+    @VisibleForTesting
+    HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener =
+            new HomeCardInterface.Model.OnModelUpdateListener() {
+                @Override
+                public void onModelUpdate(HomeCardInterface.Model model) {
+                    AssistiveModel assistiveModel = (AssistiveModel) model;
+                    if (assistiveModel.getCardHeader() == null) {
+                        if (mCurrentModel != null
+                                && assistiveModel.getClass() == mCurrentModel.getClass()) {
+                            if (mModels != null) {
+                                // Check if any other models have content to display
+                                for (HomeCardInterface.Model candidate : mModels) {
+                                    if (((AssistiveModel) candidate).getCardHeader() != null) {
+                                        mCurrentModel = (AssistiveModel) candidate;
+                                        updateCurrentModelInFragment();
+                                        return;
+                                    }
+                                }
+                            }
+                        } else {
+                            // Otherwise, another model is already on display,
+                            return;
+                        }
+                    }
+                    mCurrentModel = assistiveModel;
+                    updateCurrentModelInFragment();
                 }
             };
 
@@ -90,34 +120,14 @@ public class AssistiveCardPresenter extends CardPresenter {
         mModels = models;
     }
 
-    private void setPresenterInModel(HomeCardInterface.Model model) {
-        model.setPresenter(this);
-    }
-
-    /**
-     * Called when a Model is updated.
-     */
-    @Override
-    public void onModelUpdated(HomeCardInterface.Model model) {
-        AssistiveModel assistiveModel = (AssistiveModel) model;
-        if (assistiveModel.getCardHeader() == null) {
-            if (mCurrentModel != null && model.getClass() == mCurrentModel.getClass()) {
-                if (mModels != null) {
-                    // Check if any other models have content to display
-                    for (HomeCardInterface.Model candidate : mModels) {
-                        if (candidate.getCardHeader() != null) {
-                            mCurrentModel = (AssistiveModel) candidate;
-                            super.onModelUpdated(candidate);
-                            return;
-                        }
-                    }
-                }
-            } else {
-                // Otherwise, another model is already on display,
-                return;
+    private void updateCurrentModelInFragment() {
+        if (mCurrentModel != null && mCurrentModel.getCardHeader() != null) {
+            mHomeCardFragment.updateHeaderView(mCurrentModel.getCardHeader());
+            if (mCurrentModel.getCardContent() != null) {
+                mHomeCardFragment.updateContentView(mCurrentModel.getCardContent());
             }
+        } else {
+            mHomeCardFragment.hideCard();
         }
-        mCurrentModel = assistiveModel;
-        super.onModelUpdated(model);
     }
 }
