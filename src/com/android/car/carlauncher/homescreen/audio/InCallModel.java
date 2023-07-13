@@ -41,7 +41,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.audio.telecom.InCallServiceImpl;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
@@ -77,7 +76,6 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     private CompletableFuture<Void> mPhoneNumberInfoFuture;
 
     private InCallServiceImpl mInCallService;
-    private HomeCardInterface.Presenter mPresenter;
 
     private CardHeader mDefaultDialerCardHeader;
     private CardHeader mCardHeader;
@@ -88,6 +86,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     private DescriptiveTextWithControlsView.Control mEndCallButton;
     private DescriptiveTextWithControlsView.Control mDialpadButton;
     private Drawable mContactImageBackground;
+    private OnModelUpdateListener mOnModelUpdateListener;
 
     private final ServiceConnection mInCallServiceConnection = new ServiceConnection() {
         @Override
@@ -155,8 +154,8 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     }
 
     @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    public void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener) {
+        mOnModelUpdateListener = onModelUpdateListener;
     }
 
     @Override
@@ -239,7 +238,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
         mCurrentCall = null;
         mCardHeader = null;
         mCardContent = null;
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
         if (call != null) {
             call.unregisterCallback(mCallback);
         }
@@ -254,7 +253,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
         // This is implemented to listen to changes to audio from other sources and update the
         // content accordingly.
         if (updateMuteButtonIconState(audioState)) {
-            mPresenter.onModelUpdated(this);
+            mOnModelUpdateListener.onModelUpdate(this);
         }
     }
 
@@ -293,7 +292,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     void updateModelWithPhoneNumber(String number, @Call.CallState int callState) {
         String formattedNumber = TelecomUtils.getFormattedNumber(mContext, number);
         mCardContent = createPhoneCardContent(null, formattedNumber, callState);
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
     /**
@@ -342,7 +341,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
         mCardContent = createPhoneCardContent(
                 new CardContent.CardBackgroundImage(contactImage, mContactImageBackground),
                 contactName, callState);
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
     private void handleActiveCall(@NonNull Call call) {

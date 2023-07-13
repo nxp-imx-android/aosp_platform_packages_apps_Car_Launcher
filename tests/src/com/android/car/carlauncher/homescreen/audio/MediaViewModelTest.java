@@ -94,7 +94,9 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
     @Mock
     private PlaybackProgress mProgress;
     @Mock
-    private HomeCardInterface.Presenter mPresenter;
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
+    @Mock
+    private AudioModel.OnProgressUpdateListener mOnProgressUpdateListener;
 
 
     // The tests use the MediaViewModel's observers. To avoid errors with invoking observeForever
@@ -120,11 +122,12 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
         when(mPlaybackViewModel.getProgress()).thenReturn(mLiveProgress);
         when(mPlaybackViewModel.getPlaybackStateWrapper()).thenReturn(mLivePlaybackState);
         when(mPlaybackViewModel.getPlaybackController()).thenReturn(mPlaybackController);
-        mMediaViewModel.setPresenter(mPresenter);
+        mMediaViewModel.setOnModelUpdateListener(mOnModelUpdateListener);
+        mMediaViewModel.setOnProgressUpdateListener(mOnProgressUpdateListener);
         mMediaViewModel.onCreate(ApplicationProvider.getApplicationContext());
         mSeekBarMax = ApplicationProvider.getApplicationContext().getResources().getInteger(
                 com.android.car.carlauncher.R.integer.optional_seekbar_max);
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
     }
 
     @After
@@ -134,7 +137,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
     @Test
     public void noChange_doesNotCallPresenter() {
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         assertNull(mMediaViewModel.getCardHeader());
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
@@ -161,7 +164,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
         // Model is updated exactly twice: once when source is set (null metadata)
         // and again when the metadata is set
-        verify(mPresenter, times(2)).onModelUpdated(mMediaViewModel);
+        verify(mOnModelUpdateListener, times(2)).onModelUpdate(mMediaViewModel);
         CardHeader header = mMediaViewModel.getCardHeader();
         assertEquals(header.getCardTitle(), APP_NAME);
         assertNull(header.getCardIcon());
@@ -185,7 +188,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
         mLiveMediaSource.setValue(mMediaSource);
 
-        verify(mPresenter).onModelUpdated(mMediaViewModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mMediaViewModel);
         CardHeader header = mMediaViewModel.getCardHeader();
         assertEquals(header.getCardTitle(), APP_NAME);
         assertNull(header.getCardIcon());
@@ -210,7 +213,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
         mLiveMediaSource.setValue(mMediaSource);
 
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         // Card does not get updated.
         assertNull(mMediaViewModel.getCardHeader());
 
@@ -230,7 +233,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
         mLiveMediaSource.setValue(mMediaSource);
 
-        verify(mPresenter).onModelUpdated(mMediaViewModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mMediaViewModel);
         CardHeader header = mMediaViewModel.getCardHeader();
         assertEquals(header.getCardTitle(), APP_NAME);
         assertNull(header.getCardIcon());
@@ -248,7 +251,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
         mLiveMetadata.setValue(mMetadata);
 
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         assertNull(mMediaViewModel.getCardHeader());
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
@@ -265,7 +268,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
 
         mLiveProgress.setValue(mProgress);
 
-        verify(mPresenter).onModelUpdated(mMediaViewModel, IS_TIME_AVAILABLE);
+        verify(mOnProgressUpdateListener).onProgressUpdate(mMediaViewModel, IS_TIME_AVAILABLE);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
         SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
@@ -283,7 +286,7 @@ public class MediaViewModelTest extends AbstractExtendedMockitoTestCase  {
         mLiveProgress.setValue(mProgress);
         mLiveColors.setValue(mColors);
 
-        verify(mPresenter, times(1)).onModelUpdated(mMediaViewModel, false);
+        verify(mOnProgressUpdateListener, times(1)).onProgressUpdate(mMediaViewModel, false);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
         SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
