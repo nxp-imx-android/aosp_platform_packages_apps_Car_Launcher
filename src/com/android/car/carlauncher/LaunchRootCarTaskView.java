@@ -32,7 +32,6 @@ import android.util.Log;
 import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.taskview.TaskViewTransitions;
@@ -111,7 +110,8 @@ final class LaunchRootCarTaskView extends CarTaskView {
                     }
                     if (DBG) {
                         Log.d(TAG, "launchRootCarTaskView onTaskInfoChanged "
-                                + taskInfo.taskId + " - " + taskInfo.baseActivity);
+                                + taskInfo.taskId + " - base=" + taskInfo.baseActivity + " - top="
+                                + taskInfo.topActivity);
                     }
 
                     // Uncontrolled apps by default launch in the launch root so nothing needs to
@@ -245,7 +245,6 @@ final class LaunchRootCarTaskView extends CarTaskView {
      * Returns the {@link android.app.ActivityManager.RunningTaskInfo} of the top task inside the
      * launch root car task view.
      */
-    @VisibleForTesting
     public ActivityManager.RunningTaskInfo getTopTaskInLaunchRootTask() {
         if (mLaunchRootStack.isEmpty()) {
             return null;
