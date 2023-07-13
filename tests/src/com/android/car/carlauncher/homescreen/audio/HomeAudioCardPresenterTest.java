@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import android.view.View;
 
+import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
@@ -54,6 +55,8 @@ public class HomeAudioCardPresenterTest {
     @Mock
     private InCallModel mOtherModel;
 
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -61,11 +64,12 @@ public class HomeAudioCardPresenterTest {
         when(mModel.getCardContent()).thenReturn(CARD_CONTENT);
         mPresenter = new HomeAudioCardPresenter();
         mPresenter.setView(mView);
+        mOnModelUpdateListener = mPresenter.mOnModelUpdateListener;
     }
 
     @Test
     public void onModelUpdated_updatesFragment() {
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         verify(mView).updateHeaderView(CARD_HEADER);
         verify(mView).updateContentView(CARD_CONTENT);
@@ -74,10 +78,10 @@ public class HomeAudioCardPresenterTest {
     @Test
     public void onModelUpdated_nullDifferentModel_doesNotUpdate() {
         when(mOtherModel.getCardHeader()).thenReturn(null);
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
         reset(mView);
 
-        mPresenter.onModelUpdated(mOtherModel);
+        mOnModelUpdateListener.onModelUpdate(mOtherModel);
 
         verify(mView, never()).hideCard();
         verify(mView, never()).updateHeaderView(any());
@@ -93,10 +97,10 @@ public class HomeAudioCardPresenterTest {
                 /* image = */ null, "callerNumber", "ongoingCall");
         when(mOtherModel.getCardHeader()).thenReturn(callModelHeader);
         when(mOtherModel.getCardContent()).thenReturn(callModelContent);
-        mPresenter.onModelUpdated(mOtherModel);
+        mOnModelUpdateListener.onModelUpdate(mOtherModel);
 
         // send MediaModel update during ongoing call
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         //verify call
         verify(mView).updateHeaderView(callModelHeader);
@@ -108,11 +112,11 @@ public class HomeAudioCardPresenterTest {
 
     @Test
     public void onModelUpdated_nullSameModel_updatesFragment() {
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
         reset(mView);
         when(mModel.getCardHeader()).thenReturn(null);
 
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         verify(mView).hideCard();
     }
@@ -121,7 +125,7 @@ public class HomeAudioCardPresenterTest {
     public void onModelUpdated_nullModelAndNullCurrentModel_updatesFragment() {
         when(mModel.getCardHeader()).thenReturn(null);
 
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         verify(mView, never()).hideCard();
     }
