@@ -517,7 +517,6 @@ public final class TaskViewManager {
      * Returns the {@link android.app.ActivityManager.RunningTaskInfo} of the top task inside the
      * launch root car task view.
      */
-    @VisibleForTesting
     public ActivityManager.RunningTaskInfo getTopTaskInLaunchRootTask() {
         return mLaunchRootCarTaskView != null
                 ? mLaunchRootCarTaskView.getTopTaskInLaunchRootTask() : null;
