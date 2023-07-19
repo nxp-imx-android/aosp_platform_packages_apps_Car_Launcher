@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class AssistiveCardPresenter extends CardPresenter {
 
-    private HomeCardInterface.Model mCurrentModel;
+    private AssistiveModel mCurrentModel;
     private List<HomeCardInterface.Model> mModels;
 
     @Override
@@ -72,13 +72,14 @@ public class AssistiveCardPresenter extends CardPresenter {
      */
     @Override
     public void onModelUpdated(HomeCardInterface.Model model) {
-        if (model.getCardHeader() == null) {
+        AssistiveModel assistiveModel = (AssistiveModel) model;
+        if (assistiveModel.getCardHeader() == null) {
             if (mCurrentModel != null && model.getClass() == mCurrentModel.getClass()) {
                 if (mModels != null) {
                     // Check if any other models have content to display
                     for (HomeCardInterface.Model candidate : mModels) {
                         if (candidate.getCardHeader() != null) {
-                            mCurrentModel = candidate;
+                            mCurrentModel = (AssistiveModel) candidate;
                             super.onModelUpdated(candidate);
                             return;
                         }
@@ -89,7 +90,7 @@ public class AssistiveCardPresenter extends CardPresenter {
                 return;
             }
         }
-        mCurrentModel = model;
+        mCurrentModel = assistiveModel;
         super.onModelUpdated(model);
     }
 }

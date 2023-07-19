@@ -45,7 +45,7 @@ import java.util.Map;
  * The {@link HomeCardInterface.Model} for projection status
  */
 public class ProjectionModel implements CarProjectionManager.ProjectionStatusListener,
-        HomeCardInterface.Model {
+        AssistiveModel {
 
     private static final String TAG = "ProjectionModel";
 

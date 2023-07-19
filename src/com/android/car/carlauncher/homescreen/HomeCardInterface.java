@@ -162,10 +162,5 @@ public interface HomeCardInterface {
          * Called by the Presenter to destroy the Model when the View is destroyed
          */
         default void onDestroy(Context context) {}
-
-        /**
-         * Called by the Presenter to handle when the View is clicked
-         */
-        default void onClick(android.view.View view) {}
     }
 }

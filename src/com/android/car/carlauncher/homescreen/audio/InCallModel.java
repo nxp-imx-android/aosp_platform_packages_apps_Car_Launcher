@@ -61,7 +61,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * The {@link HomeCardInterface.Model} for ongoing phone calls.
  */
-public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.InCallListener {
+public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener {
 
     private static final String TAG = "InCallModel";
     private static final boolean DEBUG = false;

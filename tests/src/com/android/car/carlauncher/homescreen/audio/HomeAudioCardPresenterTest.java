@@ -51,7 +51,7 @@ public class HomeAudioCardPresenterTest {
     @Mock
     private HomeCardInterface.View mView;
     @Mock
-    private HomeCardInterface.Model mModel;
+    private AudioModel mModel;
     @Mock
     private InCallModel mOtherModel;
 
