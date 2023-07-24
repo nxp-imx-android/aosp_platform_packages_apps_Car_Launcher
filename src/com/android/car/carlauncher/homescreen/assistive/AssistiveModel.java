@@ -19,11 +19,24 @@ package com.android.car.carlauncher.homescreen.assistive;
 import android.content.Intent;
 
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
+import com.android.car.carlauncher.homescreen.ui.CardContent;
+import com.android.car.carlauncher.homescreen.ui.CardHeader;
 
 /**
  * An extension of {@link HomeCardInterface.Model} for assistive models.
  */
 public interface AssistiveModel extends HomeCardInterface.Model {
+
+    /**
+     * Gets the {@link CardHeader} to display for the model.
+     * If there is no content to display, this returns null.
+     */
+    CardHeader getCardHeader();
+
+    /**
+     * Gets the {@link CardContent} to display for the model
+     */
+    CardContent getCardContent();
     /**
      * Called by the Presenter to getIntent when the View is clicked
      */
