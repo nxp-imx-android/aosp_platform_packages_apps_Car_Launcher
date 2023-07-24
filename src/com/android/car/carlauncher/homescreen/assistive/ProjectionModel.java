@@ -27,8 +27,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.icu.text.MessageFormat;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -113,16 +111,8 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
     }
 
     @Override
-    public void onClick(View v) {
-        if (mIntent.resolveActivity(v.getContext().getPackageManager()) != null) {
-            v.getContext().startActivity(mIntent);
-        } else {
-            Log.e(TAG, "No activity component found to handle intent with action: "
-                    + mIntent.getAction());
-            Toast.makeText(v.getContext(),
-                    mResources.getString(R.string.projected_onclick_launch_error_toast_text),
-                    Toast.LENGTH_SHORT).show();
-        }
+    public Intent getIntent() {
+        return mIntent;
     }
 
     @Override

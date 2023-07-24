@@ -46,11 +46,6 @@ public interface HomeCardInterface {
     interface View {
 
         /**
-         * Sets the {@link Presenter} that will manage this View.
-         */
-        void setPresenter(Presenter presenter);
-
-        /**
          * Called by the Presenter to remove the entire card from view if there is no data to
          * display.
          */
@@ -95,23 +90,6 @@ public interface HomeCardInterface {
          * Sets the list of {@link Model} that the Presenter will use as sources of content.
          */
         void setModels(List<Model> models);
-
-        /**
-         * Called by the View when its view has been created.
-         * This signals the presenter to initialize the relevant models it will use as data sources
-         * and start listening for updates.
-         */
-        void onViewCreated();
-
-        /**
-         * Called by the View when it is destroyed to allow the presenter to clean up any models
-         */
-        void onViewDestroyed();
-
-        /**
-         * Called by the View when it is clicked
-         */
-        default void onViewClicked(android.view.View v) {}
 
         /**
          * Called by one of the Presenter's models when it has updated information to display on
