@@ -123,7 +123,11 @@ public class CarRecentsActivity extends AppCompatActivity implements
         itemTouchHelper.attachToRecyclerView(mRecentsRecyclerView);
 
         mTaskSnapHelper = new TaskSnapHelper(gridSpanCount,
-                getResources().getInteger(R.integer.config_recents_columns_per_page));
+                getResources().getInteger(R.integer.config_recents_columns_per_page),
+                getResources().getDimensionPixelSize(R.dimen.recent_task_width),
+                colSpacing,
+                getResources().getDimensionPixelSize(R.dimen.config_recents_page_snap_tolerance));
+
         mTaskSnapHelper.attachToRecyclerView(mRecentsRecyclerView);
 
         mOnTouchModeChangeListener = isInTouchMode -> {
