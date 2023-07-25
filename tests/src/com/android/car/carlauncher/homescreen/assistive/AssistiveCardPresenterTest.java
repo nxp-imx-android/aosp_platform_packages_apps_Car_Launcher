@@ -50,7 +50,7 @@ public class AssistiveCardPresenterTest {
     @Mock
     private HomeCardInterface.View mView;
     @Mock
-    private HomeCardInterface.Model mModel;
+    private AssistiveModel mModel;
     @Mock
     private ProjectionModel mOtherModel;
 

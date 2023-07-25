@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class HomeAudioCardPresenter extends CardPresenter implements AudioPresenter {
 
-    private HomeCardInterface.Model mCurrentModel;
+    private AudioModel mCurrentModel;
     private List<HomeCardInterface.Model> mModelList;
     private MediaViewModel mMediaViewModel;
 
@@ -45,7 +45,7 @@ public class HomeAudioCardPresenter extends CardPresenter implements AudioPresen
         return mModelList;
     }
 
-    protected HomeCardInterface.Model getCurrentModel() {
+    protected AudioModel getCurrentModel() {
         return mCurrentModel;
     }
 
@@ -116,7 +116,7 @@ public class HomeAudioCardPresenter extends CardPresenter implements AudioPresen
             // if the model trying to update View is NOT a phone call.
             return;
         }
-        mCurrentModel = model;
+        mCurrentModel = (AudioModel) model;
         super.onModelUpdated(model);
     }
 
