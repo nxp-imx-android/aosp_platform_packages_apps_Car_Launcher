@@ -175,7 +175,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
      * display as one of the requirements to fill this role is to provide an ongoing call UI.
      */
     @Override
-    public void onClick(View view) {
+    public Intent getIntent() {
         Intent intent = null;
         if (isSelfManagedCall() && mSelfManagedCallUtil.canShowCalInCallView()) {
             Bundle extras = mCurrentCall.getDetails().getExtras();
@@ -194,7 +194,16 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
             intent = mPackageManager.getLaunchIntentForPackage(
                     mTelecomManager.getDefaultDialerPackage());
         }
+        return intent;
+    }
 
+    /**
+     * Clicking the card opens the default dialer application that fills the role of {@link
+     * android.app.role.RoleManager#ROLE_DIALER}. This application will have an appropriate UI to
+     * display as one of the requirements to fill this role is to provide an ongoing call UI.
+     */
+    public void onClick(View view) {
+        Intent intent = getIntent();
         if (intent != null) {
             // Launch activity in the default app task container: the display area where
             // applications are launched by default.

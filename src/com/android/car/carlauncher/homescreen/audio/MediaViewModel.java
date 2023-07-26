@@ -19,7 +19,6 @@ package com.android.car.carlauncher.homescreen.audio;
 import static android.car.media.CarMediaIntents.EXTRA_MEDIA_COMPONENT;
 import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
 
-import android.app.ActivityOptions;
 import android.app.Application;
 import android.car.media.CarMediaIntents;
 import android.content.Context;
@@ -28,8 +27,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.Size;
-import android.view.Display;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -183,19 +180,14 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
     }
 
     @Override
-    public void onClick(View v) {
-        // Launch activity in the default app task container: the display area where
-        // applications are launched by default.
-        // If not set, activity launches in the calling TDA.
-        ActivityOptions options = ActivityOptions.makeBasic();
-        options.setLaunchDisplayId(Display.DEFAULT_DISPLAY);
-        MediaSource mediaSource = mSourceViewModel.getPrimaryMediaSource().getValue();
+    public Intent getIntent() {
+        MediaSource mediaSource = getMediaSourceViewModel().getPrimaryMediaSource().getValue();
         Intent intent = new Intent(CarMediaIntents.ACTION_MEDIA_TEMPLATE);
         if (mediaSource != null) {
             intent.putExtra(EXTRA_MEDIA_COMPONENT,
                     mediaSource.getBrowseServiceComponentName().flattenToString());
         }
-        v.getContext().startActivity(intent, options.toBundle());
+        return intent;
     }
 
 

@@ -55,14 +55,6 @@ public class CardPresenterTest {
             @Override
             public void setModels(List<HomeCardInterface.Model> models) {
             }
-
-            @Override
-            public void onViewCreated() {
-            }
-
-            @Override
-            public void onViewDestroyed() {
-            }
         };
         mPresenter.setView(mView);
     }

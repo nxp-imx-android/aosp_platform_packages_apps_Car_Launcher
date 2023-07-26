@@ -32,7 +32,7 @@ import java.util.Collections;
 /**
  * Home screen card that displays audio related content
  */
-public class AudioCard implements HomeCardModule {
+public class AudioCardModule implements HomeCardModule {
 
     private static final String TAG = "HomeScreenAudioCard";
 
@@ -77,7 +77,6 @@ public class AudioCard implements HomeCardModule {
         if (mAudioCardView == null) {
             mAudioCardView = new AudioFragment();
             getCardPresenter().setView(mAudioCardView);
-            mAudioCardView.setPresenter(getCardPresenter());
         }
         return mAudioCardView;
     }
