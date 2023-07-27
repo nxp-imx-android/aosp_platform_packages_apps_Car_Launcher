@@ -48,6 +48,7 @@ import com.android.car.carlauncher.test.R;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.core.CombinableMatcher;
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,15 +63,19 @@ import java.util.Random;
 public class TaskSnapHelperTest {
     private static final int FIRST_TASK_WIDTH = 800;
     private static final int TASK_WIDTH = 300;
+    private static final int COL_SPACING = 40;
+    private static final int FIRST_ITEM_WIDTH = FIRST_TASK_WIDTH + COL_SPACING;
+    private static final int ITEM_WIDTH = TASK_WIDTH + COL_SPACING;
     private static final boolean IS_REVERSED_LAYOUT = true;
     private static final int GRID_LAYOUT_DIRECTION = GridLayoutManager.HORIZONTAL;
     private static final int SPAN_COUNT = 2;
     private static final int COL_PER_PAGE = 2;
     private static final int TIP_OVER_VARIANCE = 5;
-    // the mid-point between the first task view and first consequent page of task views such that
-    // the center of first task view is equidistant from the center of the center of the page
-    private static final int MID_POINT_BETWEEN_FIRST_VIEW_AND_FIRST_PAGE =
-            FIRST_TASK_WIDTH / 4 + TASK_WIDTH / 2;
+    private static final int SNAP_TOLERANCE = 0;
+    private static final int DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER =
+            FIRST_ITEM_WIDTH / 2 + ITEM_WIDTH;
+    private static final int DISTANCE_FROM_FIRST_CHILD_CENTER_TO_SECOND_PAGE_CENTER =
+            DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER + (ITEM_WIDTH) * 2;
     private TaskSnapHelper mTaskSnapHelper;
     private int mWindowWidth;
     @Rule
@@ -100,9 +105,19 @@ public class TaskSnapHelperTest {
             // add padding to make sure the first and last element can be centered
             mWindowWidth =
                     activity.getWindowManager().getCurrentWindowMetrics().getBounds().width();
-            rv.setPaddingRelative(TASK_WIDTH, rv.getPaddingTop(),
-                    (mWindowWidth - FIRST_TASK_WIDTH) / 2,
+            rv.setPaddingRelative(
+                    /* start= */ ITEM_WIDTH,
+                    rv.getPaddingTop(),
+                    /* end= */ (mWindowWidth - FIRST_TASK_WIDTH - COL_SPACING) / 2,
                     rv.getPaddingBottom());
+            rv.addItemDecoration(new RecyclerView.ItemDecoration() {
+                @Override
+                public void getItemOffsets(@NotNull Rect outRect, @NotNull View view,
+                        @NotNull RecyclerView parent, @NotNull RecyclerView.State state) {
+                    outRect.right = COL_SPACING / 2;
+                    outRect.left = COL_SPACING / 2;
+                }
+            });
             rv.setAdapter(new TestAdapter(100));
         });
 
@@ -119,108 +134,142 @@ public class TaskSnapHelperTest {
     }
 
     @Test
-    public void testScrollFromInitialPageToNextPage() {
-        assertPageInCenter(/* pageNumber= */ 0);
+    public void testScroll_fromInitialPage_toNextPage() {
         RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        assertPageInCenter(/* pageNumber= */ 0);
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
-            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, SNAP_TOLERANCE);
             mTaskSnapHelper.attachToRecyclerView(rv);
-            rv.smoothScrollBy(-(MID_POINT_BETWEEN_FIRST_VIEW_AND_FIRST_PAGE + TIP_OVER_VARIANCE),
-                    0);
+            rv.smoothScrollBy(-(DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER / 2
+                    + TIP_OVER_VARIANCE), 0);
         });
 
         assertPageInCenter(/* pageNumber= */ 1);
     }
 
     @Test
-    public void testScrollFromFirstPageToNextPage() {
+    public void testScroll_fromFirstPage_toNextPage() {
         RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        assertPageInCenter(/* pageNumber= */ 0);
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
-            rv.smoothScrollBy(-(FIRST_TASK_WIDTH / 2 + TASK_WIDTH), 0);
+            rv.smoothScrollBy(-DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER, 0);
         });
         assertPageInCenter(/* pageNumber= */ 1);
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
-            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, SNAP_TOLERANCE);
             mTaskSnapHelper.attachToRecyclerView(rv);
-            rv.smoothScrollBy(-(TASK_WIDTH + TIP_OVER_VARIANCE), 0);
+            rv.smoothScrollBy(-(ITEM_WIDTH + TIP_OVER_VARIANCE), 0);
         });
 
         assertPageInCenter(/* pageNumber= */ 2);
     }
 
     @Test
-    public void testScrollFromInitialPageStaysOnInitialPage() {
+    public void testScroll_fromInitialPage_staysOnInitialPage() {
+        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
         assertPageInCenter(/* pageNumber= */ 0);
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
-            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, SNAP_TOLERANCE);
             mTaskSnapHelper.attachToRecyclerView(rv);
-            rv.smoothScrollBy(-(MID_POINT_BETWEEN_FIRST_VIEW_AND_FIRST_PAGE - TIP_OVER_VARIANCE),
-                    0);
-        });
-
-        assertPageInCenter(/* pageNumber= */ 0);
-    }
-
-    @Test
-    public void testScrollFromFirstPageStaysOnSamePage() {
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
-        mActivityRule.getScenario().onActivity(activity -> {
-            RecyclerView rv = activity.requireViewById(R.id.list);
-            rv.smoothScrollBy(-(FIRST_TASK_WIDTH / 2 + TASK_WIDTH), 0);
-        });
-        assertPageInCenter(/* pageNumber= */ 1);
-
-        mActivityRule.getScenario().onActivity(activity -> {
-            RecyclerView rv = activity.requireViewById(R.id.list);
-            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE);
-            mTaskSnapHelper.attachToRecyclerView(rv);
-            rv.smoothScrollBy(-(TASK_WIDTH - TIP_OVER_VARIANCE), 0);
-        });
-
-        assertPageInCenter(/* pageNumber= */ 1);
-    }
-
-    @Test
-    public void testScrollFromFirstPageToPreviousPage() {
-        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
-        mActivityRule.getScenario().onActivity(activity -> {
-            RecyclerView rv = activity.requireViewById(R.id.list);
-            rv.smoothScrollBy(-(FIRST_TASK_WIDTH / 2 + TASK_WIDTH), 0);
-        });
-        assertPageInCenter(/* pageNumber= */ 1);
-
-        mActivityRule.getScenario().onActivity(activity -> {
-            RecyclerView rv = activity.requireViewById(R.id.list);
-            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE);
-            mTaskSnapHelper.attachToRecyclerView(rv);
-            rv.smoothScrollBy(MID_POINT_BETWEEN_FIRST_VIEW_AND_FIRST_PAGE + TIP_OVER_VARIANCE, 0);
+            rv.smoothScrollBy(-(DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER / 2
+                    - TIP_OVER_VARIANCE), 0);
         });
 
         assertPageInCenter(/* pageNumber= */ 0);
     }
 
     @Test
-    public void testScrollFromSecondPageToPreviousPage() {
+    public void testScroll_fromFirstPage_staysOnFirstPage() {
         RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        assertPageInCenter(/* pageNumber= */ 0);
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
-            rv.smoothScrollBy(-(FIRST_TASK_WIDTH / 2 + TASK_WIDTH * 3), 0);
+            rv.smoothScrollBy(-DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER, 0);
+        });
+        assertPageInCenter(/* pageNumber= */ 1);
+
+        mActivityRule.getScenario().onActivity(activity -> {
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, SNAP_TOLERANCE);
+            mTaskSnapHelper.attachToRecyclerView(rv);
+            rv.smoothScrollBy(-(ITEM_WIDTH - TIP_OVER_VARIANCE), 0);
+        });
+
+        assertPageInCenter(/* pageNumber= */ 1);
+    }
+
+    @Test
+    public void testScroll_fromFirstPage_noSnap_scrolledUnderTolerance() {
+        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        assertPageInCenter(/* pageNumber= */ 0);
+        mActivityRule.getScenario().onActivity(activity -> {
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            rv.smoothScrollBy(-DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER, 0);
+        });
+        assertPageInCenter(/* pageNumber= */ 1);
+        int snapTolerance = 50;
+        int scrollBy = 40; // this value should be smaller than snapTolerance
+
+        mActivityRule.getScenario().onActivity(activity -> {
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, snapTolerance);
+            mTaskSnapHelper.attachToRecyclerView(rv);
+            rv.smoothScrollBy(scrollBy, 0);
+        });
+
+        assertPageInCenter(/* pageNumber= */ 1, /* offset= */ -scrollBy);
+    }
+
+    @Test
+    public void testScroll_fromFirstPage_toPreviousPage() {
+        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        assertPageInCenter(/* pageNumber= */ 0);
+        mActivityRule.getScenario().onActivity(activity -> {
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            rv.smoothScrollBy(-DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER, 0);
+        });
+        assertPageInCenter(/* pageNumber= */ 1);
+
+        mActivityRule.getScenario().onActivity(activity -> {
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, SNAP_TOLERANCE);
+            mTaskSnapHelper.attachToRecyclerView(rv);
+            rv.smoothScrollBy(DISTANCE_FROM_FIRST_CHILD_CENTER_TO_FIRST_PAGE_CENTER / 2
+                    + TIP_OVER_VARIANCE, 0);
+        });
+
+        assertPageInCenter(/* pageNumber= */ 0);
+    }
+
+    @Test
+    public void testScroll_fromSecondPage_toPreviousPage() {
+        RecyclerViewIdlingResource.register(mActivityRule.getScenario());
+        assertPageInCenter(/* pageNumber= */ 0);
+        mActivityRule.getScenario().onActivity(activity -> {
+            RecyclerView rv = activity.requireViewById(R.id.list);
+            rv.smoothScrollBy(-DISTANCE_FROM_FIRST_CHILD_CENTER_TO_SECOND_PAGE_CENTER, 0);
         });
         assertPageInCenter(/* pageNumber= */ 2);
 
         mActivityRule.getScenario().onActivity(activity -> {
             RecyclerView rv = activity.requireViewById(R.id.list);
-            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE);
+            mTaskSnapHelper = new TaskSnapHelper(SPAN_COUNT, COL_PER_PAGE, TASK_WIDTH,
+                    COL_SPACING, SNAP_TOLERANCE);
             mTaskSnapHelper.attachToRecyclerView(rv);
-            rv.smoothScrollBy((TASK_WIDTH + TIP_OVER_VARIANCE), 0);
+            rv.smoothScrollBy((ITEM_WIDTH + TIP_OVER_VARIANCE), 0);
         });
 
         assertPageInCenter(/* pageNumber= */ 1);
@@ -231,11 +280,19 @@ public class TaskSnapHelperTest {
     }
 
     /**
+     * @see #assertPageInCenter(int, int)
+     */
+    private void assertPageInCenter(int pageNumber) {
+        assertPageInCenter(pageNumber, 0);
+    }
+
+    /**
      * @param pageNumber page that should be checked to be in the center.
      *                   - 0 indicates the item at adapter position 0.
      *                   - 1+ indicates the page with {@code SPAN_COUNT * COL_PER_PAGE} items.
+     * @param offset     value by which the expected center is shifted by.
      */
-    private void assertPageInCenter(int pageNumber) {
+    private void assertPageInCenter(int pageNumber, int offset) {
         if (pageNumber < 0) {
             return;
         }
@@ -249,20 +306,22 @@ public class TaskSnapHelperTest {
         int itemsPerPage = SPAN_COUNT * COL_PER_PAGE;
         int itemPosition = 1 + (itemsPerPage * (pageNumber - 1));
 
-        expectedCenter = (mWindowWidth + TASK_WIDTH) / 2;
-        onView(withText(getViewTextAtPosition(itemPosition++))).check(
-                matches((new CombinableMatcher<>(isCompletelyDisplayed()))
+        expectedCenter = mWindowWidth / 2 + COL_SPACING / 2 + TASK_WIDTH / 2;
+        expectedCenter += offset;
+        onView(withText(getViewTextAtPosition(itemPosition++)))
+                .check(matches((new CombinableMatcher<>(isCompletelyDisplayed()))
                         .and(new IsViewInCenterMatcher(expectedCenter))));
-        onView(withText(getViewTextAtPosition(itemPosition++))).check(
-                matches((new CombinableMatcher<>(isCompletelyDisplayed()))
+        onView(withText(getViewTextAtPosition(itemPosition++)))
+                .check(matches((new CombinableMatcher<>(isCompletelyDisplayed()))
                         .and(new IsViewInCenterMatcher(expectedCenter))));
 
-        expectedCenter = (mWindowWidth - TASK_WIDTH) / 2;
-        onView(withText(getViewTextAtPosition(itemPosition++))).check(
-                matches((new CombinableMatcher<>(isCompletelyDisplayed()))
+        expectedCenter = mWindowWidth / 2 - COL_SPACING / 2 - TASK_WIDTH / 2;
+        expectedCenter += offset;
+        onView(withText(getViewTextAtPosition(itemPosition++)))
+                .check(matches((new CombinableMatcher<>(isCompletelyDisplayed()))
                         .and(new IsViewInCenterMatcher(expectedCenter))));
-        onView(withText(getViewTextAtPosition(itemPosition))).check(
-                matches((new CombinableMatcher<>(isCompletelyDisplayed()))
+        onView(withText(getViewTextAtPosition(itemPosition)))
+                .check(matches((new CombinableMatcher<>(isCompletelyDisplayed()))
                         .and(new IsViewInCenterMatcher(expectedCenter))));
     }
 
