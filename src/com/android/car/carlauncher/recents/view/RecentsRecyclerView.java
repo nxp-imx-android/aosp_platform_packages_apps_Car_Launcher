@@ -25,11 +25,11 @@ import android.view.WindowMetrics;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.recents.RecentTasksViewModel;
+import com.android.car.carlauncher.recents.RecentsUtils;
 import com.android.internal.annotations.VisibleForTesting;
 
 /**
@@ -87,7 +87,7 @@ public class RecentsRecyclerView extends RecyclerView {
             return super.focusSearch(focused, direction);
         }
         boolean goForward = direction == View.FOCUS_FORWARD;
-        if (shouldBeReversed()) {
+        if (RecentsUtils.areItemsRightToLeft(this)) {
             goForward = !goForward;
         }
         ViewHolder focusedViewHolder = findContainingViewHolder(focused);
@@ -165,19 +165,11 @@ public class RecentsRecyclerView extends RecyclerView {
      * @param lastItemPadding  padding set to recyclerView to fit the last item.
      */
     private void setPadding(@Px int firstItemPadding, @Px int lastItemPadding) {
-        boolean shouldBeReversed = shouldBeReversed();
+        boolean shouldBeReversed = RecentsUtils.areItemsRightToLeft(this);
         setPaddingRelative(
                 /* start= */ shouldBeReversed ? lastItemPadding : firstItemPadding,
                 getPaddingTop(),
                 /* end= */ shouldBeReversed ? firstItemPadding : lastItemPadding,
                 getPaddingBottom());
-    }
-
-    private boolean shouldBeReversed() {
-        boolean isLayoutReversed = false;
-        if (getLayoutManager() instanceof LinearLayoutManager) {
-            isLayoutReversed = ((LinearLayoutManager) getLayoutManager()).getReverseLayout();
-        }
-        return isLayoutRtl() ^ isLayoutReversed;
     }
 }

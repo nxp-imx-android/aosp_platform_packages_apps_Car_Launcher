@@ -87,6 +87,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="card_icon_size"/>
       <item type="dimen" name="card_name_margin_start"/>
       <item type="dimen" name="card_width"/>
+      <item type="dimen" name="config_recents_page_snap_tolerance"/>
       <item type="dimen" name="contextual_screen_percentage"/>
       <item type="dimen" name="control_bar_padding"/>
       <item type="dimen" name="descriptive_text_margin_top"/>

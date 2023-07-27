@@ -24,19 +24,39 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 import androidx.recyclerview.widget.SnapHelper;
 
+import com.android.car.carlauncher.recents.RecentsUtils;
+
 /**
- * Snaps the first item or to the center of a page of items to the center of the RecyclerView.
+ * Snaps the first item or a page of items to the center of the RecyclerView.
  */
 public class TaskSnapHelper extends SnapHelper {
+    private static final int INVALID_MEASURE = Integer.MAX_VALUE;
     private final int mSpanCount;
     private final int mColPerPage;
     private final int mItemsInPageCount;
+    private final int mItemWidth;
+    private final int mColumnSpacing;
+    private final int mSnapTolerance;
     private RecyclerView mRecyclerView;
+    // keeps track if the item used for snapping is last item. If false, it is the first item.
+    private boolean mIsLastItem = false;
 
-    public TaskSnapHelper(int spanCount, int colPerPage) {
+    /**
+     * @param spanCount     span set in the recyclerview grid layout (number of rows).
+     * @param colPerPage    number of columns to be snapped together to form a page.
+     * @param itemWidth     fixed width of an items in the recyclerview (not the first item width).
+     * @param columnSpacing spacing between two items/columns in the recyclerView.
+     * @param snapTolerance distance by/under which if center of a page is moved won't trigger a
+     *                      snap.
+     */
+    public TaskSnapHelper(int spanCount, int colPerPage, int itemWidth, int columnSpacing,
+            int snapTolerance) {
         mSpanCount = spanCount;
         mColPerPage = colPerPage;
         mItemsInPageCount = mColPerPage * mSpanCount;
+        mItemWidth = itemWidth;
+        mColumnSpacing = columnSpacing;
+        mSnapTolerance = snapTolerance;
     }
 
     @Nullable
@@ -47,7 +67,7 @@ public class TaskSnapHelper extends SnapHelper {
             return new int[]{0, 0};
         }
         int adapterPosition = mRecyclerView.getChildAdapterPosition(targetView);
-        int childCenter = Integer.MAX_VALUE;
+        int childCenter = INVALID_MEASURE;
         if (adapterPosition == 0) {
             childCenter = findCenterOfView(targetView);
         } else {
@@ -55,12 +75,16 @@ public class TaskSnapHelper extends SnapHelper {
             if (targetPosition == RecyclerView.NO_POSITION) {
                 return new int[]{0, 0};
             }
-            childCenter = findCenterOfPage(targetPosition, mItemsInPageCount, layoutManager);
+            int firstChildIndexInPage = mIsLastItem
+                    ? getFirstChildIndexFromLastChild(targetPosition, mItemsInPageCount)
+                    : targetPosition;
+            childCenter = findCenterOfPage(firstChildIndexInPage);
         }
-        if (childCenter == Integer.MAX_VALUE) {
+        if (childCenter == INVALID_MEASURE) {
             return new int[]{0, 0};
         }
         int center = layoutManager.getWidth() / 2;
+
         return new int[]{childCenter - center, 0};
     }
 
@@ -77,7 +101,7 @@ public class TaskSnapHelper extends SnapHelper {
         }
         int center = layoutManager.getWidth() / 2;
         View closestView = null;
-        int closestDistance = Integer.MAX_VALUE;
+        int closestDistance = INVALID_MEASURE;
         int i = 0;
         while (i < childCount) {
             View child = layoutManager.getChildAt(i);
@@ -91,31 +115,51 @@ public class TaskSnapHelper extends SnapHelper {
                 continue;
             }
             int childCenter;
+            boolean isLastItem = false;
             if (adapterPosition == 0) {
                 childCenter = findCenterOfView(child);
                 i++;
             } else {
+                // colNum represents the column that the item appears in. colNum starts from 0 for
+                // the 0th item, 1 for 1-mSpanCount items
                 int colNum = (int) Math.ceil(adapterPosition / (float) mSpanCount);
-                // following calculations have -1 to account for the first element not following
-                // regular grid span
-                boolean isStartCol = ((colNum - 1) % mColPerPage) == 0;
-                boolean isFirstInStartCol = ((adapterPosition - 1) % mSpanCount) == 0;
-                if (isStartCol && isFirstInStartCol) {
-                    childCenter = findCenterOfPage(i, mItemsInPageCount, layoutManager);
+                boolean isInFirstColOfPage = colNum % mColPerPage == 1;
+                boolean isInFirstRow = adapterPosition % mSpanCount == 1;
+                boolean isInLastColOfPage = colNum % mColPerPage == 0;
+                boolean isInLastRow = adapterPosition % mSpanCount == 0;
+
+                // only look at the first/last item of the page to calculate its center and skip
+                // the other items since this can already give us center of the page.
+                if (isInFirstColOfPage && isInFirstRow) {
+                    // child is the first item of its page
+                    childCenter = findCenterOfPage(i);
                     i += mItemsInPageCount;
+                } else if (isInLastColOfPage && isInLastRow) {
+                    // child is the last item of its page
+                    int firstChildIndexInPage = getFirstChildIndexFromLastChild(i,
+                            mItemsInPageCount);
+                    childCenter = findCenterOfPage(firstChildIndexInPage);
+                    isLastItem = true;
+                    i++;
                 } else {
+                    // child is neither first nor last item of its page
                     i++;
                     continue;
                 }
             }
-            if (childCenter == Integer.MAX_VALUE) {
+            if (childCenter == INVALID_MEASURE) {
                 continue;
             }
             int distanceToCenter = Math.abs(center - childCenter);
             if (distanceToCenter < closestDistance) {
                 closestView = child;
                 closestDistance = distanceToCenter;
+                mIsLastItem = isLastItem;
             }
+        }
+        if (closestDistance <= mSnapTolerance) {
+            // already reached to the closest page given the tolerance, no snapping required.
+            return null;
         }
         return closestView;
     }
@@ -186,22 +230,52 @@ public class TaskSnapHelper extends SnapHelper {
         return (left + right) / 2;
     }
 
-    private int findCenterOfPage(int startViewInPageIndex, int numOfViewsInPage,
-            LayoutManager layoutManager) {
-        int averageCenter = 0;
-        int numOfViewsPresent = 0;
-        for (int i = startViewInPageIndex; i < startViewInPageIndex + numOfViewsInPage; i++) {
-            View child = layoutManager.getChildAt(i);
-            if (child == null) {
-                continue;
-            }
-            averageCenter += findCenterOfView(child);
-            numOfViewsPresent++;
+    private int findCenterOfPage(int firstChildInPageIndex) {
+        if (mRecyclerView == null || mRecyclerView.getLayoutManager() == null) {
+            return INVALID_MEASURE;
         }
-        if (numOfViewsPresent == 0) {
-            return Integer.MAX_VALUE;
+        return findCenterOfPage(firstChildInPageIndex, mColPerPage, mItemsInPageCount,
+                mItemWidth, mColumnSpacing,
+                RecentsUtils.areItemsRightToLeft(mRecyclerView), mRecyclerView.getLayoutManager());
+    }
+
+    private int findCenterOfPage(int firstChildInPageIndex, int colPerPage, int itemsInPageCount,
+            int itemWidth, int columnSpacing, boolean isLayoutReversed,
+            @NonNull LayoutManager layoutManager) {
+        View firstChild = layoutManager.getChildAt(firstChildInPageIndex);
+        View lastChild = layoutManager.getChildAt(
+                getLastChildIndexFromFirstChild(firstChildInPageIndex, itemsInPageCount));
+        if (firstChild == null && lastChild == null) {
+            return INVALID_MEASURE;
         }
-        averageCenter = averageCenter / numOfViewsPresent;
-        return averageCenter;
+        int pageWidth = getPageWidth(itemWidth, columnSpacing, colPerPage);
+        if (lastChild != null && firstChild == null) {
+            return isLayoutReversed
+                    ? calculateCenterFromLeftEdge(lastChild, columnSpacing, pageWidth)
+                    : calculateCenterFromRightEdge(lastChild, columnSpacing, pageWidth);
+        }
+        return isLayoutReversed
+                ? calculateCenterFromRightEdge(firstChild, columnSpacing, pageWidth)
+                : calculateCenterFromLeftEdge(firstChild, columnSpacing, pageWidth);
+    }
+
+    private int calculateCenterFromLeftEdge(View view, int columnSpacing, int pageWidth) {
+        return view.getLeft() - columnSpacing / 2 + (pageWidth / 2);
+    }
+
+    private int calculateCenterFromRightEdge(View view, int columnSpacing, int pageWidth) {
+        return view.getRight() + columnSpacing / 2 - (pageWidth / 2);
+    }
+
+    private int getLastChildIndexFromFirstChild(int firstChildIndex, int itemsInPageCount) {
+        return firstChildIndex + (itemsInPageCount - 1);
+    }
+
+    private int getFirstChildIndexFromLastChild(int lastChildIndex, int itemsInPageCount) {
+        return lastChildIndex - (itemsInPageCount - 1);
+    }
+
+    private int getPageWidth(int itemWidth, int columnSpacing, int colPerPage) {
+        return (itemWidth + columnSpacing) * colPerPage;
     }
 }
