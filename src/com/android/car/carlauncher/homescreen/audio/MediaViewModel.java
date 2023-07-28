@@ -91,6 +91,8 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
     private ImageBinder<MediaItemMetadata.ArtworkRef> mAlbumArtBinder;
     private Drawable mAlbumImageBitmap;
     private Drawable mMediaBackground;
+    private OnModelUpdateListener mOnModelUpdateListener;
+    private OnProgressUpdateListener mOnProgressUpdateListener;
     private Observer<Object> mMediaSourceColorObserver = x -> updateMediaSourceColor();
     private Observer<Object> mMetadataObserver = x -> updateModelMetadata();
     private Observer<Object> mPlaybackControllerObserver = controller -> updatePlaybackController();
@@ -112,8 +114,9 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
                 if (playbackStateWrapper != null
                         && mIsSeekEnabled != playbackStateWrapper.isSeekToEnabled()) {
                     mIsSeekEnabled = playbackStateWrapper.isSeekToEnabled();
-                    if (mAudioPresenter != null) {
-                        mAudioPresenter.onModelUpdated(/* model = */ this, /* updateProgress = */
+                    if (mOnProgressUpdateListener != null) {
+                        mOnProgressUpdateListener.onProgressUpdate(/* model = */
+                                this, /* updateProgress = */
                                 false);
                     }
                 }
@@ -151,7 +154,7 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
         mAlbumArtBinder = new ImageBinder<>(ImageBinder.PlaceholderType.FOREGROUND, maxArtSize,
                 drawable -> {
                     mAlbumImageBitmap = drawable;
-                    mAudioPresenter.onModelUpdated(/* model = */ this);
+                    mOnModelUpdateListener.onModelUpdate(/* model = */ this);
                 });
         mSourceViewModel.getPrimaryMediaSource().observeForever(mMediaSourceObserver);
         mPlaybackViewModel.getMetadata().observeForever(mMetadataObserver);
@@ -166,7 +169,7 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
                 com.android.car.carlauncher.R.integer.optional_seekbar_max);
         mUseMediaSourceColor = resources.getBoolean(R.bool.use_media_source_color_for_seek_bar);
         mTimesSeparator = resources.getString(com.android.car.carlauncher.R.string.times_separator);
-        mAudioPresenter.onModelUpdated(/* model = */ this);
+        mOnModelUpdateListener.onModelUpdate(/* model = */ this);
 
         updateModel(); // Make sure the name of the media source properly reflects the locale.
     }
@@ -190,13 +193,14 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
         return intent;
     }
 
-
-    /**
-     * Sets the Presenter, which will handle updating the UI
-     */
     @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mAudioPresenter = presenter;
+    public void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener) {
+        mOnModelUpdateListener = onModelUpdateListener;
+    }
+
+    @Override
+    public void setOnProgressUpdateListener(OnProgressUpdateListener onProgressUpdateListener) {
+        mOnProgressUpdateListener = onProgressUpdateListener;
     }
 
     @Override
@@ -255,13 +259,13 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
                 updateMetadata();
                 updateProgress();
                 updateMediaSourceColor();
+                mOnModelUpdateListener.onModelUpdate(/* model = */ this);
             } else {
                 if (Log.isLoggable(TAG, Log.INFO)) {
                     Log.i(TAG, "Not resetting media widget for video apps or apps "
                             + "that do not support media browse");
                 }
             }
-            mAudioPresenter.onModelUpdated(/* model = */ this);
         }
     }
 
@@ -272,7 +276,7 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
         if (metadataChanged()) {
             updateMetadata();
             if (mCardHeader != null) {
-                mAudioPresenter.onModelUpdated(/* model = */ this);
+                mOnModelUpdateListener.onModelUpdate(/* model = */ this);
             }
         }
     }
@@ -282,7 +286,8 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
         mSeekBarColor = (mediaSourceColors == null || !mUseMediaSourceColor)
                 ? mDefaultSeekBarColor
                 : mediaSourceColors.getAccentColor(mDefaultSeekBarColor);
-        mAudioPresenter.onModelUpdated(/* model = */ this, /* updateProgress = */ false);
+        mOnProgressUpdateListener.onProgressUpdate(/* model = */ this, /* updateProgress = */
+                false);
     }
 
     private void updateProgress() {
@@ -298,7 +303,8 @@ public class MediaViewModel extends AndroidViewModel implements AudioModel {
                 : (int) (mSeekBarMax * playbackProgress.getProgressFraction());
         if (mProgress != progress) {
             mProgress = progress;
-            mAudioPresenter.onModelUpdated(/* model = */ this, /* updateProgress = */ true);
+            mOnProgressUpdateListener.onProgressUpdate(/* model = */ this, /* updateProgress = */
+                    true);
         }
     }
 

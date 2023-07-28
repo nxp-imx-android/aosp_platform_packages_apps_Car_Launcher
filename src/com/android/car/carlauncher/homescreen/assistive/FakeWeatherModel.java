@@ -19,7 +19,6 @@ package com.android.car.carlauncher.homescreen.assistive;
 import android.content.Context;
 
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
@@ -28,10 +27,9 @@ import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
  * Displays static weather information to provide default content for the assistive card.
  */
 public class FakeWeatherModel implements AssistiveModel {
-
-    private HomeCardInterface.Presenter mPresenter;
     private CardHeader mCardHeader;
     private DescriptiveTextView mCardContent;
+    private OnModelUpdateListener mOnModelUpdateListener;
 
     @Override
     public void onCreate(Context context) {
@@ -42,7 +40,7 @@ public class FakeWeatherModel implements AssistiveModel {
                 /* title= */ context.getString(R.string.fake_weather_main_text),
                 /* subtitle= */ null,
                 /* footer= */ context.getString(R.string.fake_weather_footer_text));
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
     @Override
@@ -56,7 +54,7 @@ public class FakeWeatherModel implements AssistiveModel {
     }
 
     @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    public void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener) {
+        mOnModelUpdateListener = onModelUpdateListener;
     }
 }
