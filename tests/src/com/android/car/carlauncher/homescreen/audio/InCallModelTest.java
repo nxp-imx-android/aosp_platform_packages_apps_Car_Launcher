@@ -63,7 +63,7 @@ public class InCallModelTest {
     private Context mContext;
 
     @Mock
-    private HomeCardInterface.Presenter mPresenter;
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
     @Mock
     private Clock mClock;
 
@@ -74,7 +74,7 @@ public class InCallModelTest {
         MockitoAnnotations.initMocks(this);
         mContext = ApplicationProvider.getApplicationContext();
         mInCallModel = new InCallModel(mClock);
-        mInCallModel.setPresenter(mPresenter);
+        mInCallModel.setOnModelUpdateListener(mOnModelUpdateListener);
         mInCallModel.onCreate(mContext);
         Resources resources = ApplicationProvider.getApplicationContext().getResources();
         mOngoingCallSecondaryText = resources.getString(R.string.ongoing_call_text);
@@ -88,21 +88,21 @@ public class InCallModelTest {
 
     @Test
     public void noChange_doesNotCallPresenter() {
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
     }
 
     @Test
     public void onCallRemoved_callsPresenter() {
         mInCallModel.onCallRemoved(mCall);
 
-        verify(mPresenter).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mInCallModel);
     }
 
     @Test
     public void updateModelWithPhoneNumber_active_setsPhoneNumberAndSubtitle() {
         mInCallModel.updateModelWithPhoneNumber(PHONE_NUMBER, Call.STATE_ACTIVE);
 
-        verify(mPresenter).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mInCallModel);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mInCallModel.getCardContent();
         String formattedNumber = TelecomUtils.getFormattedNumber(
@@ -115,7 +115,7 @@ public class InCallModelTest {
     public void updateModelWithPhoneNumber_dialing_setsPhoneNumberAndSubtitle() {
         mInCallModel.updateModelWithPhoneNumber(PHONE_NUMBER, Call.STATE_DIALING);
 
-        verify(mPresenter).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mInCallModel);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mInCallModel.getCardContent();
         String formattedNumber = TelecomUtils.getFormattedNumber(
@@ -131,7 +131,7 @@ public class InCallModelTest {
                 /* typeLabel = */ null, /*  lookupKey = */ null);
         mInCallModel.updateModelWithContact(phoneInfo, Call.STATE_ACTIVE);
 
-        verify(mPresenter).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mInCallModel);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mInCallModel.getCardContent();
         assertEquals(content.getTitle(), DISPLAY_NAME);
@@ -147,7 +147,7 @@ public class InCallModelTest {
                 /* lookupKey = */ null);
         mInCallModel.updateModelWithContact(phoneInfo, Call.STATE_ACTIVE);
 
-        verify(mPresenter).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mInCallModel);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mInCallModel.getCardContent();
         assertEquals(content.getTitle(), DISPLAY_NAME);
@@ -162,7 +162,7 @@ public class InCallModelTest {
                 /* typeLabel = */ null, /*  lookupKey = */ null);
         mInCallModel.updateModelWithContact(phoneInfo, Call.STATE_DIALING);
 
-        verify(mPresenter).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mInCallModel);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mInCallModel.getCardContent();
         assertEquals(content.getTitle(), DISPLAY_NAME);
@@ -179,7 +179,7 @@ public class InCallModelTest {
                 CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallAudioState.ROUTE_WIRED_OR_EARPIECE);
         mInCallModel.updateMuteButtonDrawableState(new int[0]);
         mInCallModel.onCallAudioStateChanged(callAudioState);
-        verify(mPresenter, times(1)).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener, times(1)).onModelUpdate(mInCallModel);
 
     }
 
@@ -192,7 +192,7 @@ public class InCallModelTest {
                 CallAudioState.ROUTE_WIRED_OR_EARPIECE, CallAudioState.ROUTE_WIRED_OR_EARPIECE);
         mInCallModel.updateMuteButtonDrawableState(new int[0]);
         mInCallModel.onCallAudioStateChanged(callAudioState);
-        verify(mPresenter, times(0)).onModelUpdated(mInCallModel);
+        verify(mOnModelUpdateListener, times(0)).onModelUpdate(mInCallModel);
     }
 
     @Test

@@ -19,6 +19,8 @@ package com.android.car.carlauncher.homescreen.audio;
 import android.content.Intent;
 
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
+import com.android.car.carlauncher.homescreen.ui.CardContent;
+import com.android.car.carlauncher.homescreen.ui.CardHeader;
 
 /**
  * An extension of {@link HomeCardInterface.Model} for audio models.
@@ -28,4 +30,31 @@ public interface AudioModel  extends HomeCardInterface.Model {
      * Called by the Presenter to getIntent when the View is clicked
      */
     Intent getIntent();
+
+    /**
+     * Gets the {@link CardHeader} to display for the model.
+     * If there is no content to display, this returns null.
+     */
+    CardHeader getCardHeader();
+
+    /**
+     * Gets the {@link CardContent} to display for the model
+     */
+    CardContent getCardContent();
+
+    /**
+     * Interface definition for a callback to be invoked for when audio model has progress updates.
+     */
+    interface OnProgressUpdateListener {
+
+        /**
+         * Called when progress is updated.
+         */
+        default void onProgressUpdate(AudioModel model, boolean updateProgress) {}
+    }
+
+    /**
+     * Registers OnProgressUpdateListener on the model.
+     */
+    default void setOnProgressUpdateListener(OnProgressUpdateListener onProgressUpdateListener) {}
 }
