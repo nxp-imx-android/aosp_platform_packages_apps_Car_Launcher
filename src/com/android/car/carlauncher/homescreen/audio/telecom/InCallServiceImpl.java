@@ -26,6 +26,7 @@ import android.telecom.InCallService;
 import android.util.Log;
 
 import com.android.car.carlauncher.homescreen.audio.InCallModel;
+import com.android.car.carlauncher.homescreen.audio.InCallServiceManagerProvider;
 
 import java.util.ArrayList;
 
@@ -45,6 +46,18 @@ public class InCallServiceImpl extends InCallService {
     public static final String ACTION_LOCAL_BIND = "local_bind";
 
     private ArrayList<InCallListener> mInCallListeners = new ArrayList<>();
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        InCallServiceManagerProvider.get().setInCallService(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        InCallServiceManagerProvider.get().setInCallService(null);
+        super.onDestroy();
+    }
 
     @Override
     public void onCallAdded(Call call) {
