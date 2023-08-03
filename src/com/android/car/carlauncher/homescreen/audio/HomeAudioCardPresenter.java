@@ -23,6 +23,7 @@ import android.view.Display;
 import com.android.car.carlauncher.homescreen.CardPresenter;
 import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
+import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.List;
@@ -129,7 +130,11 @@ public class HomeAudioCardPresenter extends CardPresenter {
                             || model.getCardHeader() == null) {
                         return;
                     }
-                    mAudioFragment.updateContentView(model.getCardContent(), updateProgress);
+                    DescriptiveTextWithControlsView descriptiveTextWithControlsContent =
+                            (DescriptiveTextWithControlsView) model.getCardContent();
+                    mAudioFragment.updateProgress(
+                            descriptiveTextWithControlsContent.getSeekBarViewModel(),
+                            updateProgress);
                 }
             };
 
