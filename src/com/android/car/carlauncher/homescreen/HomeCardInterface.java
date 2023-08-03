@@ -20,9 +20,6 @@ import android.content.Context;
 
 import androidx.fragment.app.Fragment;
 
-import com.android.car.carlauncher.homescreen.ui.CardContent;
-import com.android.car.carlauncher.homescreen.ui.CardHeader;
-
 import java.util.List;
 
 /**
@@ -50,22 +47,6 @@ public interface HomeCardInterface {
          * display.
          */
         void hideCard();
-
-        /**
-         * Called by the Presenter when there is a change in the source of the card's content.
-         * This updates the app name and app icon displayed on the card.
-         */
-        void updateHeaderView(CardHeader header);
-
-        /**
-         * Called by the Presenter to update the card's content.
-         */
-        void updateContentView(CardContent content);
-
-        /**
-         * Called by the Presenter to update the seekbar and times
-         */
-        default void updateContentView(CardContent content, boolean showTimes) {}
 
         /**
          * Returns the {@link Fragment} with which the View is associated.
@@ -119,11 +100,13 @@ public interface HomeCardInterface {
          * Called by the Presenter to create the Model when the View is created.
          * Should be called after the Model's Presenter has been set with setPresenter
          */
-        default void onCreate(Context context) {}
+        default void onCreate(Context context) {
+        }
 
         /**
          * Called by the Presenter to destroy the Model when the View is destroyed
          */
-        default void onDestroy(Context context) {}
+        default void onDestroy(Context context) {
+        }
     }
 }
