@@ -81,6 +81,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     private ImageButton mControlBarRightButton;
 
 
+    private boolean mViewCreated;
     private OnViewLifecycleChangeListener mOnViewLifecycleChangeListener;
 
     private OnViewClickListener mOnViewClickListener;
@@ -124,14 +125,20 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mOnViewLifecycleChangeListener.onViewCreated();
+        mViewCreated = true;
+        if (mOnViewLifecycleChangeListener != null) {
+            mOnViewLifecycleChangeListener.onViewCreated();
+        }
         mRootView.setOnClickListener(v -> mOnViewClickListener.onViewClicked());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mOnViewLifecycleChangeListener.onViewDestroyed();
+        mViewCreated = false;
+        if (mOnViewLifecycleChangeListener != null) {
+            mOnViewLifecycleChangeListener.onViewDestroyed();
+        }
         mSize = null;
     }
 
@@ -148,6 +155,9 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     public void setOnViewLifecycleChangeListener(
             OnViewLifecycleChangeListener onViewLifecycleChangeListener) {
         mOnViewLifecycleChangeListener = onViewLifecycleChangeListener;
+        if (mViewCreated) {
+            mOnViewLifecycleChangeListener.onViewCreated();
+        }
     }
 
     /**
