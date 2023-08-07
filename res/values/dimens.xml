@@ -134,6 +134,6 @@
     <!--  task width can be calculated using the following formula:
       available height of thumbnail * width of screen / height of screen between the insets
       This will allow most task thumbnails to be displayed without cropping. -->
-    <dimen name="recent_task_width_first">894dp</dimen>
-    <dimen name="recent_task_width">359dp</dimen>
+    <dimen name="recent_task_width_first">1036dp</dimen>
+    <dimen name="recent_task_width">432dp</dimen>
 </resources>

@@ -165,8 +165,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="card_icon"/>
       <item type="id" name="card_name"/>
       <item type="id" name="card_view"/>
-      <item type="id" name="clear_all_button"/>
-      <item type="id" name="clear_all_button_focus_area"/>
       <item type="id" name="descriptive_text_layout"/>
       <item type="id" name="descriptive_text_with_controls_layout"/>
       <item type="id" name="divider"/>
@@ -192,6 +190,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="recent_tasks_group"/>
       <item type="id" name="recent_tasks_list"/>
       <item type="id" name="recent_tasks_list_focus_area"/>
+      <item type="id" name="recents_clear_all_button"/>
       <item type="id" name="secondary_text"/>
       <item type="id" name="start_edge"/>
       <item type="id" name="tap_for_more_text"/>
@@ -235,6 +234,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="descriptive_text"/>
       <item type="layout" name="optional_seek_bar_with_times"/>
       <item type="layout" name="recent_apps_row"/>
+      <item type="layout" name="recent_clear_all_view"/>
       <item type="layout" name="recent_task_view"/>
       <item type="layout" name="recent_task_view_first"/>
       <item type="layout" name="recent_task_view_inner"/>
@@ -281,7 +281,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="style" name="AppDisplayNameStyle"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ClearAllRecentTasksButton"/>
-      <item type="style" name="ClearAllRecentTasksButtonFocusArea"/>
       <item type="style" name="ContextualSpace"/>
       <item type="style" name="HiddenRecentTaskThumbnail"/>
       <item type="style" name="HorizontalLineDivider"/>
