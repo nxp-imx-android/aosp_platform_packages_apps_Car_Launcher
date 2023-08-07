@@ -87,7 +87,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="card_icon_size"/>
       <item type="dimen" name="card_name_margin_start"/>
       <item type="dimen" name="card_width"/>
-      <item type="dimen" name="config_recents_page_snap_tolerance"/>
       <item type="dimen" name="contextual_screen_percentage"/>
       <item type="dimen" name="control_bar_padding"/>
       <item type="dimen" name="descriptive_text_margin_top"/>
@@ -148,7 +147,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="page_indicator_bar"/>
       <item type="drawable" name="recent_clear_all_button_background"/>
       <item type="drawable" name="recent_dismiss_button_background"/>
-      <item type="drawable" name="recent_task_hidden_icon"/>
       <item type="id" name="app_icon"/>
       <item type="id" name="app_item"/>
       <item type="id" name="app_name"/>
@@ -212,7 +210,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="integer" name="config_msg_register_mirroring_pkg_code"/>
       <item type="integer" name="config_msg_send_mirroring_pkg_code"/>
       <item type="integer" name="config_msg_unregister_mirroring_pkg_code"/>
-      <item type="integer" name="config_recents_columns_per_page"/>
       <item type="integer" name="ms_background_highlight_duration"/>
       <item type="integer" name="ms_drop_animation_delay"/>
       <item type="integer" name="ms_long_press_animation_duration"/>
@@ -240,7 +237,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="recent_apps_row"/>
       <item type="layout" name="recent_task_view"/>
       <item type="layout" name="recent_task_view_first"/>
-      <item type="layout" name="recent_task_view_hidden"/>
       <item type="layout" name="recent_task_view_inner"/>
       <item type="layout" name="recents_activity"/>
       <item type="layout" name="tap_for_more_text"/>
