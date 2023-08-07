@@ -33,7 +33,7 @@
         android:id="@+id/recent_tasks_list_focus_area"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/clear_all_button_focus_area"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         style="@style/RecentTasksListFocusArea">
         <com.android.car.carlauncher.recents.view.RecentsRecyclerView
@@ -44,19 +44,6 @@
             app:spanCount="2"
             app:reverseLayout="true"
             style="@style/RecentTasksList"/>
-    </com.android.car.ui.FocusArea>
-
-    <com.android.car.ui.FocusArea
-        android:id="@+id/clear_all_button_focus_area"
-        app:layout_constraintTop_toBottomOf="@id/recent_tasks_list_focus_area"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        style="@style/ClearAllRecentTasksButtonFocusArea">
-        <Button
-            android:id="@+id/clear_all_button"
-            android:text="@string/recents_clear_all_text"
-            style="@style/ClearAllRecentTasksButton"/>
     </com.android.car.ui.FocusArea>
 
     <androidx.constraintlayout.widget.Group

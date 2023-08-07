@@ -96,7 +96,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                if (position == 0) {
+                boolean isLastPosition = mRecentsRecyclerView != null
+                        && mRecentsRecyclerView.getAdapter() != null
+                        && position == mRecentsRecyclerView.getAdapter().getItemCount() - 1;
+                if (position == 0 || isLastPosition) {
                     return gridSpanCount;
                 }
                 return 1;
@@ -118,9 +121,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
                 getResources().getFloat(R.dimen.recent_task_swiped_threshold)));
         itemTouchHelper.attachToRecyclerView(mRecentsRecyclerView);
 
-        mRecentsRecyclerView.setAdapter(new RecentTasksAdapter(this, getLayoutInflater(),
-                itemTouchHelper));
-
         mClearAllAnimator = AnimatorInflater.loadAnimator(this,
                 R.animator.recents_clear_all);
         mClearAllAnimator.addListener(new AnimatorListenerAdapter() {
@@ -132,8 +132,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
             }
         });
         mClearAllAnimator.setTarget(mRecentsRecyclerView);
-        View clearAllButton = findViewById(R.id.clear_all_button);
-        clearAllButton.setOnClickListener(v -> mClearAllAnimator.start());
+        View.OnClickListener clearAllOnClickListener = v -> mClearAllAnimator.start();
+
+        mRecentsRecyclerView.setAdapter(new RecentTasksAdapter(this, getLayoutInflater(),
+                itemTouchHelper, clearAllOnClickListener));
     }
 
     @Override
