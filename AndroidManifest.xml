@@ -77,10 +77,16 @@
         </intent>
     </queries>
 
+    <!-- The app needs to be directBootAware so that it can reflect the correct call state
+     when the system boots up. -->
+    <!-- defaultToDeviceProtectedStorage prevents app crash before boot complete if access
+     storage. -->
     <application
         android:icon="@drawable/ic_launcher_home"
         android:label="@string/app_title"
         android:theme="@style/Theme.Launcher"
+        android:directBootAware="true"
+        android:defaultToDeviceProtectedStorage="true"
         android:supportsRtl="true">
         <activity
             android:name=".CarLauncher"
