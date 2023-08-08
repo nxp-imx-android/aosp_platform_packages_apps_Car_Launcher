@@ -40,7 +40,6 @@ public class RecentsRecyclerView extends RecyclerView {
     private final int mFirstItemWidth;
     private final int mColSpacing;
     private final int mItemWidth;
-    private final int mColsPerPage;
     private RecentTasksViewModel mRecentTasksViewModel;
     private WindowMetrics mWindowMetrics;
 
@@ -65,7 +64,6 @@ public class RecentsRecyclerView extends RecyclerView {
         mFirstItemWidth = getResources().getDimensionPixelSize(R.dimen.recent_task_width_first);
         mItemWidth = getResources().getDimensionPixelSize(R.dimen.recent_task_width);
         mColSpacing = getResources().getDimensionPixelSize(R.dimen.recent_task_col_space);
-        mColsPerPage = getResources().getInteger(R.integer.config_recents_columns_per_page);
     }
 
     @VisibleForTesting
@@ -137,7 +135,7 @@ public class RecentsRecyclerView extends RecyclerView {
             // only one element is left, center it by adding equal padding
             lastItemPadding = firstItemPadding;
         } else {
-            lastItemPadding = calculateLastItemPadding(mWindowMetrics.getBounds().width());
+            lastItemPadding = calculateLastItemPadding();
         }
         setPadding(/* firstItemPadding= */ firstItemPadding,
                 /* lastItemPadding= */ lastItemPadding);
@@ -153,10 +151,9 @@ public class RecentsRecyclerView extends RecyclerView {
 
     @Px
     @VisibleForTesting
-    int calculateLastItemPadding(@Px int windowWidth) {
-        // This assumes that RecyclerView's width is same as the windowWidth. This is to add padding
-        // before RecyclerView or its children is drawn.
-        return Math.max(0, (windowWidth - (mColsPerPage * (mItemWidth + mColSpacing))) / 2);
+    int calculateLastItemPadding() {
+        // no-op
+        return 0;
     }
 
 

@@ -52,7 +52,6 @@ public class RecentsRecyclerViewTest {
     private static final int FIRST_TASK_WIDTH = 800;
     private static final int TASK_WIDTH = 300;
     private static final int COL_SPACING_BETWEEN_TASKS = 50;
-    private static final int COL_PER_PAGE = 2;
     private static final int CURRENT_ADAPTER_POSITION = 2;
     private static final int PREVIOUS_ADAPTER_POSITION = 1;
     private static final int NEXT_ADAPTER_POSITION = 3;
@@ -110,8 +109,6 @@ public class RecentsRecyclerViewTest {
                 /* value= */ TASK_WIDTH);
         mContext.getOrCreateTestableResources().addOverride(R.dimen.recent_task_col_space,
                 /* value= */ COL_SPACING_BETWEEN_TASKS);
-        mContext.getOrCreateTestableResources().addOverride(
-                R.integer.config_recents_columns_per_page, /* value= */ COL_PER_PAGE);
 
         mRecentsRecyclerView = new RecentsRecyclerView(mContext, mRecentTasksViewModel,
                 mWindowMetrics);
@@ -166,7 +163,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingEnd()).isEqualTo(endPadding);
@@ -190,7 +187,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingStart()).isEqualTo(endPadding);
@@ -214,7 +211,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(true);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingStart()).isEqualTo(endPadding);
@@ -238,7 +235,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingEnd()).isEqualTo(endPadding);
