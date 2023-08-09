@@ -98,6 +98,17 @@ public class AudioFragment extends HomeCardFragment {
                 }
             };
 
+    private CardContent.CardBackgroundImage mCardBackgroundImage;
+    private View.OnLayoutChangeListener mOnRootLayoutChangeListener =
+            (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                boolean isWidthChanged = left - right != oldLeft - oldRight;
+                boolean isHeightChanged = top - bottom != oldTop - oldBottom;
+                boolean isSizeChanged = isWidthChanged || isHeightChanged;
+                if (isSizeChanged) {
+                    resizeCardBackgroundImage();
+                }
+            };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +117,12 @@ public class AudioFragment extends HomeCardFragment {
                 getContext().getDrawable(R.drawable.default_audio_background),
                 getContext().getDrawable(R.drawable.control_bar_image_background));
         mShowSeekBar = getResources().getBoolean(R.bool.show_seek_bar);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getRootView().addOnLayoutChangeListener(mOnRootLayoutChangeListener);
     }
 
     @Override
@@ -164,30 +181,42 @@ public class AudioFragment extends HomeCardFragment {
         return (PlaybackControlsActionBar) mMediaControlBarView;
     }
 
-    private void updateBackgroundImage(CardContent.CardBackgroundImage cardBackgroundImage) {
-        if (getCardSize() != null) {
-            if (cardBackgroundImage.getForeground() == null) {
-                cardBackgroundImage = mDefaultCardBackgroundImage;
-            }
-            int maxDimen = Math.max(getCardBackgroundImage().getWidth(),
-                    getCardBackgroundImage().getHeight());
-            // Prioritize size of background image view. Otherwise, use size of whole card
-            if (maxDimen == 0) {
-                maxDimen = Math.max(getCardSize().getWidth(), getCardSize().getHeight());
-            }
-            Size scaledSize = new Size(maxDimen, maxDimen);
-            Bitmap imageBitmap = BitmapUtils.fromDrawable(cardBackgroundImage.getForeground(),
-                    scaledSize);
-            Bitmap blurredBackground = ImageUtils.blur(getContext(), imageBitmap, scaledSize,
-                    mBlurRadius);
-
-            if (cardBackgroundImage.getBackground() != null) {
-                getCardBackgroundImage().setBackground(cardBackgroundImage.getBackground());
-                getCardBackgroundImage().setClipToOutline(true);
-            }
-            getCardBackgroundImage().setImageBitmap(blurredBackground, /* showAnimation= */ true);
-            getCardBackground().setVisibility(View.VISIBLE);
+    private void resizeCardBackgroundImage() {
+        if (mCardBackgroundImage == null || mCardBackgroundImage.getForeground() == null) {
+            mCardBackgroundImage = mDefaultCardBackgroundImage;
         }
+        int maxDimen = Math.max(getCardBackgroundImage().getWidth(),
+                getCardBackgroundImage().getHeight());
+        // Prioritize size of background image view. Otherwise, use size of whole card
+        if (maxDimen == 0) {
+            Size cardSize = getCardSize();
+
+            if (cardSize == null) {
+                return;
+            }
+            maxDimen = Math.max(cardSize.getWidth(), cardSize.getHeight());
+        }
+
+        if (maxDimen == 0) {
+            return;
+        }
+        Size scaledSize = new Size(maxDimen, maxDimen);
+        Bitmap imageBitmap = BitmapUtils.fromDrawable(mCardBackgroundImage.getForeground(),
+                scaledSize);
+        Bitmap blurredBackground = ImageUtils.blur(getContext(), imageBitmap, scaledSize,
+                mBlurRadius);
+
+        if (mCardBackgroundImage.getBackground() != null) {
+            getCardBackgroundImage().setBackground(mCardBackgroundImage.getBackground());
+            getCardBackgroundImage().setClipToOutline(true);
+        }
+        getCardBackgroundImage().setImageBitmap(blurredBackground, /* showAnimation= */ true);
+        getCardBackground().setVisibility(View.VISIBLE);
+    }
+
+    private void updateBackgroundImage(CardContent.CardBackgroundImage cardBackgroundImage) {
+        mCardBackgroundImage = cardBackgroundImage;
+        resizeCardBackgroundImage();
     }
 
     private void updateMediaView(CharSequence title, CharSequence subtitle) {
