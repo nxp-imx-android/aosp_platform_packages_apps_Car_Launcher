@@ -16,6 +16,8 @@
 
 package com.android.car.carlauncher.homescreen.audio;
 
+import static android.content.pm.PackageManager.GET_RESOLVED_FILTER;
+
 import android.Manifest;
 import android.app.ActivityOptions;
 import android.content.ComponentName;
@@ -46,8 +48,6 @@ import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView
 import com.android.car.telephony.calling.InCallServiceManager;
 import com.android.car.telephony.common.CallDetail;
 import com.android.car.telephony.common.TelecomUtils;
-import com.android.car.telephony.selfmanaged.SelfManagedCallUtil;
-import com.android.car.ui.utils.CarUxRestrictionsUtil;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 
@@ -66,12 +66,16 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
 
     private static final String TAG = "InCallModel";
     private static final String PROPERTY_IN_CALL_SERVICE = "PROPERTY_IN_CALL_SERVICE";
+    private static final String CAR_APP_SERVICE_INTERFACE = "androidx.car.app.CarAppService";
+    private static final String CAR_APP_ACTIVITY_INTERFACE =
+            "androidx.car.app.activity.CarAppActivity";
+    /** androidx.car.app.CarAppService.CATEGORY_CALLING_APP from androidx car app library. */
+    private static final String CAR_APP_CATEGORY_CALLING = "androidx.car.app.category.CALLING";
     private static final boolean DEBUG = false;
     private static InCallServiceManager sInCallServiceManager;
 
     private Context mContext;
     private TelecomManager mTelecomManager;
-    private SelfManagedCallUtil mSelfManagedCallUtil;
 
     private PackageManager mPackageManager;
     private final Clock mElapsedTimeClock;
@@ -108,8 +112,6 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     public void onCreate(Context context) {
         mContext = context;
         mTelecomManager = context.getSystemService(TelecomManager.class);
-        CarUxRestrictionsUtil carUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(context);
-        mSelfManagedCallUtil = new SelfManagedCallUtil(mContext, carUxRestrictionsUtil);
 
         mOngoingCallSubtitle = context.getResources().getString(R.string.ongoing_call_text);
         mDialingCallSubtitle = context.getResources().getString(R.string.dialing_call_text);
@@ -166,7 +168,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     @Override
     public Intent getIntent() {
         Intent intent = null;
-        if (isSelfManagedCall() && mSelfManagedCallUtil.canShowCalInCallView()) {
+        if (isSelfManagedCall()) {
             Bundle extras = mCurrentCall.getDetails().getExtras();
             ComponentName componentName = extras == null ? null : extras.getParcelable(
                     Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
@@ -176,7 +178,15 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
             } else {
                 String callingAppPackageName = getCallingAppPackageName();
                 if (!TextUtils.isEmpty(callingAppPackageName)) {
-                    intent = mPackageManager.getLaunchIntentForPackage(callingAppPackageName);
+                    if (isCarAppCallingService(callingAppPackageName)) {
+                        intent = new Intent();
+                        intent.setComponent(
+                                new ComponentName(
+                                        callingAppPackageName, CAR_APP_ACTIVITY_INTERFACE));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    } else {
+                        intent = mPackageManager.getLaunchIntentForPackage(callingAppPackageName);
+                    }
                 }
             }
         } else {
@@ -460,5 +470,13 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
         if (mInCallService.getCalls() != null && !mInCallService.getCalls().isEmpty()) {
             onCallAdded(mInCallService.getCalls().get(0));
         }
+    }
+
+    private boolean isCarAppCallingService(String packageName) {
+        Intent intent =
+                new Intent(CAR_APP_SERVICE_INTERFACE)
+                        .setPackage(packageName)
+                        .addCategory(CAR_APP_CATEGORY_CALLING);
+        return !mPackageManager.queryIntentServices(intent, GET_RESOLVED_FILTER).isEmpty();
     }
 }
