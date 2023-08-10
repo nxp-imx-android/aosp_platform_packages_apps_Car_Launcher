@@ -31,7 +31,7 @@ import com.android.car.carlauncher.R;
  * Builds onto BaseViewHolder by adding functionality of disabled state and adding click and touch
  * listeners.
  */
-public class TaskViewHolder extends BaseViewHolder {
+public class TaskViewHolder extends BaseTaskViewHolder {
     private final ImageView mThumbnailImageView;
     private final ImageView mIconImageView;
     private final ImageView mDismissButton;

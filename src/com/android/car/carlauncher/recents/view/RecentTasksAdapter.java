@@ -39,18 +39,20 @@ import java.util.List;
 /**
  * Adapter that is used to display the list of Recent tasks.
  * ViewTypes in this adapter:
- * - FIRST_ITEM_VIEW_TYPE:  First task has special handling since it is takes up more area.
- * - HIDDEN_ITEM_VIEW_TYPE: Hidden ViewHolders are added to/removed from the end to always maintain
- *                          complete pages.
- * - DEFAULT_ITEM_VIEW_TYPE: all other view holders that hold a recent task.
+ * - FIRST_TASK_ITEM_VIEW_TYPE:  First task has special handling since it is takes up more area.
+ * - DEFAULT_TASK_ITEM_VIEW_TYPE: all other view holders that hold a recent task.
+ * - CLEAR_ALL_VIEW_TYPE: represents the view that contains the clear all button.
  */
-public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> implements
+public class RecentTasksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
         RecentTasksViewModel.RecentTasksChangeListener {
-    @IntDef({RecentsItemViewType.DEFAULT_ITEM_VIEW_TYPE, RecentsItemViewType.FIRST_ITEM_VIEW_TYPE})
+    @IntDef({RecentsItemViewType.DEFAULT_TASK_ITEM_VIEW_TYPE,
+            RecentsItemViewType.FIRST_TASK_ITEM_VIEW_TYPE,
+            RecentsItemViewType.CLEAR_ALL_VIEW_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     @interface RecentsItemViewType {
-        int DEFAULT_ITEM_VIEW_TYPE = 0;
-        int FIRST_ITEM_VIEW_TYPE = 1;
+        int DEFAULT_TASK_ITEM_VIEW_TYPE = 0;
+        int FIRST_TASK_ITEM_VIEW_TYPE = 1;
+        int CLEAR_ALL_VIEW_TYPE = 2;
     }
 
     private static final byte THUMBNAIL_UPDATED = 0x1; // 00000001
@@ -58,40 +60,48 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
     private final RecentTasksViewModel mRecentTasksViewModel;
     private final LayoutInflater mLayoutInflater;
     private final ItemTouchHelper mItemTouchHelper;
+    private final View.OnClickListener mClearAllOnClickListener;
     private final float mStartSwipeThreshold;
 
     public RecentTasksAdapter(Context context, LayoutInflater layoutInflater,
-            ItemTouchHelper itemTouchHelper) {
-        this(context, layoutInflater, itemTouchHelper, RecentTasksViewModel.getInstance());
+            ItemTouchHelper itemTouchHelper, View.OnClickListener clearAllOnClickListener) {
+        this(context, layoutInflater, itemTouchHelper, RecentTasksViewModel.getInstance(),
+                clearAllOnClickListener);
     }
 
     @VisibleForTesting
     public RecentTasksAdapter(Context context, LayoutInflater layoutInflater,
-            ItemTouchHelper itemTouchHelper, RecentTasksViewModel recentTasksViewModel) {
+            ItemTouchHelper itemTouchHelper, RecentTasksViewModel recentTasksViewModel,
+            View.OnClickListener clearAllOnClickListener) {
         mRecentTasksViewModel = recentTasksViewModel;
         mRecentTasksViewModel.addRecentTasksChangeListener(this);
         mLayoutInflater = layoutInflater;
         mItemTouchHelper = itemTouchHelper;
         mStartSwipeThreshold = context.getResources().getFloat(
                 R.dimen.recent_task_start_swipe_threshold);
+        mClearAllOnClickListener = clearAllOnClickListener;
     }
 
     @NonNull
     @Override
-    public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
             @RecentsItemViewType int viewType) {
         switch (viewType) {
-            case RecentsItemViewType.FIRST_ITEM_VIEW_TYPE:
+            case RecentsItemViewType.FIRST_TASK_ITEM_VIEW_TYPE:
                 return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view_first,
                         parent, /* attachToRoot= */ false));
+            case RecentsItemViewType.CLEAR_ALL_VIEW_TYPE:
+                return new ClearAllViewHolder(
+                        mLayoutInflater.inflate(R.layout.recent_clear_all_view, parent,
+                                /* attachToRoot= */ false), mClearAllOnClickListener);
             default:
-                return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view, parent,
-                        /* attachToRoot= */ false));
+                return new TaskViewHolder(mLayoutInflater.inflate(R.layout.recent_task_view,
+                        parent, /* attachToRoot= */ false));
         }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BaseViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof TaskViewHolder) {
             TaskViewHolder taskViewHolder = (TaskViewHolder) holder;
             Drawable taskIcon = mRecentTasksViewModel.getRecentTaskIconAt(position);
@@ -108,29 +118,30 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BaseViewHolder holder, int position,
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
             @NonNull List<Object> payloads) {
-        if (payloads.isEmpty()) {
+        if (payloads.isEmpty() || !(holder instanceof BaseTaskViewHolder)) {
             super.onBindViewHolder(holder, position, payloads);
             return;
         }
+        BaseTaskViewHolder baseTaskViewHolder = (BaseTaskViewHolder) holder;
         payloads.forEach(payload -> {
             if (payload instanceof Byte) {
                 byte updateType = (Byte) payload;
                 if ((updateType & THUMBNAIL_UPDATED) > 0) {
                     Bitmap taskThumbnail = mRecentTasksViewModel.getRecentTaskThumbnailAt(position);
-                    holder.updateThumbnail(taskThumbnail);
+                    baseTaskViewHolder.updateThumbnail(taskThumbnail);
                 }
                 if ((updateType & ICON_UPDATED) > 0) {
                     Drawable taskIcon = mRecentTasksViewModel.getRecentTaskIconAt(position);
-                    holder.updateIcon(taskIcon);
+                    baseTaskViewHolder.updateIcon(taskIcon);
                 }
             }
         });
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull BaseViewHolder holder) {
+    public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         if (holder instanceof TaskViewHolder) {
             ((TaskViewHolder) holder).attachedToWindow();
@@ -138,7 +149,7 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
     }
 
     @Override
-    public void onViewDetachedFromWindow(@NonNull BaseViewHolder holder) {
+    public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
         if (holder instanceof TaskViewHolder) {
             ((TaskViewHolder) holder).detachedFromWindow();
@@ -147,15 +158,20 @@ public class RecentTasksAdapter extends RecyclerView.Adapter<BaseViewHolder> imp
 
     @Override
     public int getItemCount() {
-        return mRecentTasksViewModel.getRecentTasksSize();
+        // +1 to account for clear-all button at the end of the list
+        return mRecentTasksViewModel.getRecentTasksSize() + 1;
     }
 
     @Override
     public int getItemViewType(int position) {
         if (position == 0) {
-            return RecentsItemViewType.FIRST_ITEM_VIEW_TYPE;
+            return RecentsItemViewType.FIRST_TASK_ITEM_VIEW_TYPE;
         }
-        return RecentsItemViewType.DEFAULT_ITEM_VIEW_TYPE;
+        if (position == getItemCount() - 1) {
+            // last item is always clear all view
+            return RecentsItemViewType.CLEAR_ALL_VIEW_TYPE;
+        }
+        return RecentsItemViewType.DEFAULT_TASK_ITEM_VIEW_TYPE;
     }
 
     @Override
