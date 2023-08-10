@@ -32,6 +32,8 @@ import com.android.car.carlauncher.recents.RecentTasksViewModel;
 import com.android.car.carlauncher.recents.RecentsUtils;
 import com.android.internal.annotations.VisibleForTesting;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * RecyclerView that centers the first and last elements of the Recent task list by adding
  * appropriate padding.
@@ -84,40 +86,83 @@ public class RecentsRecyclerView extends RecyclerView {
         if (direction != View.FOCUS_FORWARD && direction != View.FOCUS_BACKWARD) {
             return super.focusSearch(focused, direction);
         }
-        boolean goForward = direction == View.FOCUS_FORWARD;
-        if (RecentsUtils.areItemsRightToLeft(this)) {
-            goForward = !goForward;
-        }
+        boolean shouldGoToNextView = shouldGoToNextView(direction);
         ViewHolder focusedViewHolder = findContainingViewHolder(focused);
         if (focusedViewHolder == null) {
             return null;
         }
-
-        View taskDismissButton = focusedViewHolder.itemView.findViewById(R.id.task_dismiss_button);
-        View taskThumbnail = focusedViewHolder.itemView.findViewById(R.id.task_thumbnail);
-        if (focused == taskDismissButton && goForward) {
-            return taskThumbnail;
+        if (focusedViewHolder instanceof BaseTaskViewHolder) {
+            View taskDismissButton = focusedViewHolder.itemView.findViewById(
+                    R.id.task_dismiss_button);
+            View taskThumbnail = focusedViewHolder.itemView.findViewById(R.id.task_thumbnail);
+            if (focused == taskDismissButton && shouldGoToNextView) {
+                return taskThumbnail;
+            }
+            if (focused == taskThumbnail && !shouldGoToNextView) {
+                return taskDismissButton;
+            }
         }
-        if (focused == taskThumbnail && !goForward) {
-            return taskDismissButton;
-        }
-
         int position = focusedViewHolder.getAbsoluteAdapterPosition();
         if (position == NO_POSITION) {
             return null;
         }
-        if (goForward) {
-            ++position;
-        } else {
-            --position;
-        }
 
-        ViewHolder nextFocusViewHolder = findViewHolderForAdapterPosition(position);
+        return getNextFocusView(direction,
+                shouldGoToNextView ? ++position : --position, /* tryScrolling= */ true);
+    }
+
+    /**
+     * Should be called to find the view in the next viewHolder to take focus.
+     *
+     * @param nextPosition next view holder position to be focused.
+     * @param tryScrolling should try to scroll to find the next view holder.
+     *                     This would only happen if view holder at {@code nextPosition} is null.
+     * @return the next view to be focused.
+     */
+    @Nullable
+    private View getNextFocusView(int direction, int nextPosition, boolean tryScrolling) {
+        ViewHolder nextFocusViewHolder = findViewHolderForAdapterPosition(nextPosition);
+
         if (nextFocusViewHolder == null) {
+            if (tryScrolling) {
+                this.smoothScrollBy(direction == View.FOCUS_FORWARD ? mItemWidth : -mItemWidth, 0);
+                this.addOnScrollListener(new OnScrollListener() {
+                    @Override
+                    public void onScrollStateChanged(@NotNull RecyclerView recyclerView,
+                            int newState) {
+                        super.onScrollStateChanged(recyclerView, newState);
+                        if (newState == SCROLL_STATE_IDLE) {
+                            RecentsRecyclerView.this.removeOnScrollListener(this);
+                            View nextFocusedView = getNextFocusView(direction, nextPosition,
+                                    /* tryScrolling= */ false);
+                            if (nextFocusedView != null) {
+                                nextFocusedView.requestFocus();
+                            }
+                        }
+                    }
+                });
+            }
             return null;
         }
-        return goForward ? nextFocusViewHolder.itemView.findViewById(R.id.task_dismiss_button)
-                : nextFocusViewHolder.itemView.findViewById(R.id.task_thumbnail);
+        if (nextFocusViewHolder instanceof BaseTaskViewHolder) {
+            return shouldGoToNextView(direction)
+                    ? nextFocusViewHolder.itemView.findViewById(R.id.task_dismiss_button)
+                    : nextFocusViewHolder.itemView.findViewById(R.id.task_thumbnail);
+        }
+        if (nextFocusViewHolder instanceof ClearAllViewHolder) {
+            return nextFocusViewHolder.itemView.findViewById(R.id.recents_clear_all_button);
+        }
+        return nextFocusViewHolder.itemView;
+
+    }
+
+    /**
+     * @return {@code true} if the {@code direction} is meant to move the focus to next
+     * view {@code false} for previous view.
+     */
+    private boolean shouldGoToNextView(int direction) {
+        return (direction == View.FOCUS_FORWARD)
+                == !RecentsUtils.areItemsRightToLeft(this);
     }
 
     /**
@@ -129,16 +174,9 @@ public class RecentsRecyclerView extends RecyclerView {
             setPadding(/* firstItemPadding= */ 0, /* lastItemPadding= */ 0);
             return;
         }
-        int firstItemPadding, lastItemPadding;
-        firstItemPadding = calculateFirstItemPadding(mWindowMetrics.getBounds().width());
-        if (mRecentTasksViewModel.getRecentTasksSize() == 1) {
-            // only one element is left, center it by adding equal padding
-            lastItemPadding = firstItemPadding;
-        } else {
-            lastItemPadding = calculateLastItemPadding();
-        }
-        setPadding(/* firstItemPadding= */ firstItemPadding,
-                /* lastItemPadding= */ lastItemPadding);
+        setPadding(/* firstItemPadding= */ calculateFirstItemPadding(
+                        mWindowMetrics.getBounds().width()),
+                /* lastItemPadding= */ calculateLastItemPadding());
     }
 
     @Px
@@ -155,7 +193,6 @@ public class RecentsRecyclerView extends RecyclerView {
         // no-op
         return 0;
     }
-
 
     /**
      * @param firstItemPadding padding set to recyclerView to fit the first item.

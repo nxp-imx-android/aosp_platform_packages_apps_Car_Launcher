@@ -53,20 +53,14 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:paddingTop">37dp</item>
-        <item name="android:paddingBottom">32dp</item>
+        <item name="android:paddingBottom">51dp</item>
         <item name="android:scrollbars">none</item>
         <item name="android:clipToPadding">false</item>
-    </style>
-
-    <style name="ClearAllRecentTasksButtonFocusArea">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
     </style>
 
     <style name="ClearAllRecentTasksButton">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginBottom">25dp</item>
         <item name="android:paddingVertical">20dp</item>
         <item name="android:paddingHorizontal">48dp</item>
         <item name="android:textSize">24sp</item>

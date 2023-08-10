@@ -30,11 +30,11 @@ import com.android.car.carlauncher.R;
 /**
  * Base ViewHolder for Recent tasks.
  */
-public class BaseViewHolder extends RecyclerView.ViewHolder {
+public class BaseTaskViewHolder extends RecyclerView.ViewHolder {
     private final ImageView mThumbnailImageView;
     private final ImageView mIconImageView;
 
-    public BaseViewHolder(@NonNull View itemView) {
+    public BaseTaskViewHolder(@NonNull View itemView) {
         super(itemView);
         mThumbnailImageView = itemView.findViewById(R.id.task_thumbnail);
         mIconImageView = itemView.findViewById(R.id.task_icon);
