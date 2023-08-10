@@ -44,7 +44,11 @@ public class AssistiveCardPresenter extends CardPresenter {
                 @Override
                 public void onViewClicked() {
                     Intent intent = mCurrentModel.getIntent();
-                    if (intent != null && intent.resolveActivity(
+                    if (intent == null) {
+                        Log.e(TAG, "No intent to handle view click");
+                        return;
+                    }
+                    if (intent.resolveActivity(
                             mHomeCardFragment.getContext().getPackageManager()) != null) {
                         mHomeCardFragment.getContext().startActivity(intent);
                     } else {
