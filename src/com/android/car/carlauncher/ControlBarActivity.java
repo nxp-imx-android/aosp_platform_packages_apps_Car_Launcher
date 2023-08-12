@@ -84,7 +84,7 @@ public class ControlBarActivity extends FragmentActivity {
         }
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         for (HomeCardModule cardModule : mHomeCardModules) {
-            transaction.replace(cardModule.getCardResId(), cardModule.getCardView());
+            transaction.replace(cardModule.getCardResId(), cardModule.getCardView().getFragment());
         }
         transaction.commitNow();
     }
