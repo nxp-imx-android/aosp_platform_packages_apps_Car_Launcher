@@ -18,18 +18,22 @@ package com.android.car.carlauncher;
 
 import static com.android.car.carlauncher.TaskViewManager.DBG;
 
+import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.UserManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.SurfaceControl;
 import android.window.WindowContainerTransaction;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.taskview.TaskViewTransitions;
 
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -51,17 +55,19 @@ final class ControlledCarTaskView extends CarTaskView {
     private final UserManager mUserManager;
     private final TaskViewManager mTaskViewManager;
     private final ControlledCarTaskViewConfig mConfig;
+    @Nullable private RunnerWithBackoff mStartActivityWithBackoff;
 
     ControlledCarTaskView(
             Activity context,
             ShellTaskOrganizer organizer,
+            TaskViewTransitions taskViewTransitions,
             SyncTransactionQueue syncQueue,
             Executor callbackExecutor,
             ControlledCarTaskViewConfig controlledCarTaskViewConfig,
             ControlledCarTaskViewCallbacks callbacks,
             UserManager userManager,
             TaskViewManager taskViewManager) {
-        super(context, organizer, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue);
         mCallbackExecutor = callbackExecutor;
         mConfig = controlledCarTaskViewConfig;
         mCallbacks = callbacks;
@@ -69,6 +75,9 @@ final class ControlledCarTaskView extends CarTaskView {
         mTaskViewManager = taskViewManager;
 
         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewCreated(this));
+        if (mConfig.mAutoRestartOnCrash) {
+            mStartActivityWithBackoff = new RunnerWithBackoff(this::startActivityInternal);
+        }
     }
 
     @Override
@@ -82,6 +91,25 @@ final class ControlledCarTaskView extends CarTaskView {
      * Starts the underlying activity.
      */
     public void startActivity() {
+        if (mStartActivityWithBackoff == null) {
+            startActivityInternal();
+            return;
+        }
+        mStartActivityWithBackoff.stop();
+        mStartActivityWithBackoff.start();
+    }
+
+    private void stopTheStartActivityBackoffIfExists() {
+        if (mStartActivityWithBackoff == null) {
+            if (DBG) {
+                Log.d(TAG, "mStartActivityWithBackoff is not present.");
+            }
+            return;
+        }
+        mStartActivityWithBackoff.stop();
+    }
+
+    private void startActivityInternal() {
         if (!mUserManager.isUserUnlocked()) {
             if (DBG) Log.d(TAG, "Can't start activity due to user is isn't unlocked");
             return;
@@ -108,11 +136,15 @@ final class ControlledCarTaskView extends CarTaskView {
             Log.d(TAG, "Starting (" + mConfig.mActivityIntent.getComponent() + ") on "
                     + launchBounds);
         }
+        Intent fillInIntent = null;
+        if ((mConfig.mActivityIntent.getFlags() & Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS) != 0) {
+            fillInIntent = new Intent().addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        }
         startActivity(
                 PendingIntent.getActivity(mContext, /* requestCode= */ 0,
                         mConfig.mActivityIntent,
                         PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT),
-                /* fillInIntent= */ null, options, launchBounds);
+                fillInIntent, options, launchBounds);
     }
 
     /** Gets the config used to build this controlled car task view. */
@@ -128,6 +160,13 @@ final class ControlledCarTaskView extends CarTaskView {
     }
 
     @Override
+    public void onTaskAppeared(ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
+        super.onTaskAppeared(taskInfo, leash);
+        // Stop the start activity backoff because a task has already appeared.
+        stopTheStartActivityBackoffIfExists();
+    }
+
+    @Override
     public void onTaskVanished(ActivityManager.RunningTaskInfo taskInfo) {
         super.onTaskVanished(taskInfo);
         if (mConfig.mAutoRestartOnCrash && mTaskViewManager.isHostVisible()) {
@@ -140,8 +179,8 @@ final class ControlledCarTaskView extends CarTaskView {
     }
 
     @Override
-    public void showEmbeddedTask(WindowContainerTransaction wct) {
-        if (mTaskInfo == null) {
+    void showEmbeddedTask(WindowContainerTransaction wct) {
+        if (getTaskInfo() == null) {
             if (DBG) {
                 Log.d(TAG, "Embedded task not available, starting it now.");
             }
@@ -149,5 +188,11 @@ final class ControlledCarTaskView extends CarTaskView {
             return;
         }
         super.showEmbeddedTask(wct);
+    }
+
+    @Override
+    public void release() {
+        super.release();
+        stopTheStartActivityBackoffIfExists();
     }
 }

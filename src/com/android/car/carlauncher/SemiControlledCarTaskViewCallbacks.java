@@ -16,18 +16,9 @@
 
 package com.android.car.carlauncher;
 
-import android.app.TaskInfo;
-
 /**
  * A callbacks interface for {@link SemiControlledCarTaskView}.
  */
 public interface SemiControlledCarTaskViewCallbacks extends
         CarTaskViewCallbacks {
-    /**
-     * Specifies whether or not the given {@code taskInfo} should start in this
-     * {@link SemiControlledCarTaskView}.
-     * @return true if the task should be started on this {@link SemiControlledCarTaskView}, false
-     * otherwise.
-     */
-    boolean shouldStartInTaskView(TaskInfo taskInfo);
 }

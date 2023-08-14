@@ -87,6 +87,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     private DescriptiveTextWithControlsView.Control mMuteButton;
     private DescriptiveTextWithControlsView.Control mEndCallButton;
     private DescriptiveTextWithControlsView.Control mDialpadButton;
+    private Drawable mContactImageBackground;
 
     private final ServiceConnection mInCallServiceConnection = new ServiceConnection() {
         @Override
@@ -94,6 +95,9 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
             if (DEBUG) Log.d(TAG, "onServiceConnected: " + name + ", service: " + service);
             mInCallService = ((InCallServiceImpl.LocalBinder) service).getService();
             mInCallService.addListener(InCallModel.this);
+            if (mInCallService.getCalls() != null && !mInCallService.getCalls().isEmpty()) {
+                handleActiveCall(mInCallService.getCalls().get(0));
+            }
         }
 
         @Override
@@ -124,6 +128,8 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
 
         mOngoingCallSubtitle = context.getResources().getString(R.string.ongoing_call_text);
         mDialingCallSubtitle = context.getResources().getString(R.string.dialing_call_text);
+        mContactImageBackground = context.getResources()
+                .getDrawable(R.drawable.control_bar_contact_image_background);
         initializeAudioControls();
 
         mPackageManager = context.getPackageManager();
@@ -139,6 +145,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     @Override
     public void onDestroy(Context context) {
         if (mInCallService != null) {
+            mInCallService.removeListener(InCallModel.this);
             context.getApplicationContext().unbindService(mInCallServiceConnection);
             mInCallService = null;
         }
@@ -288,17 +295,15 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     @VisibleForTesting
     void updateModelWithContact(TelecomUtils.PhoneNumberInfo phoneNumberInfo,
             @Call.CallState int callState) {
-        // If call has been removed, return.
-        if (mCurrentCall == null) {
-            return;
-        }
-
-        // Use the caller display name or contact display name from call details first.
-        String contactName = mCurrentCall.getDetails().getCallerDisplayName();
-        if (TextUtils.isEmpty(contactName)) {
-            contactName = mCurrentCall.getDetails().getContactDisplayName();
-        }
+        String contactName = null;
         String initials = null;
+        // If current call details exist, use the caller display name or contact display name first.
+        if (mCurrentCall != null) {
+            contactName = mCurrentCall.getDetails().getCallerDisplayName();
+            if (TextUtils.isEmpty(contactName)) {
+                contactName = mCurrentCall.getDetails().getContactDisplayName();
+            }
+        }
         if (TextUtils.isEmpty(contactName)) {
             contactName = phoneNumberInfo.getDisplayName();
             initials = phoneNumberInfo.getInitials();
@@ -325,7 +330,9 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
             contactImage = TelecomUtils.createLetterTile(mContext, initials, contactName);
         }
 
-        mCardContent = createPhoneCardContent(contactImage, contactName, callState);
+        mCardContent = createPhoneCardContent(
+                new CardContent.CardBackgroundImage(contactImage, mContactImageBackground),
+                contactName, callState);
         mPresenter.onModelUpdated(this);
     }
 
@@ -363,15 +370,19 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
                         mContext.getMainExecutor());
     }
 
-    private CardContent createPhoneCardContent(Drawable image, CharSequence title,
-            @Call.CallState int callState) {
+    private CardContent createPhoneCardContent(CardContent.CardBackgroundImage image,
+            CharSequence title, @Call.CallState int callState) {
         switch (callState) {
             case Call.STATE_DIALING:
                 return new DescriptiveTextWithControlsView(image, title, mDialingCallSubtitle,
                         mMuteButton, mEndCallButton, mDialpadButton);
             case Call.STATE_ACTIVE:
+                long callStartTime =
+                        mCurrentCall != null ? mCurrentCall.getDetails().getConnectTimeMillis()
+                                - System.currentTimeMillis() + mElapsedTimeClock.millis()
+                                : mElapsedTimeClock.millis();
                 return new DescriptiveTextWithControlsView(image, title, mOngoingCallSubtitle,
-                        mElapsedTimeClock.millis(), mMuteButton, mEndCallButton, mDialpadButton);
+                        callStartTime, mMuteButton, mEndCallButton, mDialpadButton);
             default:
                 if (DEBUG) {
                     Log.d(TAG, "Call State " + callState

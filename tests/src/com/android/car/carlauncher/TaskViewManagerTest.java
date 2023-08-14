@@ -28,7 +28,6 @@ import static com.android.car.internal.common.CommonConstants.USER_LIFECYCLE_EVE
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -52,6 +51,7 @@ import android.car.Car;
 import android.car.app.CarActivityManager;
 import android.car.test.mocks.AbstractExtendedMockitoTestCase;
 import android.car.user.CarUserManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Binder;
@@ -72,11 +72,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.car.carlauncher.taskstack.TaskStackChangeListeners;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import com.android.wm.shell.ShellTaskOrganizer;
-import com.android.wm.shell.TaskView;
 import com.android.wm.shell.common.HandlerExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.startingsurface.StartingWindowController;
+import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.taskview.TaskView;
+import com.android.wm.shell.transition.Transitions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -98,6 +100,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+//TODO(b/266742500): Test that uses setUpLaunchRootTaskView get null listener
 @RunWith(AndroidJUnit4.class)
 public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
     @Rule
@@ -107,6 +110,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
     private ShellTaskOrganizer mOrganizer;
     @Mock
     private SyncTransactionQueue mSyncQueue;
+    @Mock
+    private Transitions mTransitions;
     @Mock
     private HandlerExecutor mShellExecutor;
     @Mock
@@ -120,6 +125,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
     @Mock
     private WindowContainerToken mToken;
 
+    @Mock
+    private ShellController mShellController;
     @Mock
     private StartingWindowController mStartingWindowController;
     @Mock
@@ -320,7 +327,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         verify(taskViewCallbacks).onTaskViewCreated(any());
         verify(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
                 eq(WINDOWING_MODE_MULTI_WINDOW),
-                any(ShellTaskOrganizer.TaskListener.class));
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
     }
 
     @Test
@@ -335,7 +343,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
             return null;
         }).when(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
                 eq(WINDOWING_MODE_MULTI_WINDOW),
-                any(ShellTaskOrganizer.TaskListener.class));
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
 
         taskViewManager.createLaunchRootTaskView(
                 mActivity.getMainExecutor(),
@@ -415,122 +424,127 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
     }
 
     @Test
-    public void testCreateSemiControlledTaskView_launchRootTaskViewAbsent_throwsError()
-            throws Exception {
-        SemiControlledCarTaskViewCallbacks taskViewCallbacks =
-                mock(SemiControlledCarTaskViewCallbacks.class);
-        TaskViewManager taskViewManager = createTaskViewManager();
-
-        // The exception happens in the current stack because mShellExecutor simply calls .run()
-        assertThrows(IllegalStateException.class, () -> {
-            taskViewManager.createSemiControlledTaskView(
-                    mActivity.getMainExecutor(),
-                    taskViewCallbacks
-            );
-        });
-
-        runOnMainAndWait(() -> {});
-        verifyZeroInteractions(taskViewCallbacks);
-    }
-
-    @Test
     public void testCreateSemiControlledTaskView() throws Exception {
         SemiControlledCarTaskViewCallbacks taskViewCallbacks =
                 mock(SemiControlledCarTaskViewCallbacks.class);
-        when(taskViewCallbacks.shouldStartInTaskView(any())).thenReturn(true);
         TaskViewManager taskViewManager = createTaskViewManager();
-        runOnMainAndWait(() -> {});
-        AtomicReference<ShellTaskOrganizer.TaskListener> listener = new AtomicReference<>();
-        setUpLaunchRootTaskView(taskViewManager, listener, /* rootTaskId = */ 1);
 
         taskViewManager.createSemiControlledTaskView(
                 mActivity.getMainExecutor(),
+                List.of(),
                 taskViewCallbacks
         );
         runOnMainAndWait(() -> {});
-        // Trigger surfaceCreated on SemiControlledTaskView so that taskView can get into the
-        // initialized state.
-        SemiControlledCarTaskView semiControlledCarTaskView =
-                taskViewManager.getSemiControlledTaskViews().get(0);
-        semiControlledCarTaskView.surfaceCreated(mock(SurfaceHolder.class));
-        runOnMainAndWait(() -> {});
+        TaskView taskView = taskViewManager.getSemiControlledTaskViews().get(0);
+        taskView.surfaceCreated(mock(SurfaceHolder.class));
 
+        runOnMainAndWait(() -> {});
         verify(taskViewCallbacks).onTaskViewCreated(any());
-        verify(taskViewCallbacks).onTaskViewReady();
+        verify(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
+                eq(WINDOWING_MODE_MULTI_WINDOW),
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
     }
 
     @Test
-    public void testSemiControlledTaskAppeared_reparentedCorrectly() throws Exception {
-        SemiControlledCarTaskViewCallbacks taskViewCallbacks =
-                mock(SemiControlledCarTaskViewCallbacks.class);
-        when(taskViewCallbacks.shouldStartInTaskView(any())).thenReturn(true);
-
+    public void testSemiControlledTaskView_callsOnReady() throws Exception {
+        List<ComponentName> persistentActivities =
+                List.of(ComponentName.unflattenFromString("com.example/.MainActivity"));
+        SemiControlledCarTaskViewCallbacks mockCallbacks = mock(
+                SemiControlledCarTaskViewCallbacks.class);
         TaskViewManager taskViewManager = createTaskViewManager();
         runOnMainAndWait(() -> {});
-        // Set up a LaunchRootTaskView
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
         AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
-        setUpLaunchRootTaskView(taskViewManager, rootTaskListener, /* rootTaskId = */ 1);
-        // Set up a SemiControlledTaskView
-        taskViewManager.createSemiControlledTaskView(
-                mActivity.getMainExecutor(),
-                taskViewCallbacks
-        );
-        runOnMainAndWait(() -> {});
-        SemiControlledCarTaskView semiControlledCarTaskView =
-                taskViewManager.getSemiControlledTaskViews().get(0);
-        semiControlledCarTaskView.surfaceCreated(mock(SurfaceHolder.class));
-        runOnMainAndWait(() -> {});
-        TaskView.Listener mockListener = mock(TaskView.Listener.class);
-        semiControlledCarTaskView.setListener(mActivity.getMainExecutor(), mockListener);
 
         // Act
-        // Trigger a taskAppeared on the launch root task to mimic the task appearance.
-        rootTaskListener.get().onTaskAppeared(createMultiWindowTask(2).getTaskInfo(), mLeash);
+        setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, persistentActivities, mockCallbacks);
         runOnMainAndWait(() -> {});
 
         // Assert
-        // Verify if the task was reparented in the SemiControlledTaskView
-        verify(mockListener).onTaskCreated(eq(2), any());
+        verify(mockCallbacks).onTaskViewReady();
+        verify(mCarActivityManager).setPersistentActivitiesOnRootTask(eq(persistentActivities),
+                any());
     }
 
     @Test
-    public void testSemiControlledTaskVanished_reparentedCorrectly() throws Exception {
-        SemiControlledCarTaskViewCallbacks taskViewCallbacks =
-                mock(SemiControlledCarTaskViewCallbacks.class);
-        when(taskViewCallbacks.shouldStartInTaskView(any())).thenReturn(true);
-
+    public void testTaskAppeared_semiControlledTaskView_topTaskUpdated() throws Exception {
+        SemiControlledCarTaskViewCallbacks mockCallbacks = mock(
+                SemiControlledCarTaskViewCallbacks.class);
         TaskViewManager taskViewManager = createTaskViewManager();
         runOnMainAndWait(() -> {});
-        // Set up a LaunchRootTaskView
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
         AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
-        setUpLaunchRootTaskView(taskViewManager, rootTaskListener, /* rootTaskId = */ 1);
-        // Set up a SemiControlledTaskView
-        taskViewManager.createSemiControlledTaskView(
-                mActivity.getMainExecutor(),
-                taskViewCallbacks
-        );
-        runOnMainAndWait(() -> {});
-        SemiControlledCarTaskView semiControlledCarTaskView =
-                taskViewManager.getSemiControlledTaskViews().get(0);
-        semiControlledCarTaskView.surfaceCreated(mock(SurfaceHolder.class));
-        runOnMainAndWait(() -> {});
-        TaskView.Listener mockListener = mock(TaskView.Listener.class);
-        semiControlledCarTaskView.setListener(mActivity.getMainExecutor(), mockListener);
-
-        ActivityManager.RunningTaskInfo semiControlledTaskInfo = createMultiWindowTask(2)
-                .getTaskInfo();
-        rootTaskListener.get().onTaskAppeared(semiControlledTaskInfo, mLeash);
-        runOnMainAndWait(() -> {});
+        SemiControlledCarTaskView taskView = setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, List.of(), mockCallbacks);
+        ActivityManager.RunningTaskInfo childTaskInfo =
+                createMultiWindowTask(2).getTaskInfo();
 
         // Act
-        // Trigger a taskVanished on the launch root task
-        rootTaskListener.get().onTaskVanished(semiControlledTaskInfo);
+        rootTaskListener.get().onTaskAppeared(childTaskInfo, mLeash);
         runOnMainAndWait(() -> {});
 
         // Assert
-        // Verify if the task was removed from the SemiControlledTaskView
-        verify(mockListener).onTaskRemovalStarted(/* taskId = */ eq(2));
+        assertThat(taskView.getTopTaskInTheRootTask()).isEqualTo(childTaskInfo);
     }
+
+    @Test
+    public void testTaskInfoChanged_semiControlledTaskView_topTaskUpdated() throws Exception {
+        TaskViewManager taskViewManager = createTaskViewManager();
+        runOnMainAndWait(() -> {});
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
+        AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
+        SemiControlledCarTaskView taskView = setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, List.of(), mock(
+                        SemiControlledCarTaskViewCallbacks.class));
+        ActivityManager.RunningTaskInfo childTaskInfo =
+                createMultiWindowTask(1).getTaskInfo();
+        rootTaskListener.get().onTaskAppeared(childTaskInfo, mLeash);
+        runOnMainAndWait(() -> {});
+        ActivityManager.RunningTaskInfo childTaskInfo2 =
+                createMultiWindowTask(2).getTaskInfo();
+        rootTaskListener.get().onTaskAppeared(childTaskInfo2, mLeash);
+        runOnMainAndWait(() -> {});
+
+        // Act
+        rootTaskListener.get().onTaskInfoChanged(childTaskInfo);
+        runOnMainAndWait(() -> {});
+
+        // Assert
+        assertThat(taskView.getTopTaskInTheRootTask()).isEqualTo(childTaskInfo);
+    }
+
+    @Test
+    public void testTaskVanished_semiControlledTaskView_topTaskUpdated() throws Exception {
+        TaskViewManager taskViewManager = createTaskViewManager();
+        runOnMainAndWait(() -> {});
+        mCarServiceLifecycleListener.onLifecycleChanged(mCar, true);
+        // Set up a SemiControlledCarTaskView
+        AtomicReference<ShellTaskOrganizer.TaskListener> rootTaskListener = new AtomicReference<>();
+        SemiControlledCarTaskView taskView = setUpSemiControlledTaskView(taskViewManager,
+                rootTaskListener, /* rootTaskId = */ 1, List.of(),
+                mock(SemiControlledCarTaskViewCallbacks.class));
+        ActivityManager.RunningTaskInfo childTaskInfo =
+                createMultiWindowTask(1).getTaskInfo();
+        rootTaskListener.get().onTaskAppeared(childTaskInfo, mLeash);
+        runOnMainAndWait(() -> {});
+        ActivityManager.RunningTaskInfo childTaskInfo2 =
+                createMultiWindowTask(2).getTaskInfo();
+        rootTaskListener.get().onTaskAppeared(childTaskInfo2, mLeash);
+        runOnMainAndWait(() -> {});
+
+        // Act
+        rootTaskListener.get().onTaskVanished(childTaskInfo2);
+        runOnMainAndWait(() -> {});
+
+        // Assert
+        assertThat(taskView.getTopTaskInTheRootTask()).isEqualTo(childTaskInfo);
+    }
+
 
     private ActivityManager.RunningTaskInfo setUpLaunchRootTaskView(TaskViewManager taskViewManager,
             AtomicReference<ShellTaskOrganizer.TaskListener> listener,
@@ -543,7 +557,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
             return null;
         }).when(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
                 eq(WINDOWING_MODE_MULTI_WINDOW),
-                any(ShellTaskOrganizer.TaskListener.class));
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
         taskViewManager.createLaunchRootTaskView(
                 mActivity.getMainExecutor(),
                 mock(LaunchRootCarTaskViewCallbacks.class)
@@ -553,6 +568,35 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         launchRootCarTaskView.surfaceCreated(mock(SurfaceHolder.class));
         runOnMainAndWait(() -> {});
         return launchRootTaskInfo;
+    }
+
+    private SemiControlledCarTaskView setUpSemiControlledTaskView(
+            TaskViewManager taskViewManager,
+            AtomicReference<ShellTaskOrganizer.TaskListener> listener, int rootTaskId,
+            List<ComponentName> persistentActivities,
+            SemiControlledCarTaskViewCallbacks callbacks)
+            throws Exception {
+        ActivityManager.RunningTaskInfo rootTaskInfo =
+                createMultiWindowTask(rootTaskId).getTaskInfo();
+        doAnswer(invocation -> {
+            listener.set(invocation.getArgument(2));
+            listener.get().onTaskAppeared(rootTaskInfo, mLeash);
+            return null;
+        }).when(mOrganizer).createRootTask(eq(DEFAULT_DISPLAY),
+                eq(WINDOWING_MODE_MULTI_WINDOW),
+                any(ShellTaskOrganizer.TaskListener.class),
+                /* removeWithTaskOrganizer= */ eq(true));
+        taskViewManager.createSemiControlledTaskView(
+                mActivity.getMainExecutor(),
+                persistentActivities,
+                callbacks
+        );
+        runOnMainAndWait(() -> {});
+        SemiControlledCarTaskView semiControlledCarTaskView =
+                taskViewManager.getSemiControlledTaskViews().get(0);
+        semiControlledCarTaskView.surfaceCreated(mock(SurfaceHolder.class));
+        runOnMainAndWait(() -> {});
+        return semiControlledCarTaskView;
     }
 
     @Test
@@ -663,8 +707,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -691,7 +735,7 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
 
         // Stub the taskview with a spy to assert on startActivity.
         ControlledCarTaskView spiedTaskView = spy(controlledCarTaskView);
@@ -717,8 +761,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -747,8 +791,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -775,8 +819,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -805,8 +849,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         ControlledCarTaskView controlledCarTaskView =
                 taskViewManager.getControlledTaskViews().get(0);
         ActivityManager.RunningTaskInfo taskInfo = createMultiWindowTask(2).getTaskInfo();
-        controlledCarTaskView.onTaskAppeared(taskInfo, mLeash);
-        controlledCarTaskView.onTaskVanished(taskInfo);
+        controlledCarTaskView.dispatchTaskAppeared(taskInfo, mLeash);
+        controlledCarTaskView.dispatchTaskVanished(taskInfo);
         assertThat(controlledCarTaskView.getTaskId()).isEqualTo(INVALID_TASK_ID);
 
         // Stub the taskview with a spy to assert on startActivity.
@@ -852,14 +896,15 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
 
         SemiControlledCarTaskViewCallbacks taskViewCallbacks =
                 mock(SemiControlledCarTaskViewCallbacks.class);
-        when(taskViewCallbacks.shouldStartInTaskView(any())).thenReturn(true);
         taskViewManager.createSemiControlledTaskView(
                 mActivity.getMainExecutor(),
+                List.of(),
                 taskViewCallbacks
         );
         runOnMainAndWait(() -> {});
         taskViewManager.createSemiControlledTaskView(
                 mActivity.getMainExecutor(),
+                List.of(),
                 taskViewCallbacks
         );
         runOnMainAndWait(() -> {});
@@ -900,7 +945,8 @@ public class TaskViewManagerTest extends AbstractExtendedMockitoTestCase {
         }
 
         TaskViewManager taskViewManager =  new TaskViewManager(mActivity, mShellExecutor,
-                mOrganizer, mSyncQueue, new ShellInit(mShellExecutor), mStartingWindowController);
+                mOrganizer, mSyncQueue, mTransitions, new ShellInit(mShellExecutor),
+                mShellController, mStartingWindowController);
         taskViewManager.setTaskViewInputInterceptor(mTaskViewInputInterceptor);
         return taskViewManager;
     }
