@@ -136,6 +136,11 @@ public class CarQuickStepService extends Service {
         }
 
         @Override
+        public void onAssistantOverrideInvoked(int invocationType) {
+            // no-op
+        }
+
+        @Override
         public void onSystemUiStateChanged(int stateFlags) {
             // no-op
         }
