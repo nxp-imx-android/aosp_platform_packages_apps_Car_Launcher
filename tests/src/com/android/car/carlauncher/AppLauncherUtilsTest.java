@@ -133,6 +133,9 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
 
     @Before
     public void setUp() throws Exception {
+        // Need for CarMediaManager to get the user from the context.
+        when(mMockContext.getUser()).thenReturn(UserHandle.of(ActivityManager.getCurrentUser()));
+
         mCar = Car.createCar(mMockContext, /* handler = */ null, Car.CAR_WAIT_TIMEOUT_WAIT_FOREVER,
                 (car, ready) -> {
                     if (!ready) {
