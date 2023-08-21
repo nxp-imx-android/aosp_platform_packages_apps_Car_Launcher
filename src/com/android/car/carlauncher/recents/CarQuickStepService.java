@@ -156,22 +156,7 @@ public class CarQuickStepService extends Service {
         }
 
         @Override
-        public void onScreenTurnedOn() {
-            // no-op
-        }
-
-        @Override
         public void onNavButtonsDarkIntensityChanged(float darkIntensity) {
-            // no-op
-        }
-
-        @Override
-        public void onScreenTurningOn() {
-            // no-op
-        }
-
-        @Override
-        public void onScreenTurningOff() {
             // no-op
         }
 
