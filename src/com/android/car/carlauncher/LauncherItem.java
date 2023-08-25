@@ -64,7 +64,7 @@ public abstract class LauncherItem implements Parcelable {
     /**
      * This method is used to convert a LauncherItem to a protobuf class
      */
-    public LauncherItemMessage launcherItem2Msg(int relativePosition, int containerID) {
+    public LauncherItemMessage convertToMessage(int relativePosition, int containerID) {
         LauncherItemMessage.Builder builder = LauncherItemMessage.newBuilder()
                 .setPackageName(mPackageName)
                 .setClassName(mClassName)

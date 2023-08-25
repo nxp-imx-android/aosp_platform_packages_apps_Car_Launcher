@@ -23,14 +23,14 @@ import java.io.File;
 
 /** A factory class to allow creation of LauncherViewModel by ViewModelProvider. */
 public class LauncherViewModelFactory implements ViewModelProvider.Factory{
-    private File mAppsOrderFile;
+    private File mLauncherFileDir;
 
-    public LauncherViewModelFactory(File appsOrderFile) {
-        mAppsOrderFile = appsOrderFile;
+    public LauncherViewModelFactory(File launcherFileDir) {
+        mLauncherFileDir = launcherFileDir;
     }
 
     @Override
     public <T extends ViewModel> T create(Class<T> modelClass) {
-        return (T) new LauncherViewModel(mAppsOrderFile);
+        return (T) new LauncherViewModel(mLauncherFileDir);
     }
 }

@@ -32,6 +32,11 @@ public class AppItem extends LauncherItem {
         mAppMetaData = appMetaData;
     }
 
+    public AppItem(AppMetaData appMetaData) {
+        this(appMetaData.getPackageName(), appMetaData.getClassName(),
+                appMetaData.getDisplayName(), appMetaData);
+    }
+
     public static final Creator<LauncherItem> CREATOR = new Creator<LauncherItem>() {
         @Override
         public AppItem createFromParcel(Parcel in) {

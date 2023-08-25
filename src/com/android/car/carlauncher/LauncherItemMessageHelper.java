@@ -16,6 +16,9 @@
 
 package com.android.car.carlauncher;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.android.car.carlauncher.LauncherItemProto.LauncherItemListMessage;
 import com.android.car.carlauncher.LauncherItemProto.LauncherItemMessage;
 
@@ -27,20 +30,14 @@ import java.util.List;
 /**
  * Helper class that provides method used by LauncherModel
  */
-public class LauncherItemHelper {
-    private static final String TAG = "LauncherItemHelper";
-
+public class LauncherItemMessageHelper {
     /**
-     * This method is used to convert a list of launcher items into protobuf class
+     * Convert a List of {@link LauncherItemMessage} to a single {@link LauncherItemListMessage}.
      */
-    public LauncherItemListMessage launcherList2Msg(List<LauncherItem> launcherItemList) {
-        List<LauncherItemMessage> msgList = new ArrayList<LauncherItemMessage>();
-        if (launcherItemList == null) {
+    @Nullable
+    public LauncherItemListMessage convertToMessage(List<LauncherItemMessage> msgList) {
+        if (msgList == null) {
             return null;
-        } else {
-            for (int i = 0; i < launcherItemList.size(); i++) {
-                msgList.add(launcherItemList.get(i).launcherItem2Msg(i, -1));
-            }
         }
         LauncherItemListMessage.Builder builder =
                 LauncherItemListMessage.newBuilder().addAllLauncherItemMessage(msgList);
@@ -48,20 +45,23 @@ public class LauncherItemHelper {
     }
 
     /**
-     * This method converts sort the LauncherItemList based on their
-     * relative order in the proto file
+     * Converts {@link LauncherItemListMessage} to a List of {@link LauncherItemMessage},
+     * sorts the LauncherItemList based on their relative order in the file, then return the list.
      */
-    public List<LauncherItemMessage> sortLauncherItemListMsg(
-            LauncherItemListMessage launcherItemListMsg) {
-        List<LauncherItemMessage> itemListMsg = launcherItemListMsg.getLauncherItemMessageList();
-        List<LauncherItemMessage> items = new ArrayList<>();
-        if (!itemListMsg.isEmpty() && itemListMsg.size() > 0) {
-            //Need to create a new list for sorting purposes since ProtobufArrayList is not mutable
-            items.addAll(itemListMsg);
-            Collections.sort(items,
+    @NonNull
+    public List<LauncherItemMessage> getSortedList(@Nullable LauncherItemListMessage protoLstMsg) {
+        if (protoLstMsg == null) {
+            return new ArrayList<>();
+        }
+        List<LauncherItemMessage> itemMsgList = protoLstMsg.getLauncherItemMessageList();
+        List<LauncherItemMessage> sortedItemMsgList = new ArrayList<>();
+        if (!itemMsgList.isEmpty() && itemMsgList.size() > 0) {
+            // need to create a new list for sorting purposes since ProtobufArrayList is not mutable
+            sortedItemMsgList.addAll(itemMsgList);
+            Collections.sort(sortedItemMsgList,
                     Comparator.comparingInt(LauncherItemMessage::getRelativePosition));
         }
-        return items;
+        return sortedItemMsgList;
     }
 }
 
