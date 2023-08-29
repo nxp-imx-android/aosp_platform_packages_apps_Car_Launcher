@@ -20,6 +20,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="array" name="config_homeCardModuleClasses"/>
       <item type="array" name="config_homeCardPreferredMapActivities"/>
       <item type="array" name="config_taskViewPackages"/>
+      <item type="array" name="launcher_qc_provider_package_allowlist"/>
       <item type="array" name="packages_hidden_from_recents"/>
       <item type="attr" name="cardCornerRadius"/>
       <item type="attr" name="cornerFamily"/>
@@ -115,6 +116,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="divider_horizontal"/>
       <item type="id" name="empty_state"/>
       <item type="id" name="end_edge"/>
+      <item type="id" name="exit_button"/>
       <item type="id" name="maps_card"/>
       <item type="id" name="media_descriptive_text"/>
       <item type="id" name="media_layout"/>
@@ -147,6 +149,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="integer" name="optional_seekbar_max"/>
       <item type="integer" name="playback_controls_bar_columns"/>
       <item type="layout" name="button_trio"/>
+      <item type="layout" name="calm_mode"/>
       <item type="layout" name="car_launcher"/>
       <item type="layout" name="car_launcher_multiwindow"/>
       <item type="layout" name="card_content_descriptive_text_only"/>
@@ -165,6 +168,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="tap_for_more_text"/>
       <item type="layout" name="text_block"/>
       <item type="string" name="app_title"/>
+      <item type="string" name="calm_mode_title"/>
       <item type="string" name="config_passengerLauncherComponent"/>
       <item type="string" name="config_smallCanvasOptimizedMapIntent"/>
       <item type="string" name="config_tosMapIntent"/>
