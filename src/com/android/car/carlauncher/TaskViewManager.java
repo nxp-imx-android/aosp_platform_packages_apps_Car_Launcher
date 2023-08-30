@@ -48,6 +48,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.WindowManagerGlobal;
 import android.window.TaskAppearedInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.car.carlauncher.taskstack.TaskStackChangeListeners;
@@ -346,6 +347,18 @@ public final class TaskViewManager {
                     mTaskViewTransitions, mSyncQueue,
                     callbackExecutor, taskViewCallbacks, mCarActivityManagerRef);
         });
+    }
+
+    /**
+     * updates the window visibility associated with {@link WindowContainerToken}
+     *
+     * @param token {@link WindowContainerToken} of the window that needs to be hidden
+     * @param visibility {true} if window needs to be displayed {false} otherwise
+     */
+    public void updateTaskVisibility(WindowContainerToken token, boolean visibility) {
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setHidden(token, !visibility);
+        mSyncQueue.queue(wct);
     }
 
     /**
