@@ -67,7 +67,7 @@ final class ControlledCarTaskView extends CarTaskView {
             ControlledCarTaskViewCallbacks callbacks,
             UserManager userManager,
             TaskViewManager taskViewManager) {
-        super(context, organizer, taskViewTransitions, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue, true);
         mCallbackExecutor = callbackExecutor;
         mConfig = controlledCarTaskViewConfig;
         mCallbacks = callbacks;
