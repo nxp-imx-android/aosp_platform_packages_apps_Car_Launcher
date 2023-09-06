@@ -17,9 +17,35 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+java_library_static {
+    name: "launcher_item",
+    host_supported: true,
+    proto: {
+        type: "lite",
+    },
+    sdk_version: "module_current",
+    min_sdk_version: "31",
+    srcs: ["lib/src/com/android/car/carlauncher/proto/launcher_item.proto"]
+}
+
 android_library {
     name: "CarAppGrid-lib",
     platform_apis: true,
+
+    srcs: ["lib/src/**/*.java",
+    "lib/src/**/*.kt",],
+
+    resource_dirs: ["lib/res"],
+
+    static_libs: [
+        "androidx-constraintlayout_constraintlayout-solver",
+        "androidx-constraintlayout_constraintlayout",
+        "androidx.lifecycle_lifecycle-extensions",
+        "car-media-common",
+        "guava",
+        "car-ui-lib",
+        "launcher_item",
+    ],
 
     libs: ["android.car"],
 
