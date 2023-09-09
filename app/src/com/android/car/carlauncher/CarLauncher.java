@@ -99,7 +99,8 @@ public class CarLauncher extends FragmentActivity {
 
     private final TaskStackListener mTaskStackListener = new TaskStackListener() {
         @Override
-        public void onTaskFocusChanged(int taskId, boolean focused) {}
+        public void onTaskFocusChanged(int taskId, boolean focused) {
+        }
 
         @Override
         public void onActivityRestartAttempt(ActivityManager.RunningTaskInfo task,
@@ -398,17 +399,17 @@ public class CarLauncher extends FragmentActivity {
                     R.array.config_homeCardModuleClasses)) {
                 try {
                     long reflectionStartTime = System.currentTimeMillis();
-                    HomeCardModule cardModule = (HomeCardModule) Class.forName(
-                            providerClassName).newInstance();
-                    cardModule.setViewModelProvider(new ViewModelProvider( /* owner= */this));
+                    HomeCardModule cardModule = (HomeCardModule)
+                            Class.forName(providerClassName).newInstance();
+                    cardModule.setViewModelProvider(new ViewModelProvider(/* owner= */this));
                     mHomeCardModules.add(cardModule);
                     if (DEBUG) {
                         long reflectionTime = System.currentTimeMillis() - reflectionStartTime;
                         Log.d(TAG, "Initialization of HomeCardModule class " + providerClassName
                                 + " took " + reflectionTime + " ms");
                     }
-                } catch (IllegalAccessException | InstantiationException |
-                        ClassNotFoundException e) {
+                } catch (IllegalAccessException | InstantiationException
+                         | ClassNotFoundException e) {
                     Log.w(TAG, "Unable to create HomeCardProvider class " + providerClassName, e);
                 }
             }

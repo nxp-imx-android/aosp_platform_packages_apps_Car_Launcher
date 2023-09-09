@@ -47,6 +47,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions;
  * <li>b/225388469: Moves the embedded task to the top to make it resumed.</li>
  * </ul>
  */
+
 public class CarTaskView extends TaskView {
     private static final String TAG = CarTaskView.class.getSimpleName();
     @Nullable
