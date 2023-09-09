@@ -501,6 +501,9 @@ public class AppGridPageSnapperTest {
             IdlingRegistry.getInstance().unregister(this);
         }
 
+        /**
+         * Helper method to get IdlingResource for recyclerview.
+         */
         public static RecyclerViewIdlingResource register(ActivityScenario<TestActivity> scenario) {
             final RecyclerViewIdlingResource[] idlingResources = new RecyclerViewIdlingResource[1];
             scenario.onActivity((activity -> {

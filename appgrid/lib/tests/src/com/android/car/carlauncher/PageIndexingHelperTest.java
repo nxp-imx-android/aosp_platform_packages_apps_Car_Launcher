@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.android.car.carlauncher;
 
+import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
+
 import static org.junit.Assert.assertEquals;
 
 import android.view.View;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-
-import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
 
 import com.android.car.carlauncher.pagination.PageIndexingHelper;
 

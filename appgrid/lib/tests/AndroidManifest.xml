@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  ~ Copyright (C) 2020 Google Inc.
+  ~ Copyright (C) 2023 The Android Open Source Project
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,21 +16,24 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
           package="com.android.car.carlauncher.test">
+
     <application
         android:debuggable="true"
-        android:label="@string/app_test_title"
-        tools:replace="android:label">
+        android:label="@string/app_test_title">
 
-        <activity android:name="com.android.car.carlauncher.TaskViewManagerTest$TestActivity"/>
-        <activity
-            android:name="com.android.car.carlauncher.TaskViewInputInterceptorTest$TestActivity"/>
+        <activity android:name="com.android.car.carlauncher.TestActivity"/>
+
         <uses-library android:name="android.test.runner"/>
+
+        <meta-data
+            android:name="com.android.automotive"
+            android:resource="@xml/automotive_app_desc"/>
+
     </application>
 
     <instrumentation
         android:name="androidx.test.runner.AndroidJUnitRunner"
-        android:label="Tests for Car Launcher"
+        android:label="Tests for AppGrid"
         android:targetPackage="com.android.car.carlauncher.test"/>
 </manifest>
