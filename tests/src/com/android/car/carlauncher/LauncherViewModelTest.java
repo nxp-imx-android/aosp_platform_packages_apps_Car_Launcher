@@ -24,6 +24,7 @@ import android.car.test.mocks.AbstractExtendedMockitoTestCase;
 import android.content.ComponentName;
 import android.graphics.drawable.Drawable;
 
+import androidx.lifecycle.Observer;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @RunWith(AndroidJUnit4.class)
@@ -87,26 +89,30 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
     }
 
     @Test
-    public void test_concurrentExecution() {
+    public void test_concurrentExecution() throws InterruptedException {
+        ExecutorService pool = Executors.newCachedThreadPool();
         for (int i = 0; i < 100; i++) {
-            ExecutorService fetchOrderExecutorService = Executors.newSingleThreadExecutor();
-            fetchOrderExecutorService.execute(() -> {
+            pool.execute(() -> {
                 mLauncherModel.loadAppsOrderFromFile();
-                fetchOrderExecutorService.shutdown();
             });
-
-            ExecutorService alphabetizeExecutorService = Executors.newSingleThreadExecutor();
-            alphabetizeExecutorService.execute(() -> {
+            pool.execute(() -> {
                 mLauncherModel.processAppsInfoFromPlatform(mLauncherAppsInfo);
-                alphabetizeExecutorService.shutdown();
             });
         }
-
-        mLauncherModel.getCurrentLauncher().observeForever(launcherItems -> {
-            assertEquals(3, launcherItems.size());
-            assertEquals("A", launcherItems.get(0).getPackageName());
-            assertEquals("B", launcherItems.get(1).getPackageName());
-            assertEquals("C", launcherItems.get(2).getPackageName());
+        pool.shutdown(); // Disable new tasks from being submitted
+        if (!pool.awaitTermination(30, TimeUnit.SECONDS)) {
+            pool.shutdownNow(); // Cancel currently executing tasks
+        }
+        mLauncherModel.getCurrentLauncher().observeForever(new Observer<>() {
+            @Override
+            public void onChanged(List<LauncherItem> launcherItems) {
+                assertEquals(3, launcherItems.size());
+                assertEquals("A", launcherItems.get(0).getPackageName());
+                assertEquals("B", launcherItems.get(1).getPackageName());
+                assertEquals("C", launcherItems.get(2).getPackageName());
+                //remove observer after assertion
+                mLauncherModel.getCurrentLauncher().removeObserver(this);
+            }
         });
     }
 
