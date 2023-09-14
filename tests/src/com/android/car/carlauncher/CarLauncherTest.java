@@ -16,6 +16,8 @@
 
 package com.android.car.carlauncher;
 
+import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -34,6 +36,7 @@ import android.car.test.mocks.AbstractExtendedMockitoTestCase;
 import android.car.user.CarUserManager;
 import android.car.user.CarUserManager.UserLifecycleListener;
 import android.content.Intent;
+import android.provider.Settings;
 import android.testing.TestableContext;
 import android.util.ArraySet;
 
@@ -43,8 +46,6 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.filters.Suppress;
-
-import com.android.dx.mockito.inline.extended.ExtendedMockito;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -193,31 +194,80 @@ public class CarLauncherTest extends AbstractExtendedMockitoTestCase {
 
     @Test
     public void onCreate_tosStateContentObserver_tosAccepted() {
-        doReturn(true).when(() -> AppLauncherUtils.tosAccepted(any()));
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 2);
 
-        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, CarLauncher.class));
         mActivityScenario.moveToState(Lifecycle.State.RESUMED);
 
         mActivityScenario.onActivity(activity -> {
-            assertNull(activity.mTosContentObserver); // Content observer not setup
+            // Content observer not setup because tos is accepted
+            assertNull(activity.mTosContentObserver);
+        });
+    }
+
+    @Test
+    public void onCreate_registerTosStateContentObserver_tosNotAccepted() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, CarLauncher.class));
+        mActivityScenario.moveToState(Lifecycle.State.RESUMED);
+
+        mActivityScenario.onActivity(activity -> {
+            // Content observer is setup because tos is not accepted
+            assertNotNull(activity.mTosContentObserver);
+        });
+    }
+
+    @Test
+    public void onCreate_registerTosStateContentObserver_tosNotInitialized() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 0);
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, CarLauncher.class));
+        mActivityScenario.moveToState(Lifecycle.State.RESUMED);
+
+        mActivityScenario.onActivity(activity -> {
+            // Content observer is setup because tos is not initialized
+            assertNotNull(activity.mTosContentObserver);
         });
     }
 
     @Test
     public void recreate_tosStateContentObserver_tosNotAccepted() {
-        ExtendedMockito
-                .doReturn(false, false, true)
-                .when(() -> AppLauncherUtils.tosAccepted(any()));
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
 
-        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
-        mActivityScenario.moveToState(Lifecycle.State.RESUMED);
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, CarLauncher.class));
 
         mActivityScenario.onActivity(activity -> {
             assertNotNull(activity.mTosContentObserver); // Content observer is setup
+
+            // Accept TOS
+            Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 2);
             activity.mTosContentObserver.onChange(true);
         });
         // Content observer is null after recreate
         mActivityScenario.onActivity(activity -> assertNull(activity.mTosContentObserver));
+    }
+
+    @Test
+    public void recreate_tosStateContentObserver_tosNotInitialized() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 0);
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, CarLauncher.class));
+
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver); // Content observer is setup
+
+            // TOS changed to unaccepted
+            Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+            activity.mTosContentObserver.onChange(true);
+        });
+        // Content observer is not null after recreate
+        mActivityScenario.onActivity(activity -> assertNotNull(activity.mTosContentObserver));
     }
 
     private Intent createIntentFromString(String intentString) {

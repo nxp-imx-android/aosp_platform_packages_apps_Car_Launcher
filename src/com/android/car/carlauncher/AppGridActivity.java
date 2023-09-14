@@ -16,6 +16,8 @@
 
 package com.android.car.carlauncher;
 
+import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
+import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
 import static android.content.Intent.URI_INTENT_SCHEME;
 
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
@@ -41,6 +43,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +52,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -151,6 +155,10 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private Messenger mMessenger;
     private String mMirroringPackageName;
     private Intent mMirroringIntentRedirect;
+    @VisibleForTesting
+    ContentObserver mTosContentObserver;
+    @VisibleForTesting
+    ContentObserver mTosDisabledAppsContentObserver;
 
     /**
      * enum to define the state of display area possible.
@@ -435,6 +443,8 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
 
         mBanner = requireViewById(R.id.tos_banner);
         updateTosBanner();
+
+        setupContentObserversForTos();
     }
 
     @Override
@@ -464,6 +474,8 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 Log.d(TAG, "Exception sending message to mirroring service: " + e);
             }
         }
+
+        unregisterContentObserversForTos();
 
         super.onDestroy();
     }
@@ -908,6 +920,58 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
             getMainThreadHandler().post(() -> mBanner.setVisibility(View.VISIBLE));
         } else {
             mBanner.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupContentObserversForTos() {
+        if (AppLauncherUtils.tosStatusUninitialized(/* context = */ this)
+                || !AppLauncherUtils.tosAccepted(/* context = */ this)) {
+            Log.i(TAG, "TOS not accepted, setting up content observers for TOS state");
+        } else {
+            Log.i(TAG, "TOS accepted, state will remain accepted, "
+                    + "don't need to observe this value");
+            return;
+        }
+        mTosContentObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                super.onChange(selfChange);
+                boolean tosState = AppLauncherUtils.tosAccepted(getBaseContext());
+                Log.i(TAG, "TOS state updated:" + tosState);
+                reinitializeLauncherModel();
+                if (tosState) {
+                    unregisterContentObserversForTos();
+                }
+            }
+        };
+        mTosDisabledAppsContentObserver = new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                super.onChange(selfChange);
+                reinitializeLauncherModel();
+            }
+        };
+        getContentResolver().registerContentObserver(
+                Settings.Secure.getUriFor(KEY_USER_TOS_ACCEPTED),
+                /* notifyForDescendants*/ false,
+                mTosContentObserver);
+        getContentResolver().registerContentObserver(
+                Settings.Secure.getUriFor(KEY_UNACCEPTED_TOS_DISABLED_APPS),
+                /* notifyForDescendants*/ false,
+                mTosDisabledAppsContentObserver
+        );
+    }
+
+    private void unregisterContentObserversForTos() {
+        if (mTosContentObserver != null) {
+            Log.i(TAG, "Unregister content observer for tos state");
+            getContentResolver().unregisterContentObserver(mTosContentObserver);
+            mTosContentObserver = null;
+        }
+        if (mTosDisabledAppsContentObserver != null) {
+            Log.i(TAG, "Unregister content observer for tos disabled apps");
+            getContentResolver().unregisterContentObserver(mTosDisabledAppsContentObserver);
+            mTosDisabledAppsContentObserver = null;
         }
     }
 
