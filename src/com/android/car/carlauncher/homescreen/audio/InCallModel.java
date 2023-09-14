@@ -72,7 +72,7 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
     /** androidx.car.app.CarAppService.CATEGORY_CALLING_APP from androidx car app library. */
     private static final String CAR_APP_CATEGORY_CALLING = "androidx.car.app.category.CALLING";
     private static final boolean DEBUG = false;
-    private static InCallServiceManager sInCallServiceManager;
+    protected static InCallServiceManager sInCallServiceManager;
 
     private Context mContext;
     private TelecomManager mTelecomManager;
@@ -223,10 +223,16 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
      */
     @Override
     public void onCallAdded(Call call) {
-        if (call != null) {
-            handleActiveCall(call);
-            call.registerCallback(mCallback);
+        if (call == null) {
+            return;
         }
+        call.registerCallback(mCallback);
+        @Call.CallState int callState = call.getDetails().getState();
+        if (callState != Call.STATE_ACTIVE && callState != Call.STATE_DIALING) {
+            return;
+        }
+        mCurrentCall = call;
+        handleActiveCall(call);
     }
 
     /**
@@ -344,13 +350,12 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
         mOnModelUpdateListener.onModelUpdate(this);
     }
 
-    private void handleActiveCall(@NonNull Call call) {
-        @Call.CallState int callState = call.getDetails().getState();
-        if (callState != Call.STATE_ACTIVE && callState != Call.STATE_DIALING) {
-            return;
-        }
-        mCurrentCall = call;
+    protected Call getCurrentCall() {
+        return mCurrentCall;
+    }
 
+    protected void handleActiveCall(@NonNull Call call) {
+        @Call.CallState int callState = call.getDetails().getState();
         CallDetail callDetails = CallDetail.fromTelecomCallDetail(call.getDetails());
         if (callDetails.isSelfManaged()) {
             String packageName = getCallingAppPackageName();
