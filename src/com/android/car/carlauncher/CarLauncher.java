@@ -233,6 +233,12 @@ public class CarLauncher extends FragmentActivity {
                                                 public void onTaskViewInitialized() {
                                                     maybeLogReady();
                                                 }
+
+                                                @Override
+                                                public void onTaskViewReleased() {
+                                                    mRemoteCarTaskView = null;
+                                                    parent.removeAllViews();
+                                                }
                                             });
                                 }
 
@@ -240,6 +246,7 @@ public class CarLauncher extends FragmentActivity {
                                 public void onDisconnected(
                                         CarTaskViewController carTaskViewController) {
                                     Log.d(TAG, "onDisconnected");
+                                    mRemoteCarTaskView = null;
                                     parent.removeAllViews();
                                 }
                             });
