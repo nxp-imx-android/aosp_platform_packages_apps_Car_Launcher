@@ -226,13 +226,12 @@ public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener
         if (call == null) {
             return;
         }
+        mCurrentCall = call;
         call.registerCallback(mCallback);
         @Call.CallState int callState = call.getDetails().getState();
-        if (callState != Call.STATE_ACTIVE && callState != Call.STATE_DIALING) {
-            return;
+        if (callState == Call.STATE_ACTIVE || callState == Call.STATE_DIALING) {
+            handleActiveCall(call);
         }
-        mCurrentCall = call;
-        handleActiveCall(call);
     }
 
     /**
