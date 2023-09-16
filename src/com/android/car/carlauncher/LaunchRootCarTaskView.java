@@ -186,7 +186,7 @@ final class LaunchRootCarTaskView extends CarTaskView {
             Executor callbackExecutor,
             LaunchRootCarTaskViewCallbacks callbacks,
             AtomicReference<CarActivityManager> carActivityManager) {
-        super(context, organizer, taskViewTransitions, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue, false);
         mCallbacks = callbacks;
         mCallbackExecutor = callbackExecutor;
         mShellTaskOrganizer = organizer;
