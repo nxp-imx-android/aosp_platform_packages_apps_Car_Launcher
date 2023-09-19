@@ -78,7 +78,7 @@
          "intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end"
     -->
 
-    <string name="user_tos_activity_intent">intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end</string>
+    <string name="user_tos_activity_intent">intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=false;end</string>
 
     <!--
         A list of package names to exclude from the app selector when filtering is active.
