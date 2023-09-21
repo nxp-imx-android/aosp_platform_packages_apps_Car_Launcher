@@ -22,6 +22,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -67,11 +68,15 @@ public class AppGridActivityTest {
             mPageIndicator = mock(PageIndicator.class);
             activity.setPageIndicator(mPageIndicator);
         });
+        // The activity needs to be reset to go to the RESUMED state after the
+        // mock object is set up
+        mActivityScenario.moveToState(Lifecycle.State.CREATED);
         mActivityScenario.moveToState(Lifecycle.State.RESUMED);
         onView(withId(R.id.apps_grid)).check(matches(isDisplayed()));
         onView(withId(R.id.page_indicator_container)).check(matches(isDisplayed()));
-        verify(mPageIndicator, times(1)).updatePageCount(anyInt());
-
+        // onResumed will trigger LauncherViewModel.onChanged when the activity first started
+        // which triggers this call again
+        verify(mPageIndicator, atLeast(1)).updatePageCount(anyInt());
     }
 
     @Test
