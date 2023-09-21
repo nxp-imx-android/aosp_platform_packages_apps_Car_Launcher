@@ -59,7 +59,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final int mNumOfRows;
     private int mAppItemWidth;
     private int mAppItemHeight;
-    private final LauncherViewModel mDataModel;
+    private final LauncherViewModel mLauncherViewModel;
     // grid order of the mLauncherItems used by DiffUtils in dispatchUpdates to animate UI updates
     private final List<LauncherItem> mGridOrderedLauncherItems;
 
@@ -71,26 +71,26 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private Mode mAppGridMode;
 
     public AppGridAdapter(Context context, int numOfCols, int numOfRows,
-            LauncherViewModel dataModel, AppItemViewHolder.AppItemDragCallback dragCallback,
+            LauncherViewModel launcherViewModel, AppItemViewHolder.AppItemDragCallback dragCallback,
             AppGridPageSnapper.AppGridPageSnapCallback snapCallback) {
         this(context, numOfCols, numOfRows,
                 context.getResources().getBoolean(R.bool.use_vertical_app_grid)
                         ? PageOrientation.VERTICAL : PageOrientation.HORIZONTAL,
-                LayoutInflater.from(context), dataModel, dragCallback, snapCallback);
+                LayoutInflater.from(context), launcherViewModel, dragCallback, snapCallback);
     }
 
     public AppGridAdapter(Context context, int numOfCols, int numOfRows,
             @PageOrientation int pageOrientation,
-            LayoutInflater layoutInflater, LauncherViewModel dataModel,
+            LayoutInflater layoutInflater, LauncherViewModel launcherViewModel,
             AppItemViewHolder.AppItemDragCallback dragCallback,
             AppGridPageSnapper.AppGridPageSnapCallback snapCallback) {
         this(context, numOfCols, numOfRows, pageOrientation, layoutInflater,
-                dataModel, dragCallback, snapCallback, Mode.ALL_APPS);
+                launcherViewModel, dragCallback, snapCallback, Mode.ALL_APPS);
     }
 
     public AppGridAdapter(Context context, int numOfCols, int numOfRows,
             @PageOrientation int pageOrientation,
-            LayoutInflater layoutInflater, LauncherViewModel dataModel,
+            LayoutInflater layoutInflater, LauncherViewModel launcherViewModel,
             AppItemViewHolder.AppItemDragCallback dragCallback,
             AppGridPageSnapper.AppGridPageSnapCallback snapCallback, Mode mode) {
         mContext = context;
@@ -102,7 +102,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         mIndexingHelper = new PageIndexingHelper(numOfCols, numOfRows, pageOrientation);
         mGridOrderedLauncherItems = new ArrayList<>();
-        mDataModel = dataModel;
+        mLauncherViewModel = launcherViewModel;
         mAppGridMode = mode;
     }
 
@@ -273,7 +273,7 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         // we need to move package to target index even if the from and to index are the same to
         // ensure dispatchLayout gets called to re-anchor the recyclerview to current page.
         AppItem selectedApp = (AppItem) mLauncherItems.get(adaptorIndexFrom);
-        mDataModel.movePackage(adaptorIndexTo, selectedApp.getAppMetaData());
+        mLauncherViewModel.setAppPosition(adaptorIndexTo, selectedApp.getAppMetaData());
     }
 
 

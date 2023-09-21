@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 
+import com.android.car.carlauncher.apporder.AppOrderController;
 import com.android.car.ui.AlertDialogBuilder;
 
 import java.io.File;
@@ -38,7 +39,7 @@ public class ResetLauncherActivity extends Activity {
                 .setTitle(getString(R.string.reset_appgrid_title))
                 .setMessage(getString(R.string.reset_appgrid_dialogue_message))
                 .setPositiveButton(getString(android.R.string.ok), (dialogInterface, which) -> {
-                    File order = new File(filesDir, LauncherViewModel.ORDER_FILE_NAME);
+                    File order = new File(filesDir, AppOrderController.ORDER_FILE_NAME);
                     order.delete();
                     finish();
                 })

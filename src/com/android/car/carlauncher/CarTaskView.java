@@ -58,15 +58,17 @@ public class CarTaskView extends TaskView {
     private TaskViewTaskController mTaskViewTaskController;
 
     public CarTaskView(Context context, ShellTaskOrganizer organizer,
-            TaskViewTransitions taskViewTransitions, SyncTransactionQueue syncQueue) {
-        this(context, syncQueue,
+            TaskViewTransitions taskViewTransitions, SyncTransactionQueue syncQueue,
+            boolean shouldHideTask) {
+        this(context, syncQueue, shouldHideTask,
                 new TaskViewTaskController(context, organizer, taskViewTransitions, syncQueue));
     }
 
-    public CarTaskView(Context context, SyncTransactionQueue syncQueue,
+    public CarTaskView(Context context, SyncTransactionQueue syncQueue, boolean shouldHideTask,
             TaskViewTaskController taskViewTaskController) {
         super(context, taskViewTaskController);
         mTaskViewTaskController = taskViewTaskController;
+        mTaskViewTaskController.setHideTaskWithSurface(shouldHideTask);
         mSyncQueue = syncQueue;
     }
 

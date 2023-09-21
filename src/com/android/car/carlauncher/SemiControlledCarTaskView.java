@@ -152,7 +152,7 @@ final class SemiControlledCarTaskView extends CarTaskView {
             List<ComponentName> allowListedActivities,
             SemiControlledCarTaskViewCallbacks callbacks,
             AtomicReference<CarActivityManager> carActivityManager) {
-        super(context, organizer, taskViewTransitions, syncQueue);
+        super(context, organizer, taskViewTransitions, syncQueue, true);
         mCallbacks = callbacks;
         mCallbackExecutor = callbackExecutor;
         mCallbackExecutor.execute(() -> mCallbacks.onTaskViewCreated(this));
