@@ -89,6 +89,8 @@ public class AppLauncherUtils {
 
     // This value indicates if TOS has not been accepted by the user
     private static final String TOS_NOT_ACCEPTED = "1";
+    // This value indicates if TOS is in uninitialized state
+    private static final String TOS_UNINITIALIZED = "0";
     static final String TOS_DISABLED_APPS_SEPARATOR = ",";
     static final String PACKAGES_DISABLED_ON_RESOURCE_OVERUSE_SEPARATOR = ";";
 
@@ -848,5 +850,22 @@ public class AppLauncherUtils {
                 contentResolverForUser,
                 KEY_USER_TOS_ACCEPTED);
         return !Objects.equals(settingsValue, TOS_NOT_ACCEPTED);
+    }
+
+    /**
+     * Check if TOS status is uninitialized
+     *
+     * @param context The application context
+     *
+     * @return true if tos is uninitialized, false otherwise
+     */
+    static boolean tosStatusUninitialized(Context context) {
+        ContentResolver contentResolverForUser = context.createContextAsUser(
+                        UserHandle.getUserHandleForUid(Process.myUid()), /* flags= */ 0)
+                .getContentResolver();
+        String settingsValue = Settings.Secure.getString(
+                contentResolverForUser,
+                KEY_USER_TOS_ACCEPTED);
+        return Objects.equals(settingsValue, TOS_UNINITIALIZED);
     }
 }

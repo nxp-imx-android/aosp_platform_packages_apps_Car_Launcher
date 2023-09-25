@@ -16,11 +16,16 @@
 
 package com.android.car.carlauncher;
 
+import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
+import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
@@ -28,8 +33,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.car.drivingstate.CarUxRestrictionsManager;
+import android.content.Intent;
+import android.provider.Settings;
+import android.testing.TestableContext;
 
 import androidx.lifecycle.Lifecycle;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -88,5 +97,95 @@ public class AppGridActivityTest {
         });
         mActivityScenario.moveToState(Lifecycle.State.DESTROYED);
         verify(mCarUxRestrictionsManager, times(1)).unregisterListener();
+    }
+
+    @Test
+    public void onCreate_tosIsAccepted_tosContentObserversAreNull() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 2);
+
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> {
+            assertNull(activity.mTosContentObserver); // Content observer not setup
+            assertNull(activity.mTosDisabledAppsContentObserver); // Content observer not setup
+        });
+    }
+
+    @Test
+    public void afterTosIsAccepted_unregisterTosContentObservers() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver); // Content observer is setup
+            assertNotNull(activity.mTosDisabledAppsContentObserver); // Content observer is setup
+
+            // Accept TOS
+            Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 2);
+            activity.mTosContentObserver.onChange(true);
+        });
+
+        // Content observer is null after tos is accepted
+        mActivityScenario.onActivity(activity -> {
+            assertNull(activity.mTosContentObserver);
+            assertNull(activity.mTosDisabledAppsContentObserver);
+        });
+    }
+
+    @Test
+    public void tosUninitialized_changesToTosUnaccepted_doNotUnregisterTosContentObservers() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 0);
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver); // Content observer is setup
+            assertNotNull(activity.mTosDisabledAppsContentObserver); // Content observer is setup
+
+            // TOS changed to unaccepted
+            Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+            activity.mTosContentObserver.onChange(true);
+        });
+
+        // Content observer is not null after tos is unaccepted
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver);
+            assertNotNull(activity.mTosDisabledAppsContentObserver);
+        });
+    }
+
+    @Test
+    public void
+            tosNotAccepted_tosDisabledAppsUpdate_doNotUnregisterTosDisabledAppsContentObserver() {
+        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+        Settings.Secure.putString(
+                mContext.getContentResolver(),
+                KEY_UNACCEPTED_TOS_DISABLED_APPS,
+                "tos_disabled_app_one,tos_disabled_app_2");
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver); // Content observer is setup
+            assertNotNull(activity.mTosDisabledAppsContentObserver); // Content observer is setup
+
+            // TOS changed to unaccepted
+            Settings.Secure.putString(mContext.getContentResolver(),
+                    KEY_UNACCEPTED_TOS_DISABLED_APPS,
+                    "tos_disabled_app_one");
+            activity.mTosContentObserver.onChange(true);
+        });
+
+        // Content observer is not null after tos is unaccepted
+        mActivityScenario.onActivity(activity -> {
+            assertNotNull(activity.mTosContentObserver);
+            assertNotNull(activity.mTosDisabledAppsContentObserver);
+        });
     }
 }
