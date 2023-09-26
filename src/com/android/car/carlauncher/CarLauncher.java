@@ -32,7 +32,6 @@ import android.car.app.ControlledRemoteCarTaskViewCallback;
 import android.car.app.ControlledRemoteCarTaskViewConfig;
 import android.car.user.CarUserManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
@@ -471,18 +470,20 @@ public class CarLauncher extends FragmentActivity {
     }
 
     private void setupContentObserversForTos() {
-        if (AppLauncherUtils.tosAccepted(this)) {
+        if (AppLauncherUtils.tosStatusUninitialized(/* context = */ this)
+                || !AppLauncherUtils.tosAccepted(/* context = */ this)) {
+            Log.i(TAG, "TOS not accepted, setting up content observers for TOS state");
+        } else {
             Log.i(TAG, "TOS accepted, state will remain accepted, "
                     + "don't need to observe this value");
             return;
         }
-        Context context = this;
         mTosContentObserver = new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange) {
                 super.onChange(selfChange);
                 // TODO (b/280077391): Release the remote task view and recreate the map activity
-                Log.i(TAG, "TOS state updated:" + AppLauncherUtils.tosAccepted(context));
+                Log.i(TAG, "TOS state updated:" + AppLauncherUtils.tosAccepted(getBaseContext()));
                 recreate();
             }
         };
