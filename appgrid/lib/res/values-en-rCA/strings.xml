@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2018 The Android Open Source Project
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_title" msgid="1995858460392177468">"Car Launcher"</string>
+    <!-- no translation found for reset_appgrid_title (814562055108028366) -->
+    <skip />
+    <!-- no translation found for reset_appgrid_dialogue_message (8275758912490987735) -->
+    <skip />
+    <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"All apps"</string>
+    <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Media apps"</string>
+    <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Stop app"</string>
+    <!-- no translation found for app_launcher_app_info_action (6388181061002827660) -->
+    <skip />
+    <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> has been stopped."</string>
+    <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"Stop app?"</string>
+    <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"If you force stop an app, it may misbehave."</string>
+    <string name="app_launcher_stop_app_cant_stop_text" msgid="4766841417948746773">"App can’t be stopped."</string>
+    <string name="driving_toast_text" msgid="149483091947120092">"<xliff:g id="APP_NAME">%1$s</xliff:g> can\'t be used while driving."</string>
+    <string name="hide_debug_apps" msgid="6128313544379622475">"Hide debug apps"</string>
+    <string name="show_debug_apps" msgid="4521073121286325786">"Show debug apps"</string>
+    <!-- no translation found for user_tos_activity_intent (6097193356935501673) -->
+    <skip />
+    <!-- no translation found for banner_title_text (8769404950674630387) -->
+    <skip />
+    <!-- no translation found for banner_review_button_text (8263234087487949865) -->
+    <skip />
+    <!-- no translation found for banner_dismiss_button_text (333850829842822963) -->
+    <skip />
+</resources>
