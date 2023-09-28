@@ -17,9 +17,7 @@
 package com.android.car.carlauncher;
 
 import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_SPY;
-
 import static com.google.common.truth.Truth.assertThat;
-
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -52,6 +50,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.Suppress;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
@@ -68,6 +67,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+@Suppress // CarTaskView in Launcher are not supported anymore and hence this test is not required
 @RunWith(AndroidJUnit4.class)
 public class TaskViewInputInterceptorTest extends AbstractExtendedMockitoTestCase {
     private static final UiAutomation UI_AUTOMATION =
