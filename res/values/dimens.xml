@@ -28,45 +28,6 @@
     <!-- Margin surrounding fragments on the main activity -->
     <dimen name="main_screen_widget_margin">16dp</dimen>
 
-    <!-- AppGridActivity -->
-    <dimen name="app_grid_width">1440dp</dimen>
-    <dimen name="app_grid_height">628dp</dimen>
-    <dimen name="app_grid_margin_horizontal">70dp</dimen>
-    <dimen name="app_grid_margin_vertical">0dp</dimen>
-    <dimen name="app_icon_size">84dp</dimen>
-    <dimen name="app_icon_scaled_size">100dp</dimen>
-    <item name="app_icon_opacity_unavailable" type="dimen" format="float">0.5</item>
-    <item name="app_icon_opacity_tos_disabled" type="dimen" format="float">0.46</item>
-    <item name="app_icon_opacity" type="dimen" format="float">1.0</item>
-    <dimen name="app_name_margin_horizontal">6dp</dimen>
-    <dimen name="app_item_highlight_corner_radius">18dp</dimen>
-    <dimen name="app_item_highlight_edge_width">5dp</dimen>
-    <dimen name="page_indicator_edge_corner_radius">4dp</dimen>
-    <dimen name="page_indicator_height">4dp</dimen>
-    <!-- Gap between top of screen (statusbar) and header content -->
-    <dimen name="recent_apps_divider_margin">40dp</dimen>
-    <dimen name="app_grid_header_margin">@*android:dimen/car_padding_4</dimen>
-    <dimen name="panel_margin">@*android:dimen/car_margin</dimen>
-    <!-- Height of the text and exit button on the app selection screen -->
-    <dimen name="app_bar_height">@*android:dimen/car_app_bar_height</dimen>
-    <dimen name="icon_size">@*android:dimen/car_primary_icon_size</dimen>
-    <dimen name="recent_apps_row_height">@*android:dimen/car_list_divider_height</dimen>
-    <dimen name="app_grid_touch_target_size">@*android:dimen/car_touch_target_size</dimen>
-    <!-- Padding around the touch target (makes ripple look better) -->
-    <dimen name="app_touch_target_padding">@*android:dimen/car_padding_2</dimen>
-    <dimen name="app_touch_target_margin">@*android:dimen/car_padding_1</dimen>
-    <dimen name="app_grid_row_margin">@*android:dimen/car_padding_4</dimen>
-    <dimen name="app_icon_description_margin">@*android:dimen/car_padding_2</dimen>
-    <dimen name="app_icon_ripple_radius">@*android:dimen/car_radius_2</dimen>
-
-    <!-- AppSearchActivity -->
-    <dimen name="search_item_width">760dp</dimen>
-    <dimen name="search_result_margin">@*android:dimen/car_padding_1</dimen>
-    <dimen name="search_result_text_margin">@*android:dimen/car_keyline_3</dimen>
-    <dimen name="search_box_height">65dp</dimen>
-    <dimen name="search_bar_margin">@*android:dimen/car_keyline_1</dimen>
-    <dimen name="search_bar_drawable_text_padding">46dp</dimen>
-
     <!-- Card dimensions -->
     <dimen name="card_width">388dp</dimen>
 
@@ -108,17 +69,6 @@
 
     <dimen name="control_bar_padding">0dp</dimen>
 
-    <!-- percentage of view holders on the next page that must be fully visible to the user to
-    trigger page snap to the next page -->
-    <item name="page_snap_threshold" format="float" type="dimen">0.3</item>
-
-    <!-- Velocity value of a swipe to trigger a fling to the next page -->
-    <item name="fling_threshold" format="float" type="dimen">1000</item>
-
-    <!-- distance that users must drag (hold and attempt to move the app icon) to initiate
-    drag and drop for reordering app icons. -->
-    <dimen name="threshold_to_start_drag_drop">8dp</dimen>
-
     <!-- Recent task -->
     <dimen name="recent_task_icon_size">48dp</dimen>
     <dimen name="recent_task_dismiss_button_size">@dimen/recent_task_icon_size</dimen>
@@ -136,9 +86,4 @@
       This will allow most task thumbnails to be displayed without cropping. -->
     <dimen name="recent_task_width_first">1036dp</dimen>
     <dimen name="recent_task_width">432dp</dimen>
-
-    <!-- banner dimensions -->
-    <dimen name="banner_button_maximum_width">300dp</dimen>
-    <dimen name="banner_content_margin">28dp</dimen>
-    <dimen name="banner_image_view_size">30dp</dimen>
 </resources>

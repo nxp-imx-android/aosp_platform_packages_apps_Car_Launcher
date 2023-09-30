@@ -105,22 +105,6 @@
                 <category android:name="android.intent.category.LAUNCHER_APP"/>
             </intent-filter>
         </activity>
-        <activity android:name="com.android.car.carlauncher.ResetLauncherActivity"
-                  android:theme="@style/ActionDialogTheme"
-                  android:excludeFromRecents="true"
-                  android:exported="true"
-                  android:launchMode="singleInstance">
-            <intent-filter>
-                <action android:name="com.android.settings.action.EXTRA_SETTINGS"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-            <meta-data
-                android:name="com.android.settings.title"
-                android:resource="@string/reset_appgrid_title"/>
-            <meta-data
-                android:name="com.android.settings.category"
-                android:value="com.android.settings.category.ia.apps"/>
-        </activity>
         <activity
             android:name=".ControlBarActivity"
             android:launchMode="singleInstance"
@@ -132,18 +116,6 @@
             android:excludeFromRecents="true">
             <meta-data android:name="distractionOptimized" android:value="true"/>
             <intent-filter>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".AppGridActivity"
-            android:launchMode="singleInstance"
-            android:exported="true"
-            android:theme="@style/Theme.Launcher.AppGridActivity"
-            android:excludeFromRecents="true">
-            <meta-data android:name="distractionOptimized" android:value="true"/>
-            <intent-filter>
-                <action android:name="com.android.car.carlauncher.ACTION_APP_GRID"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
