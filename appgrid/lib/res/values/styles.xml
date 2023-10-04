@@ -30,11 +30,6 @@
         <item name="android:background">@*android:color/car_list_divider</item>
     </style>
 
-    <declare-styleable name="Banner">
-        <attr name="first_button_text" format="string"/>
-        <attr name="second_button_text" format="string"/>
-    </declare-styleable>
-
     <style name="BannerButton">
         <item name="android:background">@android:color/transparent</item>
         <item name="android:layout_height">wrap_content</item>

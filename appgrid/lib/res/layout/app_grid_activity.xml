@@ -16,6 +16,7 @@
 -->
 <com.android.car.ui.FocusArea
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/focus_area"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -31,7 +32,10 @@
             android:id="@+id/tos_banner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:first_button_text="@string/banner_review_button_text"
+            app:second_button_text="@string/banner_dismiss_button_text"
+            app:title_text="@string/banner_title_text" />
         <com.android.car.carlauncher.AppGridRecyclerView
             android:id="@+id/apps_grid"
             android:layout_width="match_parent"
