@@ -265,6 +265,10 @@ public class CarLauncher extends FragmentActivity {
                                                     + taskInfo.taskId + " at "
                                                     + System.currentTimeMillis() + " milliseconds");
                                         }
+                                        if (!sAutoRestartOnCrash) {
+                                            mRemoteCarTaskView.setBackgroundColor(
+                                                    Color.TRANSPARENT);
+                                        }
                                     }
 
                                     @Override
