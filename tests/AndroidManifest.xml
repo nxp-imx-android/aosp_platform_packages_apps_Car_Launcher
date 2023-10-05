@@ -26,7 +26,7 @@
 
         <!-- This is used in AppLauncherUtilTests -->
         <activity android:name="com.android.car.carlauncher.TaskViewInputInterceptorTest$TestActivity" />
-
+        <activity android:name="com.android.car.carlauncher.TestActivity" />
         <meta-data
             android:name="com.android.automotive"
             android:resource="@xml/automotive_app_desc" />
