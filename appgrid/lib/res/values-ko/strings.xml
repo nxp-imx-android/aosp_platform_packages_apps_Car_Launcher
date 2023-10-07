@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
+<!-- 
     Copyright (C) 2018 The Android Open Source Project
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +13,25 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
- -->
+  -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="reset_appgrid_title" msgid="814562055108028366">"앱 그리드를 가나다순으로 재설정하기"</string>
-    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"이 기능은 모든 맞춤설정 정렬을 삭제합니다. 계속하시겠습니까?"</string>
-    <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"모든 앱"</string>
-    <string name="app_launcher_title_media_only" msgid="4400886555907422816">"미디어 앱"</string>
-    <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"앱 종료"</string>
-    <string name="app_launcher_app_info_action" msgid="6388181061002827660">"앱 정보"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱이 종료되었습니다."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"앱을 종료하시겠습니까?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"강제로 앱을 종료하면 예기치 않은 오류가 발생할 수 있습니다."</string>
-    <string name="app_launcher_stop_app_cant_stop_text" msgid="4766841417948746773">"앱을 닫을 수 없습니다."</string>
-    <string name="driving_toast_text" msgid="149483091947120092">"운전 중에는 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱을 사용할 수 없습니다."</string>
-    <string name="hide_debug_apps" msgid="6128313544379622475">"디버그 앱 숨기기"</string>
-    <string name="show_debug_apps" msgid="4521073121286325786">"디버그 앱 표시"</string>
-    <string name="user_tos_activity_intent" msgid="6097193356935501673">"intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end"</string>
-    <string name="banner_title_text" msgid="8769404950674630387">"사용자 서비스 약관으로 인해 중지된 앱을 사용하려면 사용자 서비스 약관에 동의하세요"</string>
-    <string name="banner_review_button_text" msgid="8263234087487949865">"검토"</string>
-    <string name="banner_dismiss_button_text" msgid="333850829842822963">"나중에"</string>
+    <string name="reset_appgrid_title" msgid="7622016163539814652">"앱 그리드를 가나다순으로 재설정하기"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="3814077723850485632">"이 기능은 모든 맞춤설정 정렬을 삭제합니다. 계속하시겠습니까?"</string>
+    <string name="app_launcher_title_all_apps" msgid="4236863581779707836">"모든 앱"</string>
+    <string name="app_launcher_title_media_only" msgid="3297560591440157071">"미디어 앱"</string>
+    <string name="app_launcher_stop_app_action" msgid="2414275293362739722">"앱 종료"</string>
+    <string name="app_launcher_app_info_action" msgid="2288269717565983364">"앱 정보"</string>
+    <string name="app_launcher_stop_app_success_toast_text" msgid="8255055517367991202">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱이 종료되었습니다."</string>
+    <string name="app_launcher_stop_app_dialog_title" msgid="8884482204151772687">"앱을 종료하시겠습니까?"</string>
+    <string name="app_launcher_stop_app_dialog_text" msgid="310512259456257777">"강제로 앱을 종료하면 예기치 않은 오류가 발생할 수 있습니다."</string>
+    <string name="app_launcher_stop_app_cant_stop_text" msgid="4056481829116697797">"앱을 닫을 수 없습니다."</string>
+    <string name="driving_toast_text" msgid="895296032546035226">"운전 중에는 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱을 사용할 수 없습니다."</string>
+    <string name="hide_debug_apps" msgid="8895503945043204933">"디버그 앱 숨기기"</string>
+    <string name="show_debug_apps" msgid="6892826454660192307">"디버그 앱 표시"</string>
+    <string name="user_tos_activity_intent" msgid="9204390243968106688">"intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end"</string>
+    <string name="banner_title_text" msgid="2450177639487820254">"사용자 서비스 약관으로 인해 중지된 앱을 사용하려면 사용자 서비스 약관에 동의하세요"</string>
+    <string name="banner_review_button_text" msgid="8908453729294251655">"검토"</string>
+    <string name="banner_dismiss_button_text" msgid="9092828248797063058">"나중에"</string>
 </resources>
