@@ -68,14 +68,10 @@ public class Banner extends ConstraintLayout {
                 defStyleAttr,
                 defStyleRes);
 
-        String firstButtonText;
-        String secondButtonText;
-
         try {
-            firstButtonText = attrArray.getString(R.styleable.Banner_first_button_text);
-            secondButtonText = attrArray.getString(R.styleable.Banner_second_button_text);
-            setFirstButtonText(firstButtonText);
-            setSecondButtonText(secondButtonText);
+            setFirstButtonText(attrArray.getString(R.styleable.Banner_first_button_text));
+            setSecondButtonText(attrArray.getString(R.styleable.Banner_second_button_text));
+            setTitleText(attrArray.getString(R.styleable.Banner_title_text));
         } finally {
             attrArray.recycle();
         }

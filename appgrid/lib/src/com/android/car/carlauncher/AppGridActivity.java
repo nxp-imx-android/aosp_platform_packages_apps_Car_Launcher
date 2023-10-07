@@ -903,9 +903,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     }
 
     private void updateTosBanner() {
-        mBanner.setFirstButtonText(getString(R.string.banner_review_button_text));
-        mBanner.setSecondButtonText(getString(R.string.banner_dismiss_button_text));
-        mBanner.setTitleText(getString(R.string.banner_title_text));
         mBanner.setFirstButtonOnClickListener(v -> {
             Intent tosIntent = AppLauncherUtils.getIntentForTosAcceptanceFlow(v.getContext());
             AppLauncherUtils.launchApp(v.getContext(), tosIntent);
