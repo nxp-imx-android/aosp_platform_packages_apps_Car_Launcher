@@ -350,7 +350,7 @@ public final class TaskViewManager {
     }
 
     /**
-     * updates the window visibility associated with {@link WindowContainerToken}
+     * Updates the window visibility associated with {@link WindowContainerToken}.
      *
      * @param token {@link WindowContainerToken} of the window that needs to be hidden
      * @param visibility {true} if window needs to be displayed {false} otherwise
@@ -359,6 +359,19 @@ public final class TaskViewManager {
         WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setHidden(token, !visibility);
         mSyncQueue.queue(wct);
+    }
+
+    /**
+     * Updates the window visibility associated with the launch root task of
+     * {@link mLaunchRootCarTaskView}.
+     *
+     * @param visibility {true} if window needs to be displayed {false} otherwise
+     */
+    public void updateLaunchRootCarTaskVisibility(boolean visibility) {
+        if (mLaunchRootCarTaskView == null) {
+            return;
+        }
+        mLaunchRootCarTaskView.updateRootTaskVisibility(visibility);
     }
 
     /**
