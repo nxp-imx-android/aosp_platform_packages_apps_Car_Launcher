@@ -256,4 +256,22 @@ final class LaunchRootCarTaskView extends CarTaskView {
         }
         return topTask;
     }
+
+    /**
+     * Updates the window visibility associated with the root task of this LaunchRootCarTaskView.
+     */
+    public void updateRootTaskVisibility(boolean visibility) {
+        if (mLaunchRootTask == null) {
+            return;
+        }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setHidden(mLaunchRootTask.token, !visibility);
+        // TODO(304309584): remove showEmbeddedTask if better solution is found.
+        // Reorder the LaunchRootCarTaskView to avoid bringing host activity to the front when
+        // touching host activity.
+        if (!visibility) {
+            showEmbeddedTask(wct);
+        }
+        mSyncQueue.queue(wct);
+    }
 }
