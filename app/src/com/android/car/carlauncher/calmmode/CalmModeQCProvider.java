@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
@@ -101,7 +102,12 @@ public class CalmModeQCProvider extends BaseQCProvider {
 
     @VisibleForTesting
     QCItem getQCItem() {
-        Intent intent = new Intent(mContext, CalmModeActivity.class);
+        Resources resources = mContext.getResources();
+        String packageName = resources.getString(R.string.config_calmMode_packageName);
+        String activityName = resources.getString(R.string.config_calmMode_activityName);
+
+        Intent intent = new Intent();
+        intent.setClassName(packageName, activityName);
         PendingIntent ambientModeIntent = PendingIntent.getActivity(mContext, 0, intent,
                 PendingIntent.FLAG_IMMUTABLE);
 

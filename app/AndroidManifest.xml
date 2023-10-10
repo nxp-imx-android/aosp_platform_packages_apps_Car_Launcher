@@ -140,11 +140,12 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:launchMode="singleInstance"
-            android:theme="@android:style/Theme.NoTitleBar">
+            android:theme="@style/Theme.CalmMode">
             <intent-filter>
                 <action android:name="com.android.settings.action.EXTRA_SETTINGS"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+            <meta-data android:name="distractionOptimized" android:value="true"/>
             <meta-data
                 android:name="com.android.settings.title"
                 android:resource="@string/calm_mode_title"/>
