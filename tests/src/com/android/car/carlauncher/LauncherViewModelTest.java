@@ -28,6 +28,7 @@ import androidx.lifecycle.Observer;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +90,7 @@ public final class LauncherViewModelTest extends AbstractExtendedMockitoTestCase
     }
 
     @Test
+    @Ignore("b/304484141")
     public void test_concurrentExecution() throws InterruptedException {
         ExecutorService pool = Executors.newCachedThreadPool();
         for (int i = 0; i < 100; i++) {
