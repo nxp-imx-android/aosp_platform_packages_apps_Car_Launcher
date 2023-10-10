@@ -18,18 +18,7 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_title" msgid="1995858460392177468">"Car Launcher"</string>
-    <string name="reset_appgrid_title" msgid="814562055108028366">"Rivendos rrjetën e aplikacioneve sipas radhës A-Z"</string>
-    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"Ky funksion do të heqë të gjitha porositjet e personalizuara. Dëshiron të vazhdosh?"</string>
-    <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"Të gjitha aplikacionet"</string>
-    <string name="app_launcher_title_media_only" msgid="4400886555907422816">"Aplikacionet e medias"</string>
-    <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"Ndalo aplikacionin"</string>
-    <string name="app_launcher_app_info_action" msgid="6388181061002827660">"Informacione mbi aplikacionin"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> është ndaluar."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"Të ndalohet aplikacioni?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"Nëse e ndalon me forcë një aplikacion, ai mund të përjetojë çrregullime në funksionim."</string>
-    <string name="app_launcher_stop_app_cant_stop_text" msgid="4766841417948746773">"Aplikacioni nuk mund të ndalohet."</string>
     <string name="default_media_song_title" msgid="2970305231647817808"></string>
-    <string name="driving_toast_text" msgid="149483091947120092">"<xliff:g id="APP_NAME">%1$s</xliff:g> nuk mund të përdoret gjatë drejtimit të makinës."</string>
     <string name="tap_for_more_info_text" msgid="2043549383814415585">"Trokit te karta për më shumë informacion"</string>
     <string name="tap_to_launch_text" msgid="6910695705119260847">"Trokit te karta për ta nisur"</string>
     <string name="ongoing_call_duration_text_separator" msgid="6019453854809413561">" • "</string>
@@ -41,15 +30,8 @@
     <string name="weather_app_name" msgid="8048146303519139993">"Moti"</string>
     <string name="fake_weather_main_text" msgid="8117240999340284429">"--° Kryesisht me diell"</string>
     <string name="fake_weather_footer_text" msgid="4570172025869749926">"Mountain View • L: --° U: --°"</string>
-    <string name="hide_debug_apps" msgid="6128313544379622475">"Fshih aplikacionet e korrigjimit"</string>
-    <string name="show_debug_apps" msgid="4521073121286325786">"Shfaq aplikacionet e korrigjimit"</string>
     <string name="times_separator" msgid="6180368193321715816">"/"</string>
-    <!-- no translation found for user_tos_activity_intent (2576362765182614557) -->
-    <skip />
     <string name="recents_empty_state_text" msgid="6703106170272215731">"Nuk ka asnjë artikull të fundit"</string>
     <string name="recents_clear_all_text" msgid="2088678071417053923">"Pastro të gjitha"</string>
     <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"Aplikacioni nuk ofrohet"</string>
-    <string name="banner_title_text" msgid="8769404950674630387">"Për të përdorur aplikacionet e çaktivizuara sipas kushteve të shërbimit të përdoruesit, prano \"Kushtet e shërbimit të përdoruesit\""</string>
-    <string name="banner_review_button_text" msgid="8263234087487949865">"Shqyrto"</string>
-    <string name="banner_dismiss_button_text" msgid="333850829842822963">"Jo tani"</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
+<!-- 
     Copyright (C) 2018 The Android Open Source Project
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +13,25 @@
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
- -->
+  -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="reset_appgrid_title" msgid="814562055108028366">"A-Z ക്രമത്തിൽ ആപ്പ് ഗ്രിഡ് റീസെറ്റ് ചെയ്യുക"</string>
-    <string name="reset_appgrid_dialogue_message" msgid="8275758912490987735">"ഈ ഫംഗ്ഷൻ, എല്ലാ ഇഷ്‌ടാനുസൃത ക്രമപ്പെടുത്തലുകളും നീക്കം ചെയ്യും. നിങ്ങൾക്ക് തുടരണമെന്നുണ്ടോ?"</string>
-    <string name="app_launcher_title_all_apps" msgid="3215107396036838217">"എല്ലാ ആപ്പുകളും"</string>
-    <string name="app_launcher_title_media_only" msgid="4400886555907422816">"മീഡിയ ആപ്പുകൾ"</string>
-    <string name="app_launcher_stop_app_action" msgid="1081680842410279692">"ആപ്പിന്റെ പ്രവർത്തനം നിർത്തുക"</string>
-    <string name="app_launcher_app_info_action" msgid="6388181061002827660">"ആപ്പ് വിവരങ്ങൾ"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="2117271772351005349">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിന്റെ പ്രവർത്തനം നിർത്തി."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="8276889322638001144">"ആപ്പിന്റെ പ്രവർത്തനം നിർത്തണോ?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="3264059639436254372">"ഒരു ആപ്പിന്റെ പ്രവർത്തനം നിർബന്ധിതമായി നിർത്തിയാൽ, അത് ശരിയായി പ്രവർത്തിക്കാനിടയില്ല."</string>
-    <string name="app_launcher_stop_app_cant_stop_text" msgid="4766841417948746773">"ആപ്പ് നിർത്താനാകില്ല."</string>
-    <string name="driving_toast_text" msgid="149483091947120092">"ഡ്രൈവിംഗിനിടെ <xliff:g id="APP_NAME">%1$s</xliff:g> ഉപയോഗിക്കാനാകില്ല."</string>
-    <string name="hide_debug_apps" msgid="6128313544379622475">"ഡീബഗ് ആപ്പുകൾ മറയ്ക്കുക"</string>
-    <string name="show_debug_apps" msgid="4521073121286325786">"ഡീബഗ് ആപ്പുകൾ കാണിക്കുക"</string>
-    <string name="user_tos_activity_intent" msgid="6097193356935501673">"intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=true;end"</string>
-    <string name="banner_title_text" msgid="8769404950674630387">"പ്രവർത്തനരഹിതമാക്കിയ ആപ്പുകൾക്കുള്ള ഉപയോക്തൃ സേവന നിബന്ധനകൾ ഉപയോഗിക്കാൻ, ഉപയോക്തൃ സേവന നിബന്ധനകൾ അംഗീകരിക്കുക"</string>
-    <string name="banner_review_button_text" msgid="8263234087487949865">"റിവ്യൂ ചെയ്യുക"</string>
-    <string name="banner_dismiss_button_text" msgid="333850829842822963">"ഇപ്പോൾ വേണ്ട"</string>
+    <string name="reset_appgrid_title" msgid="7622016163539814652">"A-Z ക്രമത്തിൽ ആപ്പ് ഗ്രിഡ് റീസെറ്റ് ചെയ്യുക"</string>
+    <string name="reset_appgrid_dialogue_message" msgid="3814077723850485632">"ഈ ഫംഗ്ഷൻ, എല്ലാ ഇഷ്‌ടാനുസൃത ക്രമപ്പെടുത്തലുകളും നീക്കം ചെയ്യും. നിങ്ങൾക്ക് തുടരണമെന്നുണ്ടോ?"</string>
+    <string name="app_launcher_title_all_apps" msgid="4236863581779707836">"എല്ലാ ആപ്പുകളും"</string>
+    <string name="app_launcher_title_media_only" msgid="3297560591440157071">"മീഡിയ ആപ്പുകൾ"</string>
+    <string name="app_launcher_stop_app_action" msgid="2414275293362739722">"ആപ്പിന്റെ പ്രവർത്തനം നിർത്തുക"</string>
+    <string name="app_launcher_app_info_action" msgid="2288269717565983364">"ആപ്പ് വിവരങ്ങൾ"</string>
+    <string name="app_launcher_stop_app_success_toast_text" msgid="8255055517367991202">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിന്റെ പ്രവർത്തനം നിർത്തി."</string>
+    <string name="app_launcher_stop_app_dialog_title" msgid="8884482204151772687">"ആപ്പിന്റെ പ്രവർത്തനം നിർത്തണോ?"</string>
+    <string name="app_launcher_stop_app_dialog_text" msgid="310512259456257777">"ഒരു ആപ്പിന്റെ പ്രവർത്തനം നിർബന്ധിതമായി നിർത്തിയാൽ, അത് ശരിയായി പ്രവർത്തിക്കാനിടയില്ല."</string>
+    <string name="app_launcher_stop_app_cant_stop_text" msgid="4056481829116697797">"ആപ്പ് നിർത്താനാകില്ല."</string>
+    <string name="driving_toast_text" msgid="895296032546035226">"ഡ്രൈവിംഗിനിടെ <xliff:g id="APP_NAME">%1$s</xliff:g> ഉപയോഗിക്കാനാകില്ല."</string>
+    <string name="hide_debug_apps" msgid="8895503945043204933">"ഡീബഗ് ആപ്പുകൾ മറയ്ക്കുക"</string>
+    <string name="show_debug_apps" msgid="6892826454660192307">"ഡീബഗ് ആപ്പുകൾ കാണിക്കുക"</string>
+    <string name="user_tos_activity_intent" msgid="9204390243968106688">"intent:#Intent;action=com.android.car.SHOW_USER_TOS_ACTIVITY;B.show_value_prop=false;end"</string>
+    <string name="banner_title_text" msgid="2450177639487820254">"ഉപയോക്താവിനുള്ള സേവന നിബന്ധനകൾ മൂലം പ്രവർത്തനരഹിതമാക്കിയ ആപ്പുകൾ ഉപയോഗിക്കാൻ, ഉപയോക്താവിനുള്ള സേവന നിബന്ധനകൾ അംഗീകരിക്കുക"</string>
+    <string name="banner_review_button_text" msgid="8908453729294251655">"അവലോകനം ചെയ്യുക"</string>
+    <string name="banner_dismiss_button_text" msgid="9092828248797063058">"ഇപ്പോൾ വേണ്ട"</string>
 </resources>
