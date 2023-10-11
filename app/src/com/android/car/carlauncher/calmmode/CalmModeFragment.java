@@ -28,6 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.Group;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.carlauncher.R;
@@ -35,19 +36,18 @@ import com.android.car.carlauncher.R;
 public final class CalmModeFragment extends Fragment {
     private static final String TAG = CalmModeFragment.class.getSimpleName();
     private static final boolean DEBUG = Build.isDebuggable();
-
     private View mContainerView;
     private Group mMediaGroup;
     private Group mNavGroup;
     private Group mTemperatureGroup;
-
     private TextView mMediaTitleView;
     private TextView mNavStateView;
     private TextView mTemperatureView;
     private TextView mClockView;
     private TextView mDateView;
-
     private ViewModelProvider mViewModelProvider;
+    private TemperatureViewModel mTemperatureViewModel;
+    private LiveData<TemperatureData> mTemperatureData;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -94,7 +94,9 @@ public final class CalmModeFragment extends Fragment {
             Log.v(TAG, "initTemperature()");
         }
         if (shouldShowTemperature()) {
-            // TODO: Read initial temperature value and units, handle change events
+            mTemperatureViewModel = mViewModelProvider.get(TemperatureViewModel.class);
+            mTemperatureData = mTemperatureViewModel.getTemperatureData();
+            mTemperatureData.observe(getViewLifecycleOwner(), this::updateTemperatureData);
         }
     }
 
@@ -161,4 +163,15 @@ public final class CalmModeFragment extends Fragment {
         return getResources().getBoolean(R.bool.config_calmMode_showNavigation);
     }
 
+    private void updateTemperatureData(@Nullable TemperatureData temperatureData) {
+        if (temperatureData == null) {
+            mTemperatureGroup.setVisibility(View.GONE);
+            mTemperatureView.setText("");
+            return;
+        }
+        mTemperatureGroup.setVisibility(View.VISIBLE);
+        mTemperatureView.setText(
+                TemperatureData.buildTemperatureString(
+                        temperatureData, getResources().getConfiguration().getLocales().get(0)));
+    }
 }
