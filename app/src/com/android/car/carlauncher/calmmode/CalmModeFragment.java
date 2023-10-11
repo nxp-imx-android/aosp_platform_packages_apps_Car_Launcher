@@ -49,6 +49,9 @@ public final class CalmModeFragment extends Fragment {
     private TemperatureViewModel mTemperatureViewModel;
     private LiveData<TemperatureData> mTemperatureData;
 
+    @Nullable
+    private NavigationStateViewModel mNavigationStateViewModel;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -139,7 +142,10 @@ public final class CalmModeFragment extends Fragment {
         }
 
         if (shouldShowNavigation()) {
-            // TODO: set up nav state listener
+            mNavigationStateViewModel = mViewModelProvider.get(NavigationStateViewModel.class);
+            mNavigationStateViewModel
+                    .getNavigationState()
+                    .observe(this, this::updateNavigationState);
         }
     }
 
@@ -174,4 +180,22 @@ public final class CalmModeFragment extends Fragment {
                 TemperatureData.buildTemperatureString(
                         temperatureData, getResources().getConfiguration().getLocales().get(0)));
     }
+
+    private void updateNavigationState(NavigationStateData navState) {
+        if (DEBUG) {
+            Log.v(TAG, "updateNavigationState navState = " + navState);
+        }
+
+        if (navState == null) {
+            mNavGroup.setVisibility(View.GONE);
+            mNavStateView.setText(null);
+            return;
+        }
+
+        mNavGroup.setVisibility(View.VISIBLE);
+        mNavStateView.setText(
+                NavigationStateData.buildTripStatusString(navState,
+                        getResources().getConfiguration().getLocales().get(0)));
+    }
+
 }
