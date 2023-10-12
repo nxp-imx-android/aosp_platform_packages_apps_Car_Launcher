@@ -22,7 +22,16 @@ android_library {
     name: "CarDock-lib",
     srcs: [
         "src/**/*.java",
-	"src/**/*.kt",
+        "src/**/*.kt",
+    ],
+
+    static_libs: [
+        "dagger2",
+        "jsr330",
+    ],
+
+    plugins: [
+        "dagger2-compiler",
     ],
 
     manifest: "AndroidManifest.xml",
