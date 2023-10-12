@@ -16,6 +16,8 @@
 
 package com.android.car.carlauncher.calmmode;
 
+import static android.car.media.CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,12 +28,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.constraintlayout.widget.Group;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.carlauncher.R;
+import com.android.car.media.common.playback.PlaybackViewModel;
 
 public final class CalmModeFragment extends Fragment {
     private static final String TAG = CalmModeFragment.class.getSimpleName();
@@ -48,6 +53,7 @@ public final class CalmModeFragment extends Fragment {
     private ViewModelProvider mViewModelProvider;
     private TemperatureViewModel mTemperatureViewModel;
     private LiveData<TemperatureData> mTemperatureData;
+    private PlaybackViewModel mPlaybackViewModel;
 
     @Nullable
     private NavigationStateViewModel mNavigationStateViewModel;
@@ -88,7 +94,14 @@ public final class CalmModeFragment extends Fragment {
             Log.v(TAG, "initMediaTitle()");
         }
         if (shouldShowMedia()) {
-            // TODO: Set up initial song title and update visibility
+            mPlaybackViewModel = PlaybackViewModel.get(requireActivity().getApplication(),
+                    MEDIA_SOURCE_MODE_PLAYBACK);
+            // Transform LiveData from MediaItemMetadata into a media title CharSequence
+            // If MediaItemMetadata is null, media title value will be null
+            LiveData<CharSequence> mediaTitleLiveData = Transformations.map(
+                    mPlaybackViewModel.getMetadata(), mediaItemMetadata ->
+                            mediaItemMetadata == null ? null : mediaItemMetadata.getTitle());
+            mediaTitleLiveData.observe(this, this::updateMediaTitle);
         }
     }
 
@@ -198,4 +211,18 @@ public final class CalmModeFragment extends Fragment {
                         getResources().getConfiguration().getLocales().get(0)));
     }
 
+    @VisibleForTesting
+    void updateMediaTitle(CharSequence mediaTitle) {
+        if (DEBUG) {
+            Log.v(TAG, "updateMediaTitle mediaTitle = " + mediaTitle);
+        }
+
+        if (mediaTitle == null || mediaTitle.isEmpty()) {
+            mMediaGroup.setVisibility(View.GONE);
+            mMediaTitleView.setText("");
+            return;
+        }
+        mMediaGroup.setVisibility(View.VISIBLE);
+        mMediaTitleView.setText(mediaTitle);
+    }
 }

@@ -23,6 +23,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
 import android.app.Activity;
@@ -78,5 +79,25 @@ public class CalmModeFragmentTest {
         mFragmentScenario.moveToState(RESUMED);
 
         onView(withId(R.id.date)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void fragmentResumed_testMedia_isVisible() {
+        String testMediaTitle = "Test media title";
+        mFragmentScenario.moveToState(RESUMED);
+
+        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaTitle));
+
+        onView(withId(R.id.media_title)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void fragmentResumed_testMediaTitleNull_isGone() {
+        String testMediaTitle = null;
+        mFragmentScenario.moveToState(RESUMED);
+
+        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaTitle));
+
+        onView(withId(R.id.media_title)).check(matches(not(isDisplayed())));
     }
 }
