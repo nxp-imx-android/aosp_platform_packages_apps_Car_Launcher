@@ -16,17 +16,17 @@
 
 package com.android.car.carlauncher.homescreen.audio;
 
+import static android.content.pm.PackageManager.GET_RESOLVED_FILTER;
+
 import android.Manifest;
 import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.telecom.Call;
 import android.telecom.CallAudioState;
 import android.telecom.PhoneAccountHandle;
@@ -41,18 +41,18 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.audio.telecom.InCallServiceImpl;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
+import com.android.car.telephony.calling.InCallServiceManager;
 import com.android.car.telephony.common.CallDetail;
 import com.android.car.telephony.common.TelecomUtils;
-import com.android.car.telephony.selfmanaged.SelfManagedCallUtil;
-import com.android.car.ui.utils.CarUxRestrictionsUtil;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.time.Clock;
@@ -61,14 +61,21 @@ import java.util.concurrent.CompletableFuture;
 /**
  * The {@link HomeCardInterface.Model} for ongoing phone calls.
  */
-public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.InCallListener {
+public class InCallModel implements AudioModel, InCallServiceImpl.InCallListener,
+        PropertyChangeListener {
 
     private static final String TAG = "InCallModel";
+    private static final String PROPERTY_IN_CALL_SERVICE = "PROPERTY_IN_CALL_SERVICE";
+    private static final String CAR_APP_SERVICE_INTERFACE = "androidx.car.app.CarAppService";
+    private static final String CAR_APP_ACTIVITY_INTERFACE =
+            "androidx.car.app.activity.CarAppActivity";
+    /** androidx.car.app.CarAppService.CATEGORY_CALLING_APP from androidx car app library. */
+    private static final String CAR_APP_CATEGORY_CALLING = "androidx.car.app.category.CALLING";
     private static final boolean DEBUG = false;
+    protected static InCallServiceManager sInCallServiceManager;
 
     private Context mContext;
     private TelecomManager mTelecomManager;
-    private SelfManagedCallUtil mSelfManagedCallUtil;
 
     private PackageManager mPackageManager;
     private final Clock mElapsedTimeClock;
@@ -77,7 +84,6 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     private CompletableFuture<Void> mPhoneNumberInfoFuture;
 
     private InCallServiceImpl mInCallService;
-    private HomeCardInterface.Presenter mPresenter;
 
     private CardHeader mDefaultDialerCardHeader;
     private CardHeader mCardHeader;
@@ -88,24 +94,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     private DescriptiveTextWithControlsView.Control mEndCallButton;
     private DescriptiveTextWithControlsView.Control mDialpadButton;
     private Drawable mContactImageBackground;
-
-    private final ServiceConnection mInCallServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            if (DEBUG) Log.d(TAG, "onServiceConnected: " + name + ", service: " + service);
-            mInCallService = ((InCallServiceImpl.LocalBinder) service).getService();
-            mInCallService.addListener(InCallModel.this);
-            if (mInCallService.getCalls() != null && !mInCallService.getCalls().isEmpty()) {
-                handleActiveCall(mInCallService.getCalls().get(0));
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            if (DEBUG) Log.d(TAG, "onServiceDisconnected: " + name);
-            mInCallService = null;
-        }
-    };
+    private OnModelUpdateListener mOnModelUpdateListener;
 
     private Call.Callback mCallback = new Call.Callback() {
         @Override
@@ -123,8 +112,6 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     public void onCreate(Context context) {
         mContext = context;
         mTelecomManager = context.getSystemService(TelecomManager.class);
-        CarUxRestrictionsUtil carUxRestrictionsUtil = CarUxRestrictionsUtil.getInstance(context);
-        mSelfManagedCallUtil = new SelfManagedCallUtil(mContext, carUxRestrictionsUtil);
 
         mOngoingCallSubtitle = context.getResources().getString(R.string.ongoing_call_text);
         mDialingCallSubtitle = context.getResources().getString(R.string.dialing_call_text);
@@ -136,17 +123,21 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
         mDefaultDialerCardHeader = createCardHeader(mTelecomManager.getDefaultDialerPackage());
         mCardHeader = mDefaultDialerCardHeader;
 
-        Intent intent = new Intent(context, InCallServiceImpl.class);
-        intent.setAction(InCallServiceImpl.ACTION_LOCAL_BIND);
-        context.getApplicationContext().bindService(intent, mInCallServiceConnection,
-                Context.BIND_AUTO_CREATE);
+        sInCallServiceManager = InCallServiceManagerProvider.get();
+        sInCallServiceManager.addObserver(this);
+        if (sInCallServiceManager.getInCallService() != null) {
+            onInCallServiceConnected();
+        }
     }
 
     @Override
     public void onDestroy(Context context) {
+        sInCallServiceManager.removeObserver(this);
         if (mInCallService != null) {
+            if (mInCallService.getCalls() != null && !mInCallService.getCalls().isEmpty()) {
+                onCallRemoved(mInCallService.getCalls().get(0));
+            }
             mInCallService.removeListener(InCallModel.this);
-            context.getApplicationContext().unbindService(mInCallServiceConnection);
             mInCallService = null;
         }
         if (mPhoneNumberInfoFuture != null) {
@@ -155,8 +146,8 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     }
 
     @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    public void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener) {
+        mOnModelUpdateListener = onModelUpdateListener;
     }
 
     @Override
@@ -175,9 +166,9 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
      * display as one of the requirements to fill this role is to provide an ongoing call UI.
      */
     @Override
-    public void onClick(View view) {
+    public Intent getIntent() {
         Intent intent = null;
-        if (isSelfManagedCall() && mSelfManagedCallUtil.canShowCalInCallView()) {
+        if (isSelfManagedCall()) {
             Bundle extras = mCurrentCall.getDetails().getExtras();
             ComponentName componentName = extras == null ? null : extras.getParcelable(
                     Intent.EXTRA_COMPONENT_NAME, ComponentName.class);
@@ -187,14 +178,31 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
             } else {
                 String callingAppPackageName = getCallingAppPackageName();
                 if (!TextUtils.isEmpty(callingAppPackageName)) {
-                    intent = mPackageManager.getLaunchIntentForPackage(callingAppPackageName);
+                    if (isCarAppCallingService(callingAppPackageName)) {
+                        intent = new Intent();
+                        intent.setComponent(
+                                new ComponentName(
+                                        callingAppPackageName, CAR_APP_ACTIVITY_INTERFACE));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    } else {
+                        intent = mPackageManager.getLaunchIntentForPackage(callingAppPackageName);
+                    }
                 }
             }
         } else {
             intent = mPackageManager.getLaunchIntentForPackage(
                     mTelecomManager.getDefaultDialerPackage());
         }
+        return intent;
+    }
 
+    /**
+     * Clicking the card opens the default dialer application that fills the role of {@link
+     * android.app.role.RoleManager#ROLE_DIALER}. This application will have an appropriate UI to
+     * display as one of the requirements to fill this role is to provide an ongoing call UI.
+     */
+    public void onClick(View view) {
+        Intent intent = getIntent();
         if (intent != null) {
             // Launch activity in the default app task container: the display area where
             // applications are launched by default.
@@ -215,9 +223,14 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
      */
     @Override
     public void onCallAdded(Call call) {
-        if (call != null) {
+        if (call == null) {
+            return;
+        }
+        mCurrentCall = call;
+        call.registerCallback(mCallback);
+        @Call.CallState int callState = call.getDetails().getState();
+        if (callState == Call.STATE_ACTIVE || callState == Call.STATE_DIALING) {
             handleActiveCall(call);
-            call.registerCallback(mCallback);
         }
     }
 
@@ -230,7 +243,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
         mCurrentCall = null;
         mCardHeader = null;
         mCardContent = null;
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
         if (call != null) {
             call.unregisterCallback(mCallback);
         }
@@ -245,7 +258,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
         // This is implemented to listen to changes to audio from other sources and update the
         // content accordingly.
         if (updateMuteButtonIconState(audioState)) {
-            mPresenter.onModelUpdated(this);
+            mOnModelUpdateListener.onModelUpdate(this);
         }
     }
 
@@ -284,7 +297,7 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
     void updateModelWithPhoneNumber(String number, @Call.CallState int callState) {
         String formattedNumber = TelecomUtils.getFormattedNumber(mContext, number);
         mCardContent = createPhoneCardContent(null, formattedNumber, callState);
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
     /**
@@ -333,16 +346,15 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
         mCardContent = createPhoneCardContent(
                 new CardContent.CardBackgroundImage(contactImage, mContactImageBackground),
                 contactName, callState);
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
-    private void handleActiveCall(@NonNull Call call) {
-        @Call.CallState int callState = call.getDetails().getState();
-        if (callState != Call.STATE_ACTIVE && callState != Call.STATE_DIALING) {
-            return;
-        }
-        mCurrentCall = call;
+    protected Call getCurrentCall() {
+        return mCurrentCall;
+    }
 
+    protected void handleActiveCall(@NonNull Call call) {
+        @Call.CallState int callState = call.getDetails().getState();
         CallDetail callDetails = CallDetail.fromTelecomCallDetail(call.getDetails());
         if (callDetails.isSelfManaged()) {
             String packageName = getCallingAppPackageName();
@@ -444,5 +456,31 @@ public class InCallModel implements HomeCardInterface.Model, InCallServiceImpl.I
             }
         }
         return null;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        Log.d(TAG, "InCallService has updated.");
+        if (PROPERTY_IN_CALL_SERVICE.equals(evt.getPropertyName())
+                && sInCallServiceManager.getInCallService() != null) {
+            onInCallServiceConnected();
+        }
+    }
+
+    private void onInCallServiceConnected() {
+        Log.d(TAG, "InCall service is connected");
+        mInCallService = (InCallServiceImpl) sInCallServiceManager.getInCallService();
+        mInCallService.addListener(this);
+        if (mInCallService.getCalls() != null && !mInCallService.getCalls().isEmpty()) {
+            onCallAdded(mInCallService.getCalls().get(0));
+        }
+    }
+
+    private boolean isCarAppCallingService(String packageName) {
+        Intent intent =
+                new Intent(CAR_APP_SERVICE_INTERFACE)
+                        .setPackage(packageName)
+                        .addCategory(CAR_APP_CATEGORY_CALLING);
+        return !mPackageManager.queryIntentServices(intent, GET_RESOLVED_FILTER).isEmpty();
     }
 }

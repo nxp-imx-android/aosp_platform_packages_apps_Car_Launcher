@@ -90,7 +90,10 @@ public class MediaViewModelTest {
     @Mock
     private PlaybackProgress mProgress;
     @Mock
-    private HomeCardInterface.Presenter mPresenter;
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
+    @Mock
+    private AudioModel.OnProgressUpdateListener mOnProgressUpdateListener;
+
 
     // The tests use the MediaViewModel's observers. To avoid errors with invoking observeForever
     // on a background thread, this rule configures LiveData to execute each task synchronously.
@@ -109,11 +112,12 @@ public class MediaViewModelTest {
         when(mPlaybackViewModel.getProgress()).thenReturn(mLiveProgress);
         when(mPlaybackViewModel.getPlaybackStateWrapper()).thenReturn(mLivePlaybackState);
         when(mPlaybackViewModel.getPlaybackController()).thenReturn(mPlaybackController);
-        mMediaViewModel.setPresenter(mPresenter);
+        mMediaViewModel.setOnModelUpdateListener(mOnModelUpdateListener);
+        mMediaViewModel.setOnProgressUpdateListener(mOnProgressUpdateListener);
         mMediaViewModel.onCreate(ApplicationProvider.getApplicationContext());
         mSeekBarMax = ApplicationProvider.getApplicationContext().getResources().getInteger(
                 com.android.car.carlauncher.R.integer.optional_seekbar_max);
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
     }
 
     @After
@@ -123,7 +127,7 @@ public class MediaViewModelTest {
 
     @Test
     public void noChange_doesNotCallPresenter() {
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         assertNull(mMediaViewModel.getCardHeader());
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
@@ -133,7 +137,7 @@ public class MediaViewModelTest {
 
     @Test
     public void changeSourceAndMetadata_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
         when(mMetadata.getSubtitle()).thenReturn(ARTIST_NAME);
         when(mMetadata.getTitle()).thenReturn(SONG_TITLE);
@@ -143,7 +147,7 @@ public class MediaViewModelTest {
 
         // Model is updated exactly twice: once when source is set (null metadata)
         // and again when the metadata is set
-        verify(mPresenter, times(2)).onModelUpdated(mMediaViewModel);
+        verify(mOnModelUpdateListener, times(2)).onModelUpdate(mMediaViewModel);
         CardHeader header = mMediaViewModel.getCardHeader();
         assertEquals(header.getCardTitle(), APP_NAME);
         assertNull(header.getCardIcon());
@@ -155,12 +159,12 @@ public class MediaViewModelTest {
 
     @Test
     public void changeSourceOnly_updatesModel() {
-        when(mMediaSource.getDisplayName()).thenReturn(APP_NAME);
+        when(mMediaSource.getDisplayName(any())).thenReturn(APP_NAME);
         when(mMediaSource.getIcon()).thenReturn(APP_ICON);
 
         mLiveMediaSource.setValue(mMediaSource);
 
-        verify(mPresenter).onModelUpdated(mMediaViewModel);
+        verify(mOnModelUpdateListener, times(2)).onModelUpdate(mMediaViewModel);
         CardHeader header = mMediaViewModel.getCardHeader();
         assertEquals(header.getCardTitle(), APP_NAME);
         assertNull(header.getCardIcon());
@@ -178,7 +182,7 @@ public class MediaViewModelTest {
 
         mLiveMetadata.setValue(mMetadata);
 
-        verify(mPresenter, never()).onModelUpdated(any());
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         assertNull(mMediaViewModel.getCardHeader());
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
@@ -195,7 +199,7 @@ public class MediaViewModelTest {
 
         mLiveProgress.setValue(mProgress);
 
-        verify(mPresenter).onModelUpdated(mMediaViewModel, IS_TIME_AVAILABLE);
+        verify(mOnProgressUpdateListener).onProgressUpdate(mMediaViewModel, IS_TIME_AVAILABLE);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
         SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
@@ -213,11 +217,10 @@ public class MediaViewModelTest {
         mLiveProgress.setValue(mProgress);
         mLiveColors.setValue(mColors);
 
-        verify(mPresenter, times(1)).onModelUpdated(mMediaViewModel, false);
+        verify(mOnProgressUpdateListener, times(1)).onProgressUpdate(mMediaViewModel, false);
         DescriptiveTextWithControlsView content =
                 (DescriptiveTextWithControlsView) mMediaViewModel.getCardContent();
         SeekBarViewModel seekBarViewModel = content.getSeekBarViewModel();
         assertEquals(seekBarViewModel.getSeekBarColor(), COLORS);
     }
 }
-

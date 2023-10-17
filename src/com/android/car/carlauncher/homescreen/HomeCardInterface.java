@@ -20,9 +20,6 @@ import android.content.Context;
 
 import androidx.fragment.app.Fragment;
 
-import com.android.car.carlauncher.homescreen.ui.CardContent;
-import com.android.car.carlauncher.homescreen.ui.CardHeader;
-
 import java.util.List;
 
 /**
@@ -46,31 +43,10 @@ public interface HomeCardInterface {
     interface View {
 
         /**
-         * Sets the {@link Presenter} that will manage this View.
-         */
-        void setPresenter(Presenter presenter);
-
-        /**
          * Called by the Presenter to remove the entire card from view if there is no data to
          * display.
          */
         void hideCard();
-
-        /**
-         * Called by the Presenter when there is a change in the source of the card's content.
-         * This updates the app name and app icon displayed on the card.
-         */
-        void updateHeaderView(CardHeader header);
-
-        /**
-         * Called by the Presenter to update the card's content.
-         */
-        void updateContentView(CardContent content);
-
-        /**
-         * Called by the Presenter to update the seekbar and times
-         */
-        default void updateContentView(CardContent content, boolean showTimes) {}
 
         /**
          * Returns the {@link Fragment} with which the View is associated.
@@ -90,40 +66,10 @@ public interface HomeCardInterface {
          */
         void setView(View view);
 
-
         /**
          * Sets the list of {@link Model} that the Presenter will use as sources of content.
          */
         void setModels(List<Model> models);
-
-        /**
-         * Called by the View when its view has been created.
-         * This signals the presenter to initialize the relevant models it will use as data sources
-         * and start listening for updates.
-         */
-        void onViewCreated();
-
-        /**
-         * Called by the View when it is destroyed to allow the presenter to clean up any models
-         */
-        void onViewDestroyed();
-
-        /**
-         * Called by the View when it is clicked
-         */
-        default void onViewClicked(android.view.View v) {}
-
-        /**
-         * Called by one of the Presenter's models when it has updated information to display on
-         * the card.
-         */
-        void onModelUpdated(Model model);
-
-        /**
-         * Called by one of the Presenter's models when it has updated progress related information
-         * to display on the card.
-         */
-        default void onModelUpdated(Model model, boolean updateProgress) {}
     }
 
     /**
@@ -136,36 +82,31 @@ public interface HomeCardInterface {
     interface Model {
 
         /**
-         * Gets the {@link CardHeader} to display for the model.
-         * If there is no content to display, this returns null.
+         * Interface definition for a callback to be invoked for when model has updates.
          */
-        CardHeader getCardHeader();
+        interface OnModelUpdateListener {
+            /**
+             * Called when model is updated.
+             */
+            void onModelUpdate(HomeCardInterface.Model model);
+        }
 
         /**
-         * Gets the {@link CardContent} to display for the model
+         * Registers OnModelUpdateListener on the model.
          */
-        CardContent getCardContent();
-
-        /**
-         * Sets the Presenter for the model. The model updates its presenter of changes and the
-         * presenter manages updating the UI.
-         */
-        void setPresenter(HomeCardInterface.Presenter presenter);
+        void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener);
 
         /**
          * Called by the Presenter to create the Model when the View is created.
          * Should be called after the Model's Presenter has been set with setPresenter
          */
-        default void onCreate(Context context) {}
+        default void onCreate(Context context) {
+        }
 
         /**
          * Called by the Presenter to destroy the Model when the View is destroyed
          */
-        default void onDestroy(Context context) {}
-
-        /**
-         * Called by the Presenter to handle when the View is clicked
-         */
-        default void onClick(android.view.View view) {}
+        default void onDestroy(Context context) {
+        }
     }
 }

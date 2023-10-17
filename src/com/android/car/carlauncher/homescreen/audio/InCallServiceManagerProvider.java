@@ -16,16 +16,20 @@
 
 package com.android.car.carlauncher.homescreen.audio;
 
-import android.view.View;
-
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
+import com.android.car.telephony.calling.InCallServiceManager;
 
 /**
- * An extension of {@link HomeCardInterface.Presenter} used to initialize controls action bar.
+ * Provides an instance of {@link InCallServiceManager} which manages the InCallServiceImpl.
  */
-public interface AudioPresenter extends HomeCardInterface.Presenter {
+public class InCallServiceManagerProvider {
+    private static final InCallServiceManager sInstance = new InCallServiceManager();
+
+    private InCallServiceManagerProvider() {}
+
     /**
-     * Initialize action bar by setting its playback view model & lifecycle owner.
+     * Creates a singleton instance of {@link InCallServiceManager}  .
      */
-    void initializeControlsActionBar(View actionBar);
+    public static InCallServiceManager get() {
+        return sInstance;
+    }
 }

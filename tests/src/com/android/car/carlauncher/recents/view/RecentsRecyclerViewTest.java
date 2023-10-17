@@ -16,10 +16,16 @@
 
 package com.android.car.carlauncher.recents.view;
 
+import static androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
@@ -29,6 +35,8 @@ import android.testing.TestableContext;
 import android.util.LayoutDirection;
 import android.view.View;
 import android.view.WindowMetrics;
+import android.widget.Button;
+import android.widget.ImageView;
 
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,11 +46,12 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.recents.RecentTasksViewModel;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -52,7 +61,6 @@ public class RecentsRecyclerViewTest {
     private static final int FIRST_TASK_WIDTH = 800;
     private static final int TASK_WIDTH = 300;
     private static final int COL_SPACING_BETWEEN_TASKS = 50;
-    private static final int COL_PER_PAGE = 2;
     private static final int CURRENT_ADAPTER_POSITION = 2;
     private static final int PREVIOUS_ADAPTER_POSITION = 1;
     private static final int NEXT_ADAPTER_POSITION = 3;
@@ -64,29 +72,38 @@ public class RecentsRecyclerViewTest {
     private WindowMetrics mWindowMetrics;
     @Mock
     private GridLayoutManager mGridLayoutManager;
-
     @Mock
     private View mCurrentTaskView;
     @Mock
-    private View mCurrentThumbnailView;
+    private ImageView mCurrentThumbnailView;
     @Mock
     private View mCurrentDismissView;
     @Mock
     private View mNextTaskView;
     @Mock
-    private View mNextThumbnailView;
+    private ImageView mNextThumbnailView;
     @Mock
     private View mNextDismissView;
     @Mock
     private View mPreviousTaskView;
     @Mock
-    private View mPreviousThumbnailView;
+    private ImageView mPreviousThumbnailView;
     @Mock
     private View mPreviousDismissView;
+    @Mock
+    private View mClearAllView;
+    @Mock
+    private Button mClearAllButtonView;
+    @Mock
+    private View.OnClickListener mClearAllButtonClickListener;
 
-    private RecyclerView.ViewHolder mCurrentViewHolder;
-    private RecyclerView.ViewHolder mNextViewHolder;
-    private RecyclerView.ViewHolder mPreviousViewHolder;
+    @Captor
+    ArgumentCaptor<RecyclerView.OnScrollListener> mOnScrollListenerCaptor;
+
+    private BaseTaskViewHolder mCurrentTaskViewHolder;
+    private BaseTaskViewHolder mNextTaskViewHolder;
+    private BaseTaskViewHolder mPreviousTaskViewHolder;
+    private ClearAllViewHolder mClearAllTaskViewHolder;
 
     @Rule
     public final TestableContext mContext = new TestableContext(
@@ -110,8 +127,6 @@ public class RecentsRecyclerViewTest {
                 /* value= */ TASK_WIDTH);
         mContext.getOrCreateTestableResources().addOverride(R.dimen.recent_task_col_space,
                 /* value= */ COL_SPACING_BETWEEN_TASKS);
-        mContext.getOrCreateTestableResources().addOverride(
-                R.integer.config_recents_columns_per_page, /* value= */ COL_PER_PAGE);
 
         mRecentsRecyclerView = new RecentsRecyclerView(mContext, mRecentTasksViewModel,
                 mWindowMetrics);
@@ -139,16 +154,6 @@ public class RecentsRecyclerViewTest {
     }
 
     @Test
-    public void resetPadding_setsTheSameStartAndEndPadding_whenOneRecentTaskPresent() {
-        when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(1);
-
-        mRecentsRecyclerView.resetPadding();
-
-        assertThat(mRecentsRecyclerView.getPaddingStart())
-                .isEqualTo(mRecentsRecyclerView.getPaddingEnd());
-    }
-
-    @Test
     public void resetPadding_setsStartPadding_toStart_noReverseLayout_noRTL() {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
@@ -166,7 +171,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingEnd()).isEqualTo(endPadding);
@@ -190,7 +195,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingStart()).isEqualTo(endPadding);
@@ -214,7 +219,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(true);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingStart()).isEqualTo(endPadding);
@@ -238,7 +243,7 @@ public class RecentsRecyclerViewTest {
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mRecentTasksViewModel.getRecentTasksSize()).thenReturn(5);
 
-        int endPadding = mRecentsRecyclerView.calculateLastItemPadding(WINDOW_WIDTH);
+        int endPadding = mRecentsRecyclerView.calculateLastItemPadding();
         mRecentsRecyclerView.resetPadding();
 
         assertThat(mRecentsRecyclerView.getPaddingEnd()).isEqualTo(endPadding);
@@ -249,7 +254,7 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mCurrentDismissView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentDismissView);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentDismissView,
@@ -263,9 +268,9 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mCurrentThumbnailView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentThumbnailView);
-        doReturn(mNextViewHolder).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
+        doReturn(mNextTaskViewHolder).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
                 NEXT_ADAPTER_POSITION);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
@@ -279,7 +284,7 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(true);
         when(mCurrentDismissView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentDismissView);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentDismissView,
@@ -293,9 +298,9 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(true);
         when(mCurrentThumbnailView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentThumbnailView);
-        doReturn(mNextViewHolder).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
+        doReturn(mNextTaskViewHolder).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
                 NEXT_ADAPTER_POSITION);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
@@ -309,7 +314,7 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mCurrentThumbnailView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentThumbnailView);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
@@ -323,9 +328,10 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
         when(mCurrentDismissView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentDismissView);
-        doReturn(mPreviousViewHolder).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
+        doReturn(mPreviousTaskViewHolder).when(
+                mRecentsRecyclerView).findViewHolderForAdapterPosition(
                 PREVIOUS_ADAPTER_POSITION);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentDismissView,
@@ -339,7 +345,7 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(true);
         when(mCurrentThumbnailView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentThumbnailView);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
@@ -353,15 +359,79 @@ public class RecentsRecyclerViewTest {
         mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
         when(mGridLayoutManager.getReverseLayout()).thenReturn(true);
         when(mCurrentDismissView.isFocused()).thenReturn(true);
-        doReturn(mCurrentViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
                 mCurrentDismissView);
-        doReturn(mPreviousViewHolder).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
+        doReturn(mPreviousTaskViewHolder).when(
+                mRecentsRecyclerView).findViewHolderForAdapterPosition(
                 PREVIOUS_ADAPTER_POSITION);
 
         View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentDismissView,
                 View.FOCUS_FORWARD);
 
         assertThat(nextFocusedView).isEqualTo(mPreviousThumbnailView);
+    }
+
+    @Test
+    public void focusSearch_nextViewNotFound_scrollOnce_nextViewFound_focusRequested() {
+        mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
+        when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
+        when(mCurrentThumbnailView.isFocused()).thenReturn(true);
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+                mCurrentThumbnailView);
+        doReturn(null).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
+                NEXT_ADAPTER_POSITION);
+
+        View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
+                View.FOCUS_FORWARD);
+
+        // since view is not loaded, no focused view is returned
+        assertThat(nextFocusedView).isEqualTo(null);
+        verify(mRecentsRecyclerView, times(1)).smoothScrollBy(anyInt(), eq(0));
+        doReturn(mNextTaskViewHolder).when(mRecentsRecyclerView)
+                .findViewHolderForAdapterPosition(NEXT_ADAPTER_POSITION);
+        verify(mRecentsRecyclerView).addOnScrollListener(mOnScrollListenerCaptor.capture());
+        mOnScrollListenerCaptor.getValue().onScrollStateChanged(mRecentsRecyclerView,
+                SCROLL_STATE_IDLE);
+        verify(mNextDismissView).requestFocus();
+    }
+
+    @Test
+    public void focusSearch_nextViewNotFound_scrollOnce_nextViewNotFound_noMoreScroll() {
+        mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
+        when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
+        when(mCurrentThumbnailView.isFocused()).thenReturn(true);
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+                mCurrentThumbnailView);
+        doReturn(null).when(mRecentsRecyclerView).findViewHolderForAdapterPosition(
+                NEXT_ADAPTER_POSITION);
+
+        View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
+                View.FOCUS_FORWARD);
+
+        // since view is not loaded, no focused view is returned
+        assertThat(nextFocusedView).isEqualTo(null);
+        verify(mRecentsRecyclerView, times(1)).smoothScrollBy(anyInt(), eq(0));
+        // view holder still null at NEXT_ADAPTER_POSITION
+        verify(mRecentsRecyclerView).addOnScrollListener(mOnScrollListenerCaptor.capture());
+        mOnScrollListenerCaptor.getValue().onScrollStateChanged(mRecentsRecyclerView,
+                SCROLL_STATE_IDLE);
+        verify(mRecentsRecyclerView, times(1)).smoothScrollBy(anyInt(), eq(0));
+    }
+
+    @Test
+    public void focusSearch_thumbnailFocused_forward_clearAllViewFocus_noReverseLayout_NoRTL() {
+        mRecentsRecyclerView.setLayoutDirection(LayoutDirection.LTR);
+        when(mGridLayoutManager.getReverseLayout()).thenReturn(false);
+        when(mCurrentThumbnailView.isFocused()).thenReturn(true);
+        doReturn(mCurrentTaskViewHolder).when(mRecentsRecyclerView).findContainingViewHolder(
+                mCurrentThumbnailView);
+        doReturn(mClearAllTaskViewHolder).when(mRecentsRecyclerView)
+                .findViewHolderForAdapterPosition(NEXT_ADAPTER_POSITION);
+
+        View nextFocusedView = mRecentsRecyclerView.focusSearch(mCurrentThumbnailView,
+                View.FOCUS_FORWARD);
+
+        assertThat(nextFocusedView).isEqualTo(mClearAllButtonView);
     }
 
     private void initViews() {
@@ -380,18 +450,20 @@ public class RecentsRecyclerViewTest {
                 mPreviousDismissView);
         when(mPreviousThumbnailView.getId()).thenReturn(R.id.task_thumbnail);
         when(mPreviousDismissView.getId()).thenReturn(R.id.task_dismiss_button);
+        when(mClearAllView.findViewById(R.id.recents_clear_all_button)).thenReturn(
+                mClearAllButtonView);
 
-        mCurrentViewHolder = spy(new TestViewHolder(mCurrentTaskView));
-        doReturn(CURRENT_ADAPTER_POSITION).when(mCurrentViewHolder).getAbsoluteAdapterPosition();
-        mNextViewHolder = spy(new TestViewHolder(mNextTaskView));
-        doReturn(NEXT_ADAPTER_POSITION).when(mNextViewHolder).getAbsoluteAdapterPosition();
-        mPreviousViewHolder = spy(new TestViewHolder(mPreviousTaskView));
-        doReturn(PREVIOUS_ADAPTER_POSITION).when(mPreviousViewHolder).getAbsoluteAdapterPosition();
-    }
-
-    private static class TestViewHolder extends RecyclerView.ViewHolder {
-        TestViewHolder(@NotNull View itemView) {
-            super(itemView);
-        }
+        mCurrentTaskViewHolder = spy(new BaseTaskViewHolder(mCurrentTaskView));
+        doReturn(CURRENT_ADAPTER_POSITION).when(
+                mCurrentTaskViewHolder).getAbsoluteAdapterPosition();
+        mNextTaskViewHolder = spy(new BaseTaskViewHolder(mNextTaskView));
+        doReturn(NEXT_ADAPTER_POSITION).when(mNextTaskViewHolder).getAbsoluteAdapterPosition();
+        mPreviousTaskViewHolder = spy(new BaseTaskViewHolder(mPreviousTaskView));
+        doReturn(PREVIOUS_ADAPTER_POSITION).when(
+                mPreviousTaskViewHolder).getAbsoluteAdapterPosition();
+        mClearAllTaskViewHolder = spy(
+                new ClearAllViewHolder(mClearAllView, mClearAllButtonClickListener));
+        doReturn(NEXT_ADAPTER_POSITION).when(
+                mClearAllTaskViewHolder).getAbsoluteAdapterPosition();
     }
 }

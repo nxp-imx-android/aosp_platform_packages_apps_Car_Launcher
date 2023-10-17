@@ -16,9 +16,6 @@
 
 package com.android.car.carlauncher.homescreen;
 
-import static com.android.car.carlauncher.homescreen.ui.CardContent.HomeCardContentType.DESCRIPTIVE_TEXT_WITH_CONTROLS;
-
-import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Size;
@@ -28,20 +25,16 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
 import com.android.car.apps.common.CrossfadeImageView;
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.audio.MediaViewModel.PlaybackCallback;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
-import com.android.car.carlauncher.homescreen.ui.SeekBarViewModel;
 import com.android.car.carlauncher.homescreen.ui.TextBlockView;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
@@ -58,18 +51,12 @@ import com.android.internal.util.ArrayUtils;
  */
 public class HomeCardFragment extends Fragment implements HomeCardInterface.View {
 
-    private HomeCardInterface.Presenter mPresenter;
     private Size mSize;
     private View mCardBackground;
     private CrossfadeImageView mCardBackgroundImage;
     private View mRootView;
     private TextView mCardTitle;
     private ImageView mCardIcon;
-    private ProgressBar mOptionalProgressBar;
-    private SeekBar mOptionalSeekBar;
-    private TextView mOptionalTimes;
-    private ViewGroup mOptionalSeekBarWithTimesContainer;
-    private int mOptionalSeekBarColor;
 
     // Views from card_content_text_block.xml
     private View mTextBlockLayoutView;
@@ -93,31 +80,37 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     private ImageButton mControlBarCenterButton;
     private ImageButton mControlBarRightButton;
 
-    private boolean mTrackingTouch;
-    private PlaybackCallback mPlaybackCallback;
-    private SeekBar.OnSeekBarChangeListener mOnSeekBarChangeListener =
-            new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                }
 
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                    mTrackingTouch = true;
-                }
+    private boolean mViewCreated;
+    private OnViewLifecycleChangeListener mOnViewLifecycleChangeListener;
 
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                    if (mTrackingTouch) {
-                        mPlaybackCallback.seekTo(seekBar.getProgress());
-                    }
-                    mTrackingTouch = false;
-                }
-            };
+    private OnViewClickListener mOnViewClickListener;
 
-    @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    /**
+     * Interface definition for a callback to be invoked for a view lifecycle changes.
+     */
+    public interface OnViewLifecycleChangeListener {
+
+        /**
+         * Called when a view has been Created.
+         */
+        void onViewCreated();
+
+        /**
+         * Called when a view has been destroyed.
+         */
+        void onViewDestroyed();
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when a view is clicked.
+     */
+    public interface OnViewClickListener {
+
+        /**
+         * Called when a view has been clicked.
+         */
+        void onViewClicked();
     }
 
     @Override
@@ -132,15 +125,19 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mPresenter.onViewCreated();
-        mRootView.setOnClickListener(v -> mPresenter.onViewClicked(v));
+        mViewCreated = true;
+        if (mOnViewLifecycleChangeListener != null) {
+            mOnViewLifecycleChangeListener.onViewCreated();
+        }
+        mRootView.setOnClickListener(v -> mOnViewClickListener.onViewClicked());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mPresenter != null) {
-            mPresenter.onViewDestroyed();
+        mViewCreated = false;
+        if (mOnViewLifecycleChangeListener != null) {
+            mOnViewLifecycleChangeListener.onViewDestroyed();
         }
         mSize = null;
     }
@@ -148,6 +145,28 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     @Override
     public Fragment getFragment() {
         return this;
+    }
+
+    /**
+     * Register a callback to be invoked when this view lifecycle changes.
+     *
+     * @param onViewLifecycleChangeListener The callback that will run
+     */
+    public void setOnViewLifecycleChangeListener(
+            OnViewLifecycleChangeListener onViewLifecycleChangeListener) {
+        mOnViewLifecycleChangeListener = onViewLifecycleChangeListener;
+        if (mViewCreated) {
+            mOnViewLifecycleChangeListener.onViewCreated();
+        }
+    }
+
+    /**
+     * Register a callback to be invoked when this view is clicked.
+     *
+     * @param onViewClickListener The callback that will run
+     */
+    public void setOnViewClickListener(OnViewClickListener onViewClickListener) {
+        mOnViewClickListener = onViewClickListener;
     }
 
     /**
@@ -172,7 +191,6 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
     /**
      * Updates the card's header: name and icon of source app
      */
-    @Override
     public void updateHeaderView(CardHeader header) {
         requireActivity().runOnUiThread(() -> {
             mRootView.setVisibility(View.VISIBLE);
@@ -181,19 +199,14 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         });
     }
 
-    @Override
+    /**
+     * Updates the card's content
+     */
     public final void updateContentView(CardContent content) {
         requireActivity().runOnUiThread(() -> {
             hideAllViews();
             updateContentViewInternal(content);
         });
-    }
-
-    @Override
-    public void updateContentView(CardContent content, boolean updateProgress) {
-        requireActivity().runOnUiThread(() ->
-                updateSeekBarAndTimes(content, updateProgress)
-        );
     }
 
 
@@ -223,63 +236,6 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
                 updateTextBlock(textBlockContent.getText(), textBlockContent.getFooter());
                 break;
         }
-    }
-
-    protected void updateSeekBarAndTimes(CardContent content, boolean updateProgress) {
-        DescriptiveTextWithControlsView descriptiveTextWithControlsContent =
-                (DescriptiveTextWithControlsView) content;
-        if (!isSeekbarWithTimesAvailable() || content.getType() != DESCRIPTIVE_TEXT_WITH_CONTROLS
-                || descriptiveTextWithControlsContent.getSeekBarViewModel() == null) {
-            return;
-        }
-
-        SeekBarViewModel seekBarViewModel =
-                descriptiveTextWithControlsContent.getSeekBarViewModel();
-        boolean shouldUseSeekBar = seekBarViewModel.isSeekEnabled();
-
-        if (updateProgress) {
-            ProgressBar progressBar = shouldUseSeekBar ? getOptionalSeekBar()
-                    : getOptionalProgressBar();
-            progressBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
-        } else {
-            SeekBar seekBar = getOptionalSeekBar();
-            ProgressBar progressBar = getOptionalProgressBar();
-            if (shouldUseSeekBar) {
-                updateSeekBar(seekBar, seekBarViewModel);
-            } else {
-                updateProgressBar(progressBar, seekBarViewModel);
-            }
-            seekBar.setVisibility(shouldUseSeekBar ? View.VISIBLE : View.GONE);
-            progressBar.setVisibility(shouldUseSeekBar ? View.GONE : View.VISIBLE);
-        }
-        getOptionalTimes().setText(seekBarViewModel.getTimes());
-
-    }
-
-    private void updateProgressBar(ProgressBar progressBar, SeekBarViewModel seekBarViewModel) {
-        if (mOptionalSeekBarColor != seekBarViewModel.getSeekBarColor()) {
-            mOptionalSeekBarColor = seekBarViewModel.getSeekBarColor();
-            progressBar.setProgressTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
-        }
-        progressBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
-    }
-
-    private void updateSeekBar(SeekBar seekBar, SeekBarViewModel seekBarViewModel) {
-        mPlaybackCallback = seekBarViewModel.getPlaybackCallback();
-        seekBar.setOnSeekBarChangeListener(mOnSeekBarChangeListener);
-        if (mOptionalSeekBarColor != seekBarViewModel.getSeekBarColor()) {
-            mOptionalSeekBarColor = seekBarViewModel.getSeekBarColor();
-            seekBar.setThumbTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
-            seekBar.setProgressTintList(ColorStateList.valueOf(mOptionalSeekBarColor));
-        }
-        seekBar.setProgress(seekBarViewModel.getProgress(), /* animate = */ true);
-    }
-
-    private boolean isSeekbarWithTimesAvailable() {
-        return (getOptionalSeekbarWithTimesContainer() != null
-                && getOptionalSeekbarWithTimesContainer().getVisibility() == View.VISIBLE)
-                && getOptionalSeekBar() != null
-                && getOptionalTimes() != null;
     }
 
     protected final void updateDescriptiveTextOnlyView(CharSequence primaryText,
@@ -343,7 +299,6 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         getTextBlockLayoutView().setVisibility(View.GONE);
         getDescriptiveTextOnlyLayoutView().setVisibility(View.GONE);
         getDescriptiveTextWithControlsLayoutView().setVisibility(View.GONE);
-        getOptionalSeekbarWithTimesContainer().setVisibility(View.GONE);
     }
 
     protected final View getRootView() {
@@ -362,35 +317,6 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
             mCardBackgroundImage = getRootView().findViewById(R.id.card_background_image);
         }
         return mCardBackgroundImage;
-    }
-
-    private ProgressBar getOptionalProgressBar() {
-        if (mOptionalProgressBar == null) {
-            mOptionalProgressBar = getRootView().findViewById(R.id.optional_progress_bar);
-        }
-        return mOptionalProgressBar;
-    }
-
-    private SeekBar getOptionalSeekBar() {
-        if (mOptionalSeekBar == null) {
-            mOptionalSeekBar = getRootView().findViewById(R.id.optional_seek_bar);
-        }
-        return mOptionalSeekBar;
-    }
-
-    private TextView getOptionalTimes() {
-        if (mOptionalTimes == null) {
-            mOptionalTimes = getRootView().findViewById(R.id.optional_times);
-        }
-        return mOptionalTimes;
-    }
-
-    protected ViewGroup getOptionalSeekbarWithTimesContainer() {
-        if (mOptionalSeekBarWithTimesContainer == null) {
-            mOptionalSeekBarWithTimesContainer = getRootView().findViewById(
-                    R.id.optional_seek_bar_with_times_container);
-        }
-        return mOptionalSeekBarWithTimesContainer;
     }
 
     protected final View getDescriptiveTextOnlyLayoutView() {
