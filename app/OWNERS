@@ -5,5 +5,10 @@ alexstetson@google.com
 danzz@google.com
 nehah@google.com
 babakbo@google.com
+arnaudberry@google.com
 igorr@google.com
 stenning@google.com
+ycheo@google.com  # for TaskView only
+
+# Recents
+per-file src/com/android/car/carlauncher/recents/* = jainams@google.com
