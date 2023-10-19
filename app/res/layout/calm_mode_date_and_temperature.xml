@@ -24,6 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:layout_marginTop="@dimen/calm_mode_padding"
         android:layout_marginEnd="@dimen/calm_mode_padding"
         app:layout_constraintEnd_toStartOf="@id/temperature_icon"
         app:layout_constraintTop_toTopOf="parent" />
@@ -49,6 +50,8 @@
         style="@style/CalmMode.Text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/calm_mode_padding"
+        android:layout_marginEnd="@dimen/calm_mode_padding"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

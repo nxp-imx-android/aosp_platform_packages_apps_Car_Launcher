@@ -18,10 +18,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/calm_mode_container"
-    style="@style/CalmMode.Container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="@dimen/calm_mode_padding">
+    android:layout_height="match_parent">
+
+    <ImageView
+        style="@style/CalmMode.BackgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <com.android.car.ui.FocusParkingView
         android:layout_width="wrap_content"
@@ -39,6 +42,8 @@
         style="@style/CalmMode.Icon"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_media"
+        android:layout_marginTop="@dimen/calm_mode_padding"
+        android:layout_marginStart="@dimen/calm_mode_padding"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -48,6 +53,7 @@
         style="@style/CalmMode.Text.MediaTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/calm_mode_padding"
         android:layout_marginStart="@dimen/calm_mode_icon_margin"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintStart_toEndOf="@id/media_icon"
@@ -65,6 +71,7 @@
         style="@style/CalmMode.Icon"
         android:layout_marginEnd="@dimen/calm_mode_icon_margin"
         android:src="@drawable/ic_navigation"
+        android:layout_marginTop="@dimen/calm_mode_padding"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintEnd_toStartOf="@id/nav_state"
         app:layout_constraintTop_toTopOf="parent" />
@@ -74,6 +81,7 @@
         style="@style/CalmMode.Text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/calm_mode_padding"
         android:layout_marginStart="@dimen/calm_mode_icon_margin"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintEnd_toEndOf="parent"
