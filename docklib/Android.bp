@@ -19,15 +19,18 @@ package {
 
 
 android_library {
-    name: "CarDock-lib",
+    name: "CarDockLib",
     srcs: [
         "src/**/*.java",
         "src/**/*.kt",
     ],
 
+    resource_dirs: ["res"],
+
     static_libs: [
         "dagger2",
         "jsr330",
+        "androidx.lifecycle_lifecycle-extensions",
     ],
 
     plugins: [
