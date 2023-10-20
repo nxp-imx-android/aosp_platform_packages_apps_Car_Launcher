@@ -16,16 +16,18 @@
 
 package com.android.car.docklib
 
+import android.content.ComponentName
+
 class DockController : DockInterface {
-    override fun appPinned(componentName: String) {
-        TODO("Not yet implemented")
+    override fun appPinned(componentName: ComponentName) {
+        // todo: Not yet implemented
     }
 
-    override fun appLaunched(componentName: String) {
-        TODO("Not yet implemented")
+    override fun appLaunched(componentName: ComponentName) {
+        // todo: Not yet implemented
     }
 
-    override fun appUnpinned(componentName: String) {
-        TODO("Not yet implemented")
+    override fun appUnpinned(componentName: ComponentName) {
+        // todo: Not yet implemented
     }
 }

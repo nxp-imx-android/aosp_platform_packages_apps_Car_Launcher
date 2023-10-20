@@ -16,6 +16,21 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.android.car.docklib">
+    package="com.android.car.docklib">
 
+    <application>
+        <receiver
+            android:name=".events.DockEventsReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.car.docklib.events.LAUNCH" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.android.car.docklib.events.PIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.android.car.docklib.events.UNPIN" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>
