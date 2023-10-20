@@ -16,7 +16,7 @@
 -->
 <resources>
     <!-- CarLauncher Activity values -->
-    <dimen name="launcher_card_corner_radius">8dp</dimen>
+    <dimen name="launcher_card_corner_radius">32dp</dimen>
     <!-- Vertical percentage of screen (not occupied by maps to devote to the contextual space
       (Ex: date time temp) -->
     <item name="contextual_screen_percentage" type="dimen" format="float">.6</item>

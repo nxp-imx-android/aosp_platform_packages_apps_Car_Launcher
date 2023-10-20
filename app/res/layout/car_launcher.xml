@@ -21,6 +21,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layoutDirection="ltr"
+    android:background="@android:color/black"
     tools:context=".CarLauncher">
 
     <com.android.car.ui.FocusParkingView
