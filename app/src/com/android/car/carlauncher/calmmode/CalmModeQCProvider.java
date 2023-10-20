@@ -26,6 +26,7 @@ import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.car.carlauncher.Flags;
 import com.android.car.carlauncher.R;
 import com.android.car.qc.QCItem;
 import com.android.car.qc.QCList;
@@ -63,9 +64,12 @@ public class CalmModeQCProvider extends BaseQCProvider {
 
     @Override
     public boolean onCreate() {
+        if (!Flags.calmMode()) {
+            return false;
+        }
         boolean returnVal = super.onCreate();
         if (DEBUG) {
-            Log.d(TAG, "onCreate() returnVal " + returnVal);
+            Log.v(TAG, "onCreate() returnVal " + returnVal);
         }
         mAllowListedPackages = Set.of(getContext().getResources().getStringArray(
                 R.array.launcher_qc_provider_package_allowlist));
@@ -76,9 +80,12 @@ public class CalmModeQCProvider extends BaseQCProvider {
 
     @Override
     public QCItem onBind(Uri uri) {
+        if (!Flags.calmMode()) {
+            return null;
+        }
         boolean isValidCalmModeURI = removeParameterFromUri(uri).equals(CALM_MODE_URI);
         if (DEBUG) {
-            Log.d(TAG, "onBind() isValidCalmModeURI " + isValidCalmModeURI);
+            Log.v(TAG, "onBind() uri=" + uri + ", isValidCalmModeURI= " + isValidCalmModeURI);
         }
 
         if (!isValidCalmModeURI) {

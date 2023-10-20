@@ -16,19 +16,24 @@
 
 package com.android.car.carlauncher.calmmode;
 
+import static junit.framework.Assert.assertNull;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.net.Uri;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.android.car.carlauncher.Flags;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,6 +41,8 @@ import java.util.Set;
 
 @RunWith(AndroidJUnit4.class)
 public class CalmModeQCProviderTest {
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     private static final String ALLOW_LIST_PKG = "com.android.systemui";
     private CalmModeQCProvider mCalmModeQCProvider;
     private final Context mContext = ApplicationProvider.getApplicationContext();
@@ -45,6 +52,7 @@ public class CalmModeQCProviderTest {
         mCalmModeQCProvider = new CalmModeQCProvider();
         ExtendedMockito.spyOn(mCalmModeQCProvider);
         ExtendedMockito.doReturn(mContext).when(mCalmModeQCProvider).getContext();
+        mSetFlagsRule.enableFlags(Flags.FLAG_CALM_MODE);
     }
 
     @Test
@@ -71,8 +79,19 @@ public class CalmModeQCProviderTest {
 
     @Test
     public void onBind_validUri_returnsQCItem() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_CALM_MODE);
+
         mCalmModeQCProvider.onCreate();
 
         assertNotNull(mCalmModeQCProvider.onBind(CalmModeQCProvider.CALM_MODE_URI));
+    }
+
+    @Test
+    public void onBind_flagOff_returnsNull() {
+        mSetFlagsRule.disableFlags(Flags.FLAG_CALM_MODE);
+
+        mCalmModeQCProvider.onCreate();
+
+        assertNull(mCalmModeQCProvider.onBind(CalmModeQCProvider.CALM_MODE_URI));
     }
 }

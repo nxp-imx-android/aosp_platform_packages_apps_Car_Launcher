@@ -50,6 +50,7 @@ android_test {
         "truth",
         "testables",
         "CarLauncher-core",
+        "flag-junit",
     ],
 
     platform_apis: true,
