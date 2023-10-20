@@ -17,21 +17,37 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_title" msgid="1995858460392177468">"מרכז האפליקציות ברכב"</string>
-    <string name="default_media_song_title" msgid="2970305231647817808"></string>
-    <string name="tap_for_more_info_text" msgid="2043549383814415585">"יש להקיש על הכרטיס למידע נוסף"</string>
-    <string name="tap_to_launch_text" msgid="6910695705119260847">"יש להקיש על הכרטיס להפעלה"</string>
-    <string name="ongoing_call_duration_text_separator" msgid="6019453854809413561">" • "</string>
-    <string name="ongoing_call_text" msgid="2394626676478708070">"שיחה פעילה"</string>
-    <string name="dialing_call_text" msgid="415326503409745490">"החיוג מתבצע…"</string>
-    <string name="projected_launch_text" msgid="5809132353957907500">"הפעלה של Android Auto"</string>
-    <string name="projected_onclick_launch_error_toast_text" msgid="7462478007773137082">"לא ניתן להפעיל את Android Auto. לא נמצאה פעילות."</string>
-    <string name="projection_devices" msgid="916314090031116598">"{count,plural, =1{מכשיר אחד}one{# מכשירים}two{# מכשירים}other{# מכשירים}}"</string>
-    <string name="weather_app_name" msgid="8048146303519139993">"מזג אוויר"</string>
-    <string name="fake_weather_main_text" msgid="8117240999340284429">"--° שמשי"</string>
-    <string name="fake_weather_footer_text" msgid="4570172025869749926">"Mountain View • H: --° L: --°‎"</string>
-    <string name="times_separator" msgid="6180368193321715816">"/"</string>
-    <string name="recents_empty_state_text" msgid="6703106170272215731">"אין פריטים אחרונים"</string>
-    <string name="recents_clear_all_text" msgid="2088678071417053923">"ניקוי הכול"</string>
-    <string name="failure_opening_recent_task_message" msgid="9097595793150874357">"האפליקציה לא זמינה"</string>
+    <!-- no translation found for app_title (1056886619192068947) -->
+    <skip />
+    <string name="default_media_song_title" msgid="7837564242036091946"></string>
+    <!-- no translation found for tap_for_more_info_text (4240146824238692769) -->
+    <skip />
+    <!-- no translation found for tap_to_launch_text (7150379866796152196) -->
+    <skip />
+    <!-- no translation found for ongoing_call_duration_text_separator (2140398350095052096) -->
+    <skip />
+    <!-- no translation found for ongoing_call_text (7160701768924041827) -->
+    <skip />
+    <!-- no translation found for dialing_call_text (3286036311692512894) -->
+    <skip />
+    <!-- no translation found for projected_launch_text (5034079820478748609) -->
+    <skip />
+    <!-- no translation found for projected_onclick_launch_error_toast_text (8853804785626030351) -->
+    <skip />
+    <!-- no translation found for projection_devices (2556503818120676439) -->
+    <skip />
+    <!-- no translation found for weather_app_name (4356705068077942048) -->
+    <skip />
+    <!-- no translation found for fake_weather_main_text (2545755284647327839) -->
+    <skip />
+    <!-- no translation found for fake_weather_footer_text (8640814250285014485) -->
+    <skip />
+    <!-- no translation found for times_separator (1962841895013564645) -->
+    <skip />
+    <!-- no translation found for recents_empty_state_text (8228569970506899117) -->
+    <skip />
+    <!-- no translation found for recents_clear_all_text (3594272268167720553) -->
+    <skip />
+    <!-- no translation found for failure_opening_recent_task_message (963567570097465902) -->
+    <skip />
 </resources>
