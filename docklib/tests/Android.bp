@@ -19,21 +19,39 @@ package {
 }
 
 android_test {
-    name: "CarDock-lib-Tests",
+    name: "CarDockLibTests",
 
     srcs: ["src/**/*.java"],
+
+    libs: [
+        "android.test.base",
+    ],
 
     optimize: {
         enabled: false,
     },
 
+    static_libs: [
+        "androidx.test.runner",
+        "androidx.test.ext.junit",
+        "mockito-target-extended",
+        "truth",
+        "CarDockLib",
+    ],
+
     manifest: "AndroidManifest.xml",
 
-    instrumentation_for: "CarDock-lib",
+    instrumentation_for: "CarDockLib",
 
     dex_preopt: {
         enabled: false,
     },
+
+    jni_libs: [
+        // For mockito extended
+        "libdexmakerjvmtiagent",
+        "libstaticjvmtiagent",
+    ],
 
     test_suites: [
         "automotive-tests",

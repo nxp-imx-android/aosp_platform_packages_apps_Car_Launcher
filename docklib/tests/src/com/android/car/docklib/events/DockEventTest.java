@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.car.docklib
+package com.android.car.docklib.events;
 
-import android.content.ComponentName
+import static com.google.common.truth.Truth.assertThat;
 
-interface DockInterface {
-    /**
-     * called when an app is statically pinned to the Dock
-     */
-    fun appPinned(componentName: ComponentName)
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-    /**
-     * called when an app is launched
-     */
-    fun appLaunched(componentName: ComponentName)
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-    /**
-     * called when an app should be removed from the Dock
-     */
-    fun appUnpinned(componentName: ComponentName)
+@RunWith(AndroidJUnit4.class)
+public class DockEventTest {
+    @Test
+    public void toDockEvent_doesNotMatchDockEvent_returnNull() {
+        String event = "fake_dock_event";
+
+        DockEvent ret = DockEvent.toDockEvent(event);
+
+        assertThat(ret).isNull();
+    }
 }
