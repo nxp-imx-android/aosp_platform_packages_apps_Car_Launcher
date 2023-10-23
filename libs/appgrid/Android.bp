@@ -33,7 +33,8 @@ android_library {
     platform_apis: true,
 
     srcs: ["lib/src/**/*.java",
-    "lib/src/**/*.kt",],
+    "lib/src/**/*.kt",
+    "lib/hidden_apis_enabled/**/*.java"],
 
     resource_dirs: ["lib/res"],
 
@@ -50,4 +51,32 @@ android_library {
     libs: ["android.car"],
 
     manifest: "lib/AndroidManifest.xml",
+}
+
+// Uses test key instead of the regular "platform" key
+CERTIFICATE = ":com-android-car-launcher-test"
+
+android_app {
+    name: "CarAppGridTestApp",
+
+    manifest: "app/src/main/AndroidManifest.xml",
+
+    resource_dirs: ["app/src/main/res"],
+
+     srcs: ["app/src/**/*.java",
+        "app/src/**/*.kt",],
+
+    platform_apis: true,
+
+    required: ["allowed_privapp_com.android.car.appgrid.test"],
+
+    certificate: CERTIFICATE,
+
+    privileged: true,
+
+    static_libs: ["CarAppGrid-lib"],
+
+    optimize: {
+        enabled: true,
+    },
 }

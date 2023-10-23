@@ -16,7 +16,7 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.android.car.carlauncher">
+    package="com.android.car.carlauncher">
 
     <!-- System permission to query all installed packages -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
@@ -24,12 +24,15 @@
     <!-- Permission to allow drag surface control to be transferred from DragEvent. -->
     <uses-permission android:name="android.permission.START_TASKS_FROM_RECENTS"/>
     <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"/>
+    <!-- System permission to query users on device -->
+    <uses-permission android:name="android.permission.MANAGE_USERS"/>
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"/>
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL"/>
 
     <application>
 
-     <!--TODO (b/301667893): Remove the Activities and its CarLauncher specific code, once we are
-        able to provide a Fragment for AppGrid-->
+        <!--TODO (b/301667893): Remove the Activities and its CarLauncher specific code, once we are
+           able to provide a Fragment for AppGrid-->
         <activity
             android:name="com.android.car.carlauncher.AppGridActivity"
             android:launchMode="singleInstance"
@@ -44,10 +47,10 @@
         </activity>
 
         <activity android:name="com.android.car.carlauncher.ResetLauncherActivity"
-                  android:theme="@style/ActionDialogTheme"
-                  android:excludeFromRecents="true"
-                  android:exported="true"
-                  android:launchMode="singleInstance">
+            android:theme="@style/ActionDialogTheme"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="com.android.settings.action.EXTRA_SETTINGS"/>
                 <category android:name="android.intent.category.DEFAULT"/>
