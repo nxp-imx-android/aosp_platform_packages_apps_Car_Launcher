@@ -597,12 +597,6 @@ public final class TaskViewManager {
      * is a known SemiControlledCarTaskView.
      */
     public void setAllowListedActivities(CarTaskView carTaskView, List<ComponentName> activities) {
-        if (activities.size() == 0) {
-            if (DBG) {
-                Log.d(TAG, "No activity to remove from allowlist");
-            }
-            return;
-        }
         for (SemiControlledCarTaskView semiControlledCarTaskView: mSemiControlledTaskViews) {
             if (semiControlledCarTaskView.equals(carTaskView)) {
                 semiControlledCarTaskView.setAllowListedActivities(activities);
