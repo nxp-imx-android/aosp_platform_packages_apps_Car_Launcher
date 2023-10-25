@@ -17,5 +17,13 @@
 
 <resources>
     <!-- Number of apps that should be shown on Dock -->
-    <integer name="config_numDockApps">3</integer>
+    <integer name="config_numDockApps">4</integer>
+
+    <!-- A list of components that are shown on Dock by default -->
+    <string-array name="config_defaultDockApps" translatable="false">
+        <item>com.android.vending/com.google.android.finsky.carmainactivity.MainActivity</item>
+        <item>com.android.car.settings/com.android.car.settings.Settings_Launcher_Homepage</item>
+        <item>com.android.car.dialer/com.android.car.dialer.ui.TelecomActivity</item>
+        <item>com.google.android.apps.maps/com.google.android.maps.MapsActivity</item>
+    </string-array>
 </resources>
