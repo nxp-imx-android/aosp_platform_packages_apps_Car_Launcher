@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.docklib.events;
+package com.android.car.dockutil.events;
 
 import static com.google.common.truth.Truth.assertThat;
 

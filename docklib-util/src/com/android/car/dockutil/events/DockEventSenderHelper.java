@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.docklib.events;
-
-import static com.android.car.docklib.events.DockEventsReceiver.EXTRA_COMPONENT;
+package com.android.car.dockutil.events;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
@@ -24,35 +22,38 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.Display;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.car.docklib.R;
+import com.android.car.dockutil.R;
 
 /**
  * Helper used to send Dock Events.
  */
 public class DockEventSenderHelper {
+    public static final String EXTRA_COMPONENT = "EXTRA_COMPONENT";
+
     private final Context mContext;
     private final ComponentName mReceiverComponent;
 
     public DockEventSenderHelper(Context context) {
         mContext = context;
         mReceiverComponent = new ComponentName(context.getString(R.string.config_dockViewPackage),
-                DockEventsReceiver.class.getName());
+                context.getString(R.string.config_dockReceiver));
     }
 
     /**
      * Used to send launch event to the dock. Generally used when an app is launched.
      */
-    public void sendLaunchEvent(ActivityManager.RunningTaskInfo taskInfo) {
+    public void sendLaunchEvent(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         sendEventBroadcast(DockEvent.LAUNCH, taskInfo);
     }
 
     /**
      * Used to send pin event to the dock. Generally used when an app should be pinned to the dock.
      */
-    public void sendPinEvent(ActivityManager.RunningTaskInfo taskInfo) {
+    public void sendPinEvent(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         sendEventBroadcast(DockEvent.PIN, taskInfo);
     }
 
@@ -60,13 +61,13 @@ public class DockEventSenderHelper {
      * Used to send unpin event to the dock. Generally used when an app should be unpinned from the
      * dock.
      */
-    public void sendUnpinEvent(ActivityManager.RunningTaskInfo taskInfo) {
+    public void sendUnpinEvent(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         sendEventBroadcast(DockEvent.UNPIN, taskInfo);
     }
 
     @VisibleForTesting
-    void sendEventBroadcast(DockEvent event,
-                            ActivityManager.RunningTaskInfo taskInfo) {
+    void sendEventBroadcast(@NonNull DockEvent event,
+                            @NonNull ActivityManager.RunningTaskInfo taskInfo) {
         if (taskInfo.getDisplayId() != Display.DEFAULT_DISPLAY) {
             return;
         }
@@ -76,7 +77,7 @@ public class DockEventSenderHelper {
         }
     }
 
-    private void sendEventBroadcast(DockEvent event, ComponentName component) {
+    private void sendEventBroadcast(@NonNull DockEvent event, @NonNull ComponentName component) {
         Intent intent = new Intent();
         intent.setComponent(mReceiverComponent);
         intent.setAction(event.toString());
@@ -85,7 +86,7 @@ public class DockEventSenderHelper {
     }
 
     @Nullable
-    private ComponentName getComponentName(ActivityManager.RunningTaskInfo taskInfo) {
+    private ComponentName getComponentName(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         if (taskInfo.baseActivity == null && taskInfo.baseIntent.getComponent() == null) {
             return null;
         }

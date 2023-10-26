@@ -16,4 +16,10 @@
   -->
 
 <resources>
+    <!-- Package that contains the dock view -->
+    <string name="config_dockViewPackage" translatable="false">com.android.systemui</string>
+    <!-- BroadcastReceiver class that receives dock events -->
+    <string name="config_dockReceiver" translatable="false">
+        com.android.car.docklib.events.DockEventsReceiver
+    </string>
 </resources>

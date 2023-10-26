@@ -16,7 +16,7 @@
 
 package com.android.car.docklib.events;
 
-import static com.android.car.docklib.events.DockEventsReceiver.EXTRA_COMPONENT;
+import static com.android.car.dockutil.events.DockEventSenderHelper.EXTRA_COMPONENT;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -32,6 +32,7 @@ import android.content.Intent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.car.docklib.DockInterface;
+import com.android.car.dockutil.events.DockEvent;
 
 import org.junit.Before;
 import org.junit.Test;
