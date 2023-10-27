@@ -18,19 +18,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.car.docklib">
 
-    <application>
-        <receiver
-            android:name=".events.DockEventsReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.android.car.docklib.events.LAUNCH" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.android.car.docklib.events.PIN" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.android.car.docklib.events.UNPIN" />
-            </intent-filter>
-        </receiver>
-    </application>
+    <!-- Permission to allow packages to broadcast events to the dock -->
+    <permission
+        android:name="com.android.car.docklib.permission.BROADCAST_SENDER"
+        android:label="@string/broadcast_sender_permission_label"
+        android:description="@string/broadcast_sender_permission_desc"
+        android:protectionLevel="signature|privileged" />
+
+    <!-- Permission to allow packages to receive broadcast events for the dock -->
+    <permission
+        android:name="com.android.car.docklib.permission.BROADCAST_RECEIVER"
+        android:label="@string/broadcast_receiver_permission_label"
+        android:description="@string/broadcast_receiver_permission_desc"
+        android:protectionLevel="signature|privileged" />
+
 </manifest>
