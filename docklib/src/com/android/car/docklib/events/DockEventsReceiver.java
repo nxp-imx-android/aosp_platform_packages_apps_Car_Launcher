@@ -21,9 +21,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
+import com.android.car.docklib.DockController;
 import com.android.car.docklib.DockInterface;
-
-import javax.inject.Inject;
 
 /**
  * BroadcastReceiver for Dock Events.
@@ -33,7 +32,10 @@ public class DockEventsReceiver extends BroadcastReceiver {
     static final String EXTRA_COMPONENT = "EXTRA_COMPONENT";
     private final DockInterface mDockController;
 
-    @Inject
+    public DockEventsReceiver() {
+        this(new DockController());
+    }
+
     public DockEventsReceiver(DockInterface dockController) {
         mDockController = dockController;
     }
