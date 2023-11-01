@@ -19,7 +19,7 @@ package {
 
 
 android_library {
-    name: "CarDockLib",
+    name: "CarDockUtilLib",
     srcs: [
         "src/**/*.java",
         "src/**/*.kt",
@@ -28,14 +28,7 @@ android_library {
     resource_dirs: ["res"],
 
     static_libs: [
-        "dagger2",
-        "jsr330",
         "androidx.lifecycle_lifecycle-extensions",
-        "CarDockUtilLib",
-    ],
-
-    plugins: [
-        "dagger2-compiler",
     ],
 
     manifest: "AndroidManifest.xml",

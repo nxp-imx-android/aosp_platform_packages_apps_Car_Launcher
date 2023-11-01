@@ -16,4 +16,8 @@
   -->
 
 <resources>
+    <string name="broadcast_sender_permission_label">Dock broadcast sender</string>
+    <string name="broadcast_sender_permission_desc">
+        Permission required for package to broadcast events to the Dock.
+    </string>
 </resources>

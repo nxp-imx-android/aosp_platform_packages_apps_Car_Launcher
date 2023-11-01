@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2023 The Android Open Source Project
+// Copyright (C) 2023 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,30 +13,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+android_test {
+    name: "CarDockUtilLibTests",
 
-android_library {
-    name: "CarDockLib",
-    srcs: [
-        "src/**/*.java",
-        "src/**/*.kt",
+    srcs: ["src/**/*.java"],
+
+    libs: [
+        "android.test.base",
     ],
 
-    resource_dirs: ["res"],
+    optimize: {
+        enabled: false,
+    },
 
     static_libs: [
-        "dagger2",
-        "jsr330",
-        "androidx.lifecycle_lifecycle-extensions",
+        "androidx.test.runner",
+        "androidx.test.ext.junit",
+        "mockito-target-extended",
+        "truth",
         "CarDockUtilLib",
     ],
 
-    plugins: [
-        "dagger2-compiler",
+    manifest: "AndroidManifest.xml",
+
+    instrumentation_for: "CarDockUtilLib",
+
+    dex_preopt: {
+        enabled: false,
+    },
+
+    jni_libs: [
+        // For mockito extended
+        "libdexmakerjvmtiagent",
+        "libstaticjvmtiagent",
     ],
 
-    manifest: "AndroidManifest.xml",
+    test_suites: [
+        "automotive-tests",
+    ],
 }
