@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.car.docklib.events;
+package com.android.car.dockutil.events;
 
 import static android.view.Display.DEFAULT_DISPLAY;
 
-import static com.android.car.docklib.events.DockEventsReceiver.EXTRA_COMPONENT;
+import static com.android.car.dockutil.events.DockEventSenderHelper.EXTRA_COMPONENT;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -35,7 +35,7 @@ import android.content.Intent;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.android.car.docklib.R;
+import com.android.car.dockutil.R;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +48,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(AndroidJUnit4.class)
 public class DockEventSenderHelperTest {
     private static final String DOCK_RECEIVER_PKG = "DOCK_RECEIVER_PKG";
+    private static final String DOCK_RECEIVER_CLS = "DOCK_RECEIVER_CLS";
     @Mock
     public ActivityManager.RunningTaskInfo mRunningTaskInfo;
     @Mock
@@ -64,6 +65,7 @@ public class DockEventSenderHelperTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         when(mContext.getString(eq(R.string.config_dockViewPackage))).thenReturn(DOCK_RECEIVER_PKG);
+        when(mContext.getString(eq(R.string.config_dockReceiver))).thenReturn(DOCK_RECEIVER_CLS);
         mDockEventSenderHelper = new DockEventSenderHelper(mContext);
     }
 

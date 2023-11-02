@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.car.docklib.events;
+package com.android.car.dockutil.events;
 
 import androidx.annotation.Nullable;
 
 /**
  * Enum for events sent by the system to trigger change in the Dock.
  */
-enum DockEvent {
+public enum DockEvent {
     LAUNCH("com.android.car.docklib.events.LAUNCH"),
     PIN("com.android.car.docklib.events.PIN"),
     UNPIN("com.android.car.docklib.events.UNPIN");
