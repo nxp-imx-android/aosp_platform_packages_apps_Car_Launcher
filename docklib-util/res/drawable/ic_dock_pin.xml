@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <!--
   ~ Copyright (C) 2023 The Android Open Source Project
   ~
@@ -15,7 +14,13 @@
   ~ limitations under the License.
   -->
 
-<resources>
-    <!-- todo(b/314817575): update the string to final value -->
-    <string name="dock_pin_shortcut_label">Pin to the dock</string>
-</resources>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960"
+    android:tint="?attr/colorControlNormal">
+  <path
+      android:fillColor="@android:color/white"
+      android:pathData="M640,480L720,560L720,640L520,640L520,880L480,920L440,880L440,640L240,640L240,560L320,480L320,200L280,200L280,120L680,120L680,200L640,200L640,480ZM354,560L606,560L560,514L560,200L400,200L400,514L354,560ZM480,560L480,560L480,560L480,560L480,560L480,560L480,560Z"/>
+</vector>

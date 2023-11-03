@@ -21,6 +21,7 @@ import android.car.content.pm.CarPackageManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import com.android.car.docklib.events.DockEventsReceiver
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
 import java.lang.ref.WeakReference
@@ -35,7 +36,7 @@ import java.util.function.Consumer
  * @param intentDelegate the system context will need to handle clicks and actions on the icons
  */
 class DockViewController(
-    userContext: Context,
+    private val userContext: Context,
     dockView: DockView,
     intentDelegate: Consumer<Intent>
 ) : DockInterface {
@@ -45,6 +46,7 @@ class DockViewController(
     private val dockViewWeakReference: WeakReference<DockView>
     private val dockViewModel: DockViewModel
     private lateinit var dockHelper: DockHelper
+    private val dockEventsReceiver: DockEventsReceiver
 
     init {
         numItems = userContext.resources.getInteger(R.integer.config_numDockApps)
@@ -72,11 +74,13 @@ class DockViewController(
                     }
                 }
             }
+        dockEventsReceiver = DockEventsReceiver.registerDockReceiver(userContext, this)
     }
 
     /** Method to stop the dock. Call this upon View being destroyed. */
     fun destroy() {
         car.disconnect()
+        userContext.unregisterReceiver(dockEventsReceiver)
         dockViewModel.destroy()
     }
 

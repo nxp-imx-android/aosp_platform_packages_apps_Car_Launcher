@@ -46,6 +46,7 @@ android_library {
         "guava",
         "car-ui-lib",
         "launcher_item",
+        "CarDockUtilLib",
     ],
 
     libs: ["android.car"],

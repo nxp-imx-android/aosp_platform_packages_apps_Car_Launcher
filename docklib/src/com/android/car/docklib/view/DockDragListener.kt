@@ -104,7 +104,7 @@ open class DockDragListener(
                     callback.resetView()
                     return false
                 }
-                if (DEBUG) Log.v(TAG, "Dropped component: $component")
+                if (DEBUG) Log.d(TAG, "Dropped component: $component")
 
                 // todo(b/312718542): hidden api(dragEvent.dragSurface) usage
                 dragEvent.dragSurface?.let {
