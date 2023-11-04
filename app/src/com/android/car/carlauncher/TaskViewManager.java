@@ -67,6 +67,7 @@ import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.taskview.TaskViewTransitions;
+import com.android.wm.shell.transition.HomeTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
@@ -217,7 +218,8 @@ public final class TaskViewManager {
         this(context, handlerExecutor, taskOrganizer,
                 new SyncTransactionQueue(transactionPool, handlerExecutor),
                 new Transitions(context, shellinit, shellController, taskOrganizer,
-                        transactionPool, dc, handlerExecutor, mainHandler, handlerExecutor),
+                        transactionPool, dc, handlerExecutor, mainHandler, handlerExecutor,
+                        new HomeTransitionObserver(context, handlerExecutor)),
                 shellinit,
                 shellController,
                 new StartingWindowController(context, shellinit,
@@ -292,7 +294,8 @@ public final class TaskViewManager {
         DisplayController dc = new DisplayController(mContext,
                 WindowManagerGlobal.getWindowManagerService(), shellInit, mShellExecutor);
         return new Transitions(mContext, shellInit, shellController, mTaskOrganizer,
-                txPool, dc, mShellExecutor, mainHandler, mShellExecutor);
+                txPool, dc, mShellExecutor, mainHandler, mShellExecutor,
+                new HomeTransitionObserver(mContext, mShellExecutor));
     }
 
     private void initTaskOrganizer(AtomicReference<CarActivityManager> carActivityManagerRef) {
