@@ -21,7 +21,5 @@ import javax.inject.Singleton
 
 @Module
 internal class DockModule {
-    @Provides
-    @Singleton
-    fun providesDockInterface(): DockInterface = DockController()
+    @Provides @Singleton fun providesDockInterface(): DockInterface = DockController()
 }

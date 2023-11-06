@@ -16,6 +16,9 @@
   -->
 
 <resources>
-    <!-- Number of apps that should be shown on Dock -->
-    <integer name="config_numDockApps">3</integer>
+
+    <!-- Default size and spacing for an icon on the Dock  -->
+    <dimen name="dock_item_size">72dp</dimen>
+    <dimen name="dock_item_spacing">12dp</dimen>
+
 </resources>

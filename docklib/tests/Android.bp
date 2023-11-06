@@ -21,9 +21,13 @@ package {
 android_test {
     name: "CarDockLibTests",
 
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt"
+    ],
 
     libs: [
+        "android.car",
         "android.test.base",
     ],
 
