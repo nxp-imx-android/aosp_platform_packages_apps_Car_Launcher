@@ -15,7 +15,7 @@ class DockAdapterTest {
     fun setItems_dockSizeEqualToListSize_adapterHasDockSize() {
         val defaultApps =
             listOf(TestUtils.createAppItem(app = "a"), TestUtils.createAppItem(app = "b"))
-        val adapter = spy(DockAdapter(defaultApps.size))
+        val adapter = spy(DockAdapter(defaultApps.size) {})
 
         adapter.setItems(defaultApps)
 
@@ -33,7 +33,7 @@ class DockAdapterTest {
                 TestUtils.createAppItem(app = "c")
             )
         val dockSize = 2
-        val adapter = spy(DockAdapter(dockSize))
+        val adapter = spy(DockAdapter(dockSize) {})
 
         adapter.setItems(defaultApps)
 
@@ -47,7 +47,7 @@ class DockAdapterTest {
         val defaultApps =
             listOf(TestUtils.createAppItem(app = "a"), TestUtils.createAppItem(app = "b"))
         val dockSize = 3
-        val adapter = spy(DockAdapter(dockSize))
+        val adapter = spy(DockAdapter(dockSize) {})
 
         adapter.setItems(defaultApps)
 
