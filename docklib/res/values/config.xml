@@ -16,4 +16,6 @@
   -->
 
 <resources>
+    <!-- Number of apps that should be shown on Dock -->
+    <integer name="config_numDockApps">3</integer>
 </resources>
