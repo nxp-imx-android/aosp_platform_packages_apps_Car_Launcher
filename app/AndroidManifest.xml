@@ -136,6 +136,28 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <activity android:name="com.android.car.carlauncher.calmmode.CalmModeActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.NoTitleBar">
+            <intent-filter>
+                <action android:name="com.android.settings.action.EXTRA_SETTINGS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <meta-data
+                android:name="com.android.settings.title"
+                android:resource="@string/calm_mode_title"/>
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.display"/>
+        </activity>
+
+        <provider android:name=".calmmode.CalmModeQCProvider"
+                  android:authorities="com.android.car.carlauncher.calmmode"
+                  android:grantUriPermissions="true"
+                  android:exported="true">
+        </provider>
 
         <!-- The service needs to be directBootAware so that it can reflect the correct call state
           when the system boots up. -->

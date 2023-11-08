@@ -30,6 +30,7 @@ android_library {
         "androidx-constraintlayout_constraintlayout",
         "androidx.lifecycle_lifecycle-extensions",
         "car-media-common",
+        "car-qc-lib",
         "car-telephony-common",
         "car-ui-lib",
         "com.google.android.material_material",
