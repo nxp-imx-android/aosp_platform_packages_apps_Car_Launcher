@@ -54,4 +54,6 @@
     <string-array name="packages_hidden_from_recents" translatable="false">
     </string-array>
 
+    <!-- Calm mode strings -->
+    <string name="calm_mode_title">Calm mode</string>
 </resources>

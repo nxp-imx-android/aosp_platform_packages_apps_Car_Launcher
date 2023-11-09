@@ -26,10 +26,12 @@ android_library {
     resource_dirs: ["res"],
 
     static_libs: [
+        "car_launcher_flags_java_lib",
         "androidx-constraintlayout_constraintlayout-solver",
         "androidx-constraintlayout_constraintlayout",
         "androidx.lifecycle_lifecycle-extensions",
         "car-media-common",
+        "car-qc-lib",
         "car-telephony-common",
         "car-ui-lib",
         "com.google.android.material_material",
@@ -73,4 +75,15 @@ android_app {
     dex_preopt: {
         enabled: false,
     },
+}
+
+aconfig_declarations {
+    name: "car_launcher_flags",
+    package: "com.android.car.carlauncher",
+    srcs: ["car_launcher_flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "car_launcher_flags_java_lib",
+    aconfig_declarations: "car_launcher_flags",
 }
