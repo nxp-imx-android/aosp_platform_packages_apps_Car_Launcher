@@ -73,6 +73,9 @@
     <uses-permission android:name="android.car.permission.CAR_EXTERIOR_ENVIRONMENT"/>
     <!-- Permission to read hvac properties -->
     <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE"/>
+    <!-- Permission to read navigation state -->
+    <uses-permission android:name="android.car.permission.CAR_MONITOR_CLUSTER_NAVIGATION_STATE"/>
+
     <!-- To connect to media browser services in other apps, media browser clients
     that target Android 11 need to add the following in their manifest -->
     <queries>
