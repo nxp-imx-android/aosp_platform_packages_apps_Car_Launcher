@@ -45,6 +45,7 @@ android_test {
         "androidx.test.espresso.contrib",
         "androidx.test.espresso.intents",
         "androidx.test.ext.junit",
+        "androidx.fragment_fragment-testing",
         "hamcrest-library",
         "mockito-target-extended",
         "truth",
