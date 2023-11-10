@@ -40,7 +40,6 @@ import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -56,6 +55,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.car.media.common.source.MediaSourceUtil;
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup;
 
 import com.google.common.collect.Sets;
@@ -254,7 +254,7 @@ public class AppLauncherUtils {
                 ComponentName componentName = new ComponentName(packageName, className);
                 mediaServicesMap.put(componentName, info);
                 mEnabledPackages.add(packageName);
-                if (shouldAddToLaunchables(packageManager, componentName, appsToHide,
+                if (shouldAddToLaunchables(context, componentName, appsToHide,
                         customMediaComponents, appTypes, APP_TYPE_MEDIA_SERVICES)) {
                     final boolean isDistractionOptimized = true;
                     boolean isDisabledByTos = tosDisabledPackages.contains(packageName);
@@ -290,7 +290,7 @@ public class AppLauncherUtils {
                 ComponentName componentName = info.getComponentName();
                 String packageName = componentName.getPackageName();
                 mEnabledPackages.add(packageName);
-                if (shouldAddToLaunchables(packageManager, componentName, appsToHide,
+                if (shouldAddToLaunchables(context, componentName, appsToHide,
                         customMediaComponents, appTypes, APP_TYPE_LAUNCHABLES)) {
                     boolean isDistractionOptimized =
                             isActivityDistractionOptimized(carPackageManager, packageName,
@@ -330,7 +330,7 @@ public class AppLauncherUtils {
                 String packageName = info.activityInfo.packageName;
                 String className = info.activityInfo.name;
                 ComponentName componentName = new ComponentName(packageName, className);
-                if (!shouldAddToLaunchables(packageManager, componentName, appsToHide,
+                if (!shouldAddToLaunchables(context, componentName, appsToHide,
                         customMediaComponents, appTypes, APP_TYPE_LAUNCHABLES)) {
                     continue;
                 }
@@ -421,52 +421,6 @@ public class AppLauncherUtils {
             Log.e(TAG, "Invalid intent URI in user_tos_activity_intent", se);
             return null;
         }
-    }
-
-    /**
-     * Determine if the given media browse service is supported through media templates
-     */
-    public static boolean isMediaTemplate(PackageManager pm, ComponentName mbsComponentName) {
-        Bundle metaData = null;
-        try {
-            metaData = pm.getServiceInfo(
-                    mbsComponentName,
-                    PackageManager.GET_META_DATA)
-                    .metaData;
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Service for Component " + mbsComponentName + " was not found");
-            return false;
-        }
-
-        if (metaData != null && metaData.containsKey(ANDROIDX_CAR_APP_LAUNCHABLE)) {
-            boolean launchable = metaData.getBoolean(ANDROIDX_CAR_APP_LAUNCHABLE);
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "MBS for " + mbsComponentName
-                        + " is opted " + (launchable ? "in" : "out"));
-            }
-            return launchable;
-        }
-
-        // No explicit declaration. For backward compatibility, keep MBS only for media apps
-        String packageName = mbsComponentName.getPackageName();
-        try {
-            if (isLegacyMediaApp(pm, packageName)) {
-                Log.d(TAG, "Including " + mbsComponentName + "  for media app " + packageName);
-                return true;
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Package " + packageName + " was not found");
-        }
-        Log.d(TAG, "Skipping MBS for " + mbsComponentName
-                + " belonging to non media app " + packageName);
-        return false;
-    }
-
-    /** Determine if it's a legacy media app that doesn't have a launcher activity*/
-    private static boolean isLegacyMediaApp(
-            PackageManager pm, String packageName) throws PackageManager.NameNotFoundException {
-        // a media app doesn't have a launcher activity
-        return pm.getLaunchIntentForPackage(packageName) == null;
     }
 
     private static Consumer<Pair<Context, View>> buildShortcuts(String packageName,
@@ -718,7 +672,7 @@ public class AppLauncherUtils {
         return activities;
     }
 
-    private static boolean shouldAddToLaunchables(PackageManager packageManager,
+    private static boolean shouldAddToLaunchables(Context context,
             @NonNull ComponentName componentName,
             @NonNull Set<String> appsToHide,
             @NonNull Set<String> customMediaComponents,
@@ -749,7 +703,7 @@ public class AppLauncherUtils {
                     return true;
                 }
                 // Only Keep MBS that is a media template
-                return isMediaTemplate(packageManager, componentName);
+                return new MediaSourceUtil(context).isMediaTemplate(componentName);
             // Process activities
             case APP_TYPE_LAUNCHABLES:
                 return true;

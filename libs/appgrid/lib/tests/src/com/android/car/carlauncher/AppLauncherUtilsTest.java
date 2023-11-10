@@ -33,6 +33,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
@@ -210,6 +211,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         // Media apps should do only switching and not launch activity
         verify(mMockContext, never()).startActivity(any(), any());
     }
+
     @Test
     public void testGetLauncherApps_Launcher() {
         mockSettingsStringCalls();
@@ -268,7 +270,6 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         verify(mMockPackageManager, never()).setApplicationEnabledSetting(
                 eq(TEST_ENABLED_APP), anyInt(), eq(0));
     }
-
 
 
     @Test
@@ -349,7 +350,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     }
 
     private void forceStopInit(ActivityManager activityManager, CarMediaManager carMediaManager,
-            ComponentName currentMediaComponentName, ComponentName previousMediaComponentName,
+            ComponentName currentMediaComponentName,
+            ComponentName previousMediaComponentName,
             Map<Integer, Boolean> currentModes, boolean isMedia) {
         when(mMockContext.getSystemService(
                 ArgumentMatchers.<Class<ActivityManager>>any())).thenReturn(activityManager);
@@ -430,7 +432,8 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         CarMediaManager carMediaManager = mock(CarMediaManager.class);
         ComponentName currentMediaComponentName = new ComponentName(packageName,
                 "com.example.service");
-        ComponentName otherMediaComponentName = new ComponentName("other.package", "other.test");
+        ComponentName otherMediaComponentName = new ComponentName("other.package",
+                "other.test");
         Map<Integer, Boolean> currentModes = new HashMap<>();
         currentModes.put(CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK, true);
         currentModes.put(CarMediaManager.MEDIA_SOURCE_MODE_BROWSE, true);
@@ -476,12 +479,20 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         ApplicationInfo mbsAppInfo = new ApplicationInfo();
         mbsAppInfo.category = CATEGORY_AUDIO;
         ResolveInfo mbs = constructServiceResolveInfo(TEST_MEDIA_TEMPLATE_MBS);
+
         try {
+            Intent mbsIntent = new Intent();
+            mbsIntent.setComponent(mbs.getComponentInfo().getComponentName());
+            mbsIntent.setAction(MediaBrowserService.SERVICE_INTERFACE);
+
             when(mMockPackageManager.getApplicationInfo(mbs.getComponentInfo().packageName, 0))
                     .thenReturn(mbsAppInfo);
-            when(mMockPackageManager.getServiceInfo(mbs.getComponentInfo().getComponentName(),
-                    PackageManager.GET_META_DATA))
-                    .thenReturn(new ServiceInfo());
+
+            doReturn(Arrays.asList(mbs)).when(mMockPackageManager).queryIntentServices(
+                    argThat((Intent i) -> i != null
+                            && mbs.getComponentInfo().getComponentName().equals(i.getComponent())),
+                    eq(PackageManager.GET_META_DATA));
+
             when(mMockPackageManager.getLaunchIntentForPackage(mbs.getComponentInfo().packageName))
                     .thenReturn(null);
         } catch (PackageManager.NameNotFoundException e) {
@@ -493,39 +504,22 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         videoAppInfo.category = CATEGORY_VIDEO;
         ResolveInfo videoApp = constructServiceResolveInfo(TEST_VIDEO_MBS);
         try {
+            Intent videoMbsIntent = new Intent();
+            videoMbsIntent.setComponent(videoApp.getComponentInfo().getComponentName());
+            videoMbsIntent.setAction(MediaBrowserService.SERVICE_INTERFACE);
+
             when(mMockPackageManager.getApplicationInfo(videoApp.getComponentInfo().packageName,
                     0))
                     .thenReturn(videoAppInfo);
-            when(mMockPackageManager.getServiceInfo(videoApp.getComponentInfo().getComponentName(),
-                    PackageManager.GET_META_DATA))
-                    .thenReturn(new ServiceInfo());
+
+            doReturn(Arrays.asList(videoApp)).when(mMockPackageManager).queryIntentServices(
+                    argThat((Intent i) -> i != null
+                            && videoApp.getComponentInfo().getComponentName()
+                                    .equals(i.getComponent())),
+                    eq(PackageManager.GET_META_DATA));
+
             when(mMockPackageManager.getLaunchIntentForPackage(
                     videoApp.getComponentInfo().packageName))
-                    .thenReturn(new Intent());
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        // setup a NDO app that has MBS opted in to launch in car
-        ApplicationInfo launchableMBSInfo = new ApplicationInfo();
-        launchableMBSInfo.category = CATEGORY_VIDEO;
-        ResolveInfo launchableMBSApp = constructServiceResolveInfo(TEST_NDO_MBS_LAUNCHABLE);
-        try {
-            when(mMockPackageManager.getApplicationInfo(
-                    launchableMBSApp.getComponentInfo().packageName,
-                    0))
-                    .thenReturn(launchableMBSInfo);
-            ServiceInfo value = new ServiceInfo();
-            value.metaData = new Bundle();
-
-            value.metaData.putBoolean("androidx.car.app.launchable", true);
-
-            when(mMockPackageManager.getServiceInfo(
-                    launchableMBSApp.getComponentInfo().getComponentName(),
-                    PackageManager.GET_META_DATA))
-                    .thenReturn(value);
-            when(mMockPackageManager.getLaunchIntentForPackage(
-                    launchableMBSApp.getComponentInfo().packageName))
                     .thenReturn(new Intent());
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
@@ -535,19 +529,29 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         ApplicationInfo notlaunchableMBSInfo = new ApplicationInfo();
         notlaunchableMBSInfo.category = CATEGORY_VIDEO;
         ResolveInfo notlaunchableMBSApp = constructServiceResolveInfo(TEST_NDO_MBS_NOT_LAUNCHABLE);
+
         try {
+            Intent notlaunachableMbsIntent = new Intent();
+            notlaunachableMbsIntent.setComponent(
+                    notlaunchableMBSApp.getComponentInfo().getComponentName());
+            notlaunachableMbsIntent.setAction(MediaBrowserService.SERVICE_INTERFACE);
+
             when(mMockPackageManager.getApplicationInfo(
                     notlaunchableMBSApp.getComponentInfo().packageName, 0))
                     .thenReturn(notlaunchableMBSInfo);
-            ServiceInfo value = new ServiceInfo();
-            value.metaData = new Bundle();
 
-            value.metaData.putBoolean("androidx.car.app.launchable", false);
 
-            when(mMockPackageManager.getServiceInfo(
-                    notlaunchableMBSApp.getComponentInfo().getComponentName(),
-                    PackageManager.GET_META_DATA))
-                    .thenReturn(value);
+            notlaunchableMBSApp.serviceInfo.metaData = new Bundle();
+            notlaunchableMBSApp.serviceInfo.metaData
+                    .putBoolean("androidx.car.app.launchable", false);
+
+            doReturn(Arrays.asList(notlaunchableMBSApp))
+                    .when(mMockPackageManager).queryIntentServices(
+                    argThat((Intent i) -> i != null
+                            && notlaunchableMBSApp.getComponentInfo().getComponentName()
+                                    .equals(i.getComponent())),
+                    eq(PackageManager.GET_META_DATA));
+
             when(mMockPackageManager.getLaunchIntentForPackage(
                     notlaunchableMBSApp.getComponentInfo().packageName))
                     .thenReturn(new Intent());
@@ -555,7 +559,40 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
             throw new RuntimeException(e);
         }
 
-        when(mMockPackageManager.queryIntentServices(any(), anyInt())).thenAnswer(args -> {
+
+        // setup a NDO app that has MBS opted in to launch in car
+        ApplicationInfo launchableMBSInfo = new ApplicationInfo();
+        launchableMBSInfo.category = CATEGORY_VIDEO;
+        ResolveInfo launchableMBSApp = constructServiceResolveInfo(TEST_NDO_MBS_LAUNCHABLE);
+        try {
+            Intent mbsIntent = new Intent();
+            mbsIntent.setComponent(launchableMBSApp.getComponentInfo().getComponentName());
+            mbsIntent.setAction(MediaBrowserService.SERVICE_INTERFACE);
+
+            when(mMockPackageManager.getApplicationInfo(
+                    launchableMBSApp.getComponentInfo().packageName,
+                    0))
+                    .thenReturn(launchableMBSInfo);
+
+
+            launchableMBSApp.serviceInfo.metaData = new Bundle();
+            launchableMBSApp.serviceInfo.metaData.putBoolean("androidx.car.app.launchable", true);
+
+            doReturn(Arrays.asList(launchableMBSApp)).when(mMockPackageManager).queryIntentServices(
+                    argThat((Intent i) -> i != null
+                            && launchableMBSApp.getComponentInfo().getComponentName()
+                            .equals(i.getComponent())),
+                    eq(PackageManager.GET_META_DATA));
+
+            when(mMockPackageManager.getLaunchIntentForPackage(
+                    launchableMBSApp.getComponentInfo().packageName))
+                    .thenReturn(new Intent());
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        when(mMockPackageManager.queryIntentServices(any(), eq(PackageManager.GET_RESOLVED_FILTER)))
+                .thenAnswer(args -> {
             Intent intent = args.getArgument(0);
             if (intent.getAction().equals(MediaBrowserService.SERVICE_INTERFACE)) {
                 return Arrays.asList(mbs, videoApp, notlaunchableMBSApp, launchableMBSApp,
@@ -587,19 +624,20 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
     }
 
     private void mockTosPackageManagerQueries() {
+        ResolveInfo resolveInfo = constructServiceResolveInfo(TEST_ENABLED_APP);
         try {
             when(mMockPackageManager.getServiceInfo(
-                    constructServiceResolveInfo(TEST_ENABLED_APP)
+                    resolveInfo
                             .getComponentInfo().getComponentName(),
                     PackageManager.GET_META_DATA))
                     .thenReturn(new ServiceInfo());
-        }  catch (PackageManager.NameNotFoundException e) {
+        } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }
         when(mMockPackageManager.queryIntentServices(any(), anyInt())).thenAnswer(args -> {
             Intent intent = args.getArgument(0);
             if (intent.getAction().equals(MediaBrowserService.SERVICE_INTERFACE)) {
-                return Collections.singletonList(constructServiceResolveInfo(TEST_ENABLED_APP));
+                return Collections.singletonList(resolveInfo);
             }
             return new ArrayList<>();
         });
@@ -641,7 +679,7 @@ public final class AppLauncherUtilsTest extends AbstractExtendedMockitoTestCase 
         doReturn(TEST_TOS_DISABLED_APP_1 + TOS_DISABLED_APPS_SEPARATOR
                 + TEST_TOS_DISABLED_APP_2)
                 .when(() -> Settings.Secure.getString(any(ContentResolver.class),
-                       eq(KEY_UNACCEPTED_TOS_DISABLED_APPS)));
+                        eq(KEY_UNACCEPTED_TOS_DISABLED_APPS)));
     }
 
     private void launchAllApps(List<AppMetaData> appMetaData) {
