@@ -102,8 +102,9 @@
         <item name="android:tint">@android:color/white</item>
     </style>
 
-    <style name="CalmMode.Container" parent="CalmMode">
-        <item name="android:background">@android:color/black</item>
+    <style name="CalmMode.BackgroundImage" parent="CalmMode">
+        <item name="android:src">@android:color/black</item>
+        <item name="android:scaleType">centerCrop</item>
     </style>
 
     <style name="CalmMode.Text.Date" parent="CalmMode.Text">

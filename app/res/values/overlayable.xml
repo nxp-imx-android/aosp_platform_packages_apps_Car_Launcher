@@ -221,7 +221,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="times_separator"/>
       <item type="string" name="weather_app_name"/>
       <item type="style" name="CalmMode"/>
-      <item type="style" name="CalmMode.Container"/>
+      <item type="style" name="CalmMode.BackgroundImage"/>
       <item type="style" name="CalmMode.Icon"/>
       <item type="style" name="CalmMode.Icon.Temperature"/>
       <item type="style" name="CalmMode.Text"/>
