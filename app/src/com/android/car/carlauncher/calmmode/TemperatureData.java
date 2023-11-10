@@ -24,7 +24,6 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.Locale;
 
@@ -82,7 +81,6 @@ public class TemperatureData {
         return (temperatureInFahrenheit - 32) * 5f / 9f;
     }
 
-    @Nullable
     public float getValue() {
         return mValue;
     }

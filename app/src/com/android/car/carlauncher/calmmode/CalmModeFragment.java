@@ -79,7 +79,7 @@ public final class CalmModeFragment extends Fragment {
         mMediaGroup = rootView.findViewById(R.id.media_group);
         mMediaTitleView = rootView.findViewById(R.id.media_title);
 
-        initExitOnTouch();
+        initExitOnClick();
         initClock();
         initDate();
         initNavState();
@@ -134,18 +134,17 @@ public final class CalmModeFragment extends Fragment {
         }
     }
 
-    private void initExitOnTouch() {
+    private void initExitOnClick() {
         if (DEBUG) {
             Log.v(TAG, "initExitOnTouch()");
         }
-        mContainerView.setOnTouchListener((view, motionEvent) -> {
+        mContainerView.setOnClickListener((view) -> {
             if (DEBUG) {
                 Log.v(TAG, "Detected touch, exiting Calm mode");
             }
             if (getActivity() != null) {
                 getActivity().finish();
             }
-            return true;
         });
     }
 

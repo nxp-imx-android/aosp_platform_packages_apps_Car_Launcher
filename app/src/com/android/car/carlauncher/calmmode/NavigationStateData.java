@@ -32,7 +32,6 @@ import java.util.Locale;
 public class NavigationStateData {
     private static final boolean DEBUG = Build.isDebuggable();
     private static final String TAG = NavigationStateData.class.getSimpleName();
-    private static final String SEPARATOR_NONE = "";
     private static final String SEPARATOR = "  ";
     @NonNull
     private final String mTimeToDestination;
@@ -139,7 +138,7 @@ public class NavigationStateData {
          *     destination. Example: "20" This is designed to be compatible with {@link
          *     android.car.cluster.navigation.NavigationState.Distance}
          * @return {@link Builder} object
-         * @throws NumberFormatException if the {@param distanceToDestination} is not a
+         * @throws NumberFormatException if the {@code distanceToDestination} is not a
          *     number
          */
         public Builder setDistanceToDestination(@NonNull String distanceToDestination)
@@ -151,7 +150,7 @@ public class NavigationStateData {
         /**
          * @param distanceUnit {@link NavigationState.Distance.Unit} Unit for distance
          * @return {@link Builder} object
-         * @throws IllegalArgumentException if the {@param distanceUnit} is not a recognized
+         * @throws IllegalArgumentException if the {@code distanceUnit} is not a recognized
          *     {@link NavigationState.Distance.Unit}
          */
         public Builder setDistanceUnit(@NonNull NavigationState.Distance.Unit distanceUnit)
@@ -163,6 +162,7 @@ public class NavigationStateData {
                 case KILOMETERS: unit = MeasureUnit.KILOMETER; break;
                 case METERS: unit = MeasureUnit.METER; break;
                 case MILES: unit = MeasureUnit.MILE; break;
+                default: break;
             }
             if (unit == null) {
                 throw new IllegalArgumentException("Unrecognized NavigationState.Distance.Unit, "

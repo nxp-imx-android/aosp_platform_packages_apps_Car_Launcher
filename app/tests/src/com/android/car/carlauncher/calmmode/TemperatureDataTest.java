@@ -31,7 +31,6 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
 
     private static final float TEMP_CONVERSION_DELTA = 0.005f;
     private static final Locale TEST_LOCALE_US = Locale.US;
-    private static final String DEGREE_SYMBOL = "°", TEMP_SYMBOL_C = "C", TEMP_SYMBOL_F = "F";
 
     @Before
     public void setUp() {
@@ -169,7 +168,7 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
 
     @Test
     public void testBuildTemperatureString_positiveFahrenheit_matchesForLocaleUS() {
-        float tempFVal = 77.221234f;
+        float tempFVal = 77.2212f;
         String tempFExpected = "77°F";
         TemperatureData tempF = new TemperatureData.Builder().setValueFahrenheit(tempFVal).build();
 
