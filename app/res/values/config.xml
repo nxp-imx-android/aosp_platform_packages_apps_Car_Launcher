@@ -84,7 +84,6 @@
     <bool name="config_calmMode_showNavigation">true</bool>
     <bool name="config_calmMode_showDate">true</bool>
     <bool name="config_calmMode_showTemperature">true</bool>
-    <string name="config_calmMode_packageName">com.android.car.carlauncher</string>
-    <string name="config_calmMode_activityName">com.android.car.carlauncher.calmmode.CalmModeActivity</string>
+    <string name="config_calmMode_componentName">com.android.car.carlauncher/com.android.car.carlauncher.calmmode.CalmModeActivity</string>
 
 </resources>

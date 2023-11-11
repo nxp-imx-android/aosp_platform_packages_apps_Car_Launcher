@@ -22,7 +22,7 @@
     android:layout_height="match_parent">
 
     <ImageView
-        style="@style/CalmMode.BackgroundImage"
+        style="@style/CalmModeBackgroundImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -39,21 +39,21 @@
 
     <ImageView
         android:id="@+id/media_icon"
-        style="@style/CalmMode.Icon"
+        style="@style/CalmModeIcon"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_media"
-        android:layout_marginTop="@dimen/calm_mode_padding"
-        android:layout_marginStart="@dimen/calm_mode_padding"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
+        android:layout_marginStart="@dimen/calm_mode_padding_horizontal"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/media_title"
-        style="@style/CalmMode.Text.MediaTitle"
+        style="@style/CalmModeText.MediaTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/calm_mode_padding"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
         android:layout_marginStart="@dimen/calm_mode_icon_margin"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintStart_toEndOf="@id/media_icon"
@@ -68,20 +68,20 @@
 
     <ImageView
         android:id="@+id/nav_state_icon"
-        style="@style/CalmMode.Icon"
+        style="@style/CalmModeIcon"
         android:layout_marginEnd="@dimen/calm_mode_icon_margin"
         android:src="@drawable/ic_navigation"
-        android:layout_marginTop="@dimen/calm_mode_padding"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintEnd_toStartOf="@id/nav_state"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/nav_state"
-        style="@style/CalmMode.Text"
+        style="@style/CalmModeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/calm_mode_padding"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
         android:layout_marginStart="@dimen/calm_mode_icon_margin"
         app:layout_constraintBottom_toTopOf="@id/barrier"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,7 +106,7 @@
 
     <TextClock
         android:id="@+id/clock"
-        style="@style/CalmMode.Text.Clock"
+        style="@style/CalmModeClock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"

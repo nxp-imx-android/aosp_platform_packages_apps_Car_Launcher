@@ -58,7 +58,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="calm_mode_icon_margin"/>
       <item type="dimen" name="calm_mode_icon_size_regular"/>
       <item type="dimen" name="calm_mode_icon_size_small"/>
-      <item type="dimen" name="calm_mode_padding"/>
+      <item type="dimen" name="calm_mode_padding_horizontal"/>
+      <item type="dimen" name="calm_mode_padding_vertical"/>
       <item type="dimen" name="calm_mode_text_size"/>
       <item type="dimen" name="card_background_image_blur_radius"/>
       <item type="dimen" name="card_background_scrim_alpha"/>
@@ -199,8 +200,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="text_block"/>
       <item type="string" name="app_title"/>
       <item type="string" name="calm_mode_title"/>
-      <item type="string" name="config_calmMode_activityName"/>
-      <item type="string" name="config_calmMode_packageName"/>
+      <item type="string" name="config_calmMode_componentName"/>
       <item type="string" name="config_passengerLauncherComponent"/>
       <item type="string" name="config_smallCanvasOptimizedMapIntent"/>
       <item type="string" name="config_tosMapIntent"/>
@@ -220,14 +220,13 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="tap_to_launch_text"/>
       <item type="string" name="times_separator"/>
       <item type="string" name="weather_app_name"/>
-      <item type="style" name="CalmMode"/>
-      <item type="style" name="CalmMode.BackgroundImage"/>
-      <item type="style" name="CalmMode.Icon"/>
-      <item type="style" name="CalmMode.Icon.Temperature"/>
-      <item type="style" name="CalmMode.Text"/>
-      <item type="style" name="CalmMode.Text.Clock"/>
-      <item type="style" name="CalmMode.Text.Date"/>
-      <item type="style" name="CalmMode.Text.MediaTitle"/>
+      <item type="style" name="CalmModeBackgroundImage"/>
+      <item type="style" name="CalmModeClock"/>
+      <item type="style" name="CalmModeIcon"/>
+      <item type="style" name="CalmModeIcon.Temperature"/>
+      <item type="style" name="CalmModeText"/>
+      <item type="style" name="CalmModeText.Date"/>
+      <item type="style" name="CalmModeText.MediaTitle"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ClearAllRecentTasksButton"/>
       <item type="style" name="ContextualSpace"/>
