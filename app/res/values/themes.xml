@@ -21,4 +21,10 @@
         <item name="textAppearanceGridItemSecondary">@android:style/TextAppearance.DeviceDefault.Small</item>
     </style>
 
+    <style name="Theme.CalmMode" parent="Theme.CarUi.NoToolbar">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
 </resources>

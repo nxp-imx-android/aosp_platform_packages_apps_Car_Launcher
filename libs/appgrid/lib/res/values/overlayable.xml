@@ -16,10 +16,10 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
 <resources>
   <overlayable name="CarAppGrid-lib">
     <policy type="system|product|signature">
-      <item type="attr" name="title_text"/>
       <item type="array" name="hidden_apps"/>
       <item type="attr" name="first_button_text"/>
       <item type="attr" name="second_button_text"/>
+      <item type="attr" name="title_text"/>
       <item type="bool" name="car_app_show_recent_apps"/>
       <item type="bool" name="car_app_show_toolbar"/>
       <item type="bool" name="config_allow_reordering"/>

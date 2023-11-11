@@ -28,6 +28,12 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="attr" name="shapeAppearanceOverlay"/>
       <item type="attr" name="strokeColor"/>
       <item type="attr" name="strokeWidth"/>
+      <item type="bool" name="config_calmMode_showClock"/>
+      <item type="bool" name="config_calmMode_showDate"/>
+      <item type="bool" name="config_calmMode_showMedia"/>
+      <item type="bool" name="config_calmMode_showNavigation"/>
+      <item type="bool" name="config_calmMode_showTemperature"/>
+      <item type="bool" name="config_enableCalmMode"/>
       <item type="bool" name="config_homecard_single_line_secondary_descriptive_text"/>
       <item type="bool" name="config_useRemoteCarTaskView"/>
       <item type="bool" name="show_seek_bar"/>
@@ -49,6 +55,11 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="button_tap_target_icon_padding"/>
       <item type="dimen" name="button_tap_target_size"/>
       <item type="dimen" name="button_trio_margin"/>
+      <item type="dimen" name="calm_mode_icon_margin"/>
+      <item type="dimen" name="calm_mode_icon_size_regular"/>
+      <item type="dimen" name="calm_mode_icon_size_small"/>
+      <item type="dimen" name="calm_mode_padding"/>
+      <item type="dimen" name="calm_mode_text_size"/>
       <item type="dimen" name="card_background_image_blur_radius"/>
       <item type="dimen" name="card_background_scrim_alpha"/>
       <item type="dimen" name="card_content_image_margin"/>
@@ -92,12 +103,16 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="drawable" name="ic_clear_black"/>
       <item type="drawable" name="ic_dialpad"/>
       <item type="drawable" name="ic_launcher_home"/>
+      <item type="drawable" name="ic_media"/>
       <item type="drawable" name="ic_mic_on"/>
       <item type="drawable" name="ic_mute_activatable"/>
+      <item type="drawable" name="ic_navigation"/>
       <item type="drawable" name="ic_recent_dismiss"/>
       <item type="drawable" name="ic_search_black"/>
+      <item type="drawable" name="ic_temperature"/>
       <item type="drawable" name="recent_clear_all_button_background"/>
       <item type="drawable" name="recent_dismiss_button_background"/>
+      <item type="id" name="barrier"/>
       <item type="id" name="bottom_card"/>
       <item type="id" name="bottom_edge"/>
       <item type="id" name="bottom_line"/>
@@ -105,22 +120,32 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="button_left"/>
       <item type="id" name="button_right"/>
       <item type="id" name="button_trio"/>
+      <item type="id" name="calm_mode_container"/>
       <item type="id" name="card_background"/>
       <item type="id" name="card_background_image"/>
       <item type="id" name="card_background_scrim"/>
       <item type="id" name="card_icon"/>
       <item type="id" name="card_name"/>
       <item type="id" name="card_view"/>
+      <item type="id" name="clock"/>
+      <item type="id" name="date"/>
+      <item type="id" name="date_and_temperature_container"/>
       <item type="id" name="descriptive_text_layout"/>
       <item type="id" name="descriptive_text_with_controls_layout"/>
       <item type="id" name="divider_horizontal"/>
       <item type="id" name="empty_state"/>
       <item type="id" name="end_edge"/>
-      <item type="id" name="exit_button"/>
+      <item type="id" name="fragment_container_view"/>
       <item type="id" name="maps_card"/>
       <item type="id" name="media_descriptive_text"/>
+      <item type="id" name="media_group"/>
+      <item type="id" name="media_icon"/>
       <item type="id" name="media_layout"/>
       <item type="id" name="media_playback_controls_bar"/>
+      <item type="id" name="media_title"/>
+      <item type="id" name="nav_group"/>
+      <item type="id" name="nav_state"/>
+      <item type="id" name="nav_state_icon"/>
       <item type="id" name="optional_image"/>
       <item type="id" name="optional_progress_bar"/>
       <item type="id" name="optional_seek_bar"/>
@@ -139,6 +164,9 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="task_dismiss_button"/>
       <item type="id" name="task_icon"/>
       <item type="id" name="task_thumbnail"/>
+      <item type="id" name="temperature"/>
+      <item type="id" name="temperature_group"/>
+      <item type="id" name="temperature_icon"/>
       <item type="id" name="text_block"/>
       <item type="id" name="text_block_layout"/>
       <item type="id" name="top_card"/>
@@ -149,7 +177,9 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="integer" name="optional_seekbar_max"/>
       <item type="integer" name="playback_controls_bar_columns"/>
       <item type="layout" name="button_trio"/>
-      <item type="layout" name="calm_mode"/>
+      <item type="layout" name="calm_mode_activity"/>
+      <item type="layout" name="calm_mode_date_and_temperature"/>
+      <item type="layout" name="calm_mode_fragment"/>
       <item type="layout" name="car_launcher"/>
       <item type="layout" name="car_launcher_multiwindow"/>
       <item type="layout" name="card_content_descriptive_text_only"/>
@@ -169,6 +199,8 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="text_block"/>
       <item type="string" name="app_title"/>
       <item type="string" name="calm_mode_title"/>
+      <item type="string" name="config_calmMode_activityName"/>
+      <item type="string" name="config_calmMode_packageName"/>
       <item type="string" name="config_passengerLauncherComponent"/>
       <item type="string" name="config_smallCanvasOptimizedMapIntent"/>
       <item type="string" name="config_tosMapIntent"/>
@@ -188,6 +220,14 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="string" name="tap_to_launch_text"/>
       <item type="string" name="times_separator"/>
       <item type="string" name="weather_app_name"/>
+      <item type="style" name="CalmMode"/>
+      <item type="style" name="CalmMode.BackgroundImage"/>
+      <item type="style" name="CalmMode.Icon"/>
+      <item type="style" name="CalmMode.Icon.Temperature"/>
+      <item type="style" name="CalmMode.Text"/>
+      <item type="style" name="CalmMode.Text.Clock"/>
+      <item type="style" name="CalmMode.Text.Date"/>
+      <item type="style" name="CalmMode.Text.MediaTitle"/>
       <item type="style" name="CardViewStyle"/>
       <item type="style" name="ClearAllRecentTasksButton"/>
       <item type="style" name="ContextualSpace"/>
@@ -198,6 +238,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="style" name="RecentTaskThumbnail.RoundedBorder"/>
       <item type="style" name="RecentTasksList"/>
       <item type="style" name="RecentTasksListFocusArea"/>
+      <item type="style" name="Theme.CalmMode"/>
       <item type="style" name="Theme.Launcher"/>
       <item type="style" name="TitleText"/>
     </policy>

@@ -16,20 +16,18 @@
 
 package com.android.car.carlauncher.calmmode;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.widget.Button;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import com.android.car.carlauncher.R;
 
-public class CalmModeActivity extends Activity {
+public class CalmModeActivity extends FragmentActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.calm_mode);
-        Button button = findViewById(R.id.exit_button);
-        button.setOnClickListener(v -> finish());
+        setContentView(R.layout.calm_mode_activity);
     }
-
 }

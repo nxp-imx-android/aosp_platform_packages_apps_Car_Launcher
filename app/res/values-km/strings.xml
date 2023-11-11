@@ -34,4 +34,6 @@
     <string name="recents_empty_state_text" msgid="8228569970506899117">"មិនមានធាតុថ្មីៗទេ"</string>
     <string name="recents_clear_all_text" msgid="3594272268167720553">"សម្អាតទាំងអស់"</string>
     <string name="failure_opening_recent_task_message" msgid="963567570097465902">"មិន​មាន​កម្មវិធី"</string>
+    <!-- no translation found for calm_mode_title (4364804976931157567) -->
+    <skip />
 </resources>

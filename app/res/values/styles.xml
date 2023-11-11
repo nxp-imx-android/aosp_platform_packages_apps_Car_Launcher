@@ -85,4 +85,56 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
     </style>
+
+    <style name="CalmMode">
+    </style>
+
+    <style name="CalmMode.Text" parent="CalmMode">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">@dimen/calm_mode_text_size</item>
+        <item name="android:minHeight">@dimen/calm_mode_icon_size_regular</item>
+    </style>
+
+    <style name="CalmMode.Icon" parent="CalmMode">
+        <item name="android:layout_width">@dimen/calm_mode_icon_size_regular</item>
+        <item name="android:layout_height">@dimen/calm_mode_icon_size_regular</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@android:color/white</item>
+    </style>
+
+    <style name="CalmMode.BackgroundImage" parent="CalmMode">
+        <item name="android:src">@android:color/black</item>
+        <item name="android:scaleType">centerCrop</item>
+    </style>
+
+    <style name="CalmMode.Text.Date" parent="CalmMode.Text">
+        <item name="android:format12Hour">EE, MMM dd</item>
+        <item name="android:format24Hour">EE, MMM dd</item>
+    </style>
+
+    <style name="CalmMode.Text.MediaTitle" parent="CalmMode.Text">
+        <item name="android:ellipsize">end</item>
+        <item name="android:maxWidth">300dp</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textAlignment">viewStart</item>
+    </style>
+
+    <style name="CalmMode.Text.Clock" parent="CalmMode.Text">
+        <item name="android:gravity">center</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">200sp</item>
+        <item name="android:lineSpacingMultiplier">0.75</item>
+        <item name="android:format12Hour">hh\nmm</item>
+        <item name="android:format24Hour">HH\nmm</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:lineSpacingExtra">-10sp</item>
+        <item name="android:fontVariationSettings">"'wght' 100, 'wdth' 10"</item>
+        <item name="android:fontFamily">roboto-flex</item>
+    </style>
+
+    <style name="CalmMode.Icon.Temperature" parent="CalmMode.Icon">
+        <item name="android:layout_width">@dimen/calm_mode_icon_size_small</item>
+        <item name="android:layout_height">@dimen/calm_mode_icon_size_small</item>
+    </style>
+
 </resources>

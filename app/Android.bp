@@ -37,7 +37,8 @@ android_library {
         "com.google.android.material_material",
         "WindowManager-Shell",
         "CarAppGrid-lib",
-        "SystemUISharedLib"
+        "SystemUISharedLib",
+        "android.car.cluster.navigation",
     ],
 
     libs: ["android.car"],
