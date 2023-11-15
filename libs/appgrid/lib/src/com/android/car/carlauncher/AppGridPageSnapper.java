@@ -21,11 +21,11 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * <p>Extension of a {@link LinearSnapHelper} that will snap to the next/previous page.

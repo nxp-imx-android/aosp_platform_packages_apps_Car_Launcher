@@ -19,6 +19,7 @@ package com.android.car.carlauncher.recyclerview;
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
 import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
+import static com.android.car.carlauncher.hidden.HiddenApiAccess.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION;
 
 import android.content.ClipData;
 import android.content.ComponentName;
@@ -95,6 +96,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
         private final boolean mIsDistractionOptimizationRequired;
         private final Rect mPageBound;
         private final AppGridActivity.Mode mMode;
+
         public BindInfo(boolean isDistractionOptimizationRequired,
                 Rect pageBound,
                 AppGridActivity.Mode mode) {
@@ -220,6 +222,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                 mAppIcon.setOnTouchListener(new View.OnTouchListener() {
                     private float mActionDownX;
                     private float mActionDownY;
+
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
                         int action = event.getAction();
@@ -391,7 +394,7 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
 
     private void startDragAndDrop(float eventX, float eventY) {
         ClipData clipData = new ClipData(/* label */ APP_ITEM_DRAG_TAG,
-                /* mimeTypes */ new String[]{ "" },
+                /* mimeTypes */ new String[]{""},
                 /* item */ new ClipData.Item(APP_ITEM_DRAG_TAG));
 
         // since the app icon is scaled, the touch point that users should be holding when drag
@@ -404,12 +407,12 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
                 /* size */ mIconSize, /* scaledSize */ mIconScaledSize);
         mAppIcon.startDragAndDrop(clipData, /* dragShadowBuilder */ dragShadowBuilder,
                 /* myLocalState */ null, /* flags */ View.DRAG_FLAG_OPAQUE
-                        | View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION);
+                        | DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION);
 
         mDragCallback.notifyItemSelected(AppItemViewHolder.this, dragPoint);
     }
 
-    class AppItemOnDragListener implements View.OnDragListener{
+    class AppItemOnDragListener implements View.OnDragListener {
         @Override
         public boolean onDrag(View view, DragEvent event) {
             int action = event.getAction();
@@ -649,12 +652,16 @@ public class AppItemViewHolder extends RecyclerView.ViewHolder {
     public interface AppItemDragListener {
         /** Listener method called during AppItemDragCallback.notifyLongPressed */
         void onItemLongPressed(boolean longPressed);
+
         /** Listener method called during AppItemDragCallback.notifyItemSelected */
         void onItemSelected(int gridPositionFrom);
+
         /** Listener method called during AppItemDragCallback.notifyDragEntered */
         void onItemDragged();
+
         /** Listener method called during AppItemDragCallback.notifyDragExited */
         void onDragExited(int gridPosition, @AppItemBoundDirection int exitDirection);
+
         /** Listener method called during AppItemDragCallback.notifyItemDropped */
         void onItemDropped(int gridPositionFrom, int gridPositionTo);
     }
