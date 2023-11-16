@@ -18,6 +18,7 @@ package com.android.car.docklib
 
 import android.car.Car
 import android.car.content.pm.CarPackageManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import com.android.car.docklib.view.DockAdapter
@@ -32,7 +33,11 @@ import java.util.function.Consumer
  * @param view the inflated dock view
  * @param intentDelegate the system context will need to handle clicks and actions on the icons
  */
-class DockViewController(userContext: Context, view: DockView, intentDelegate: Consumer<Intent>) {
+class DockViewController(
+    userContext: Context,
+    view: DockView,
+    intentDelegate: Consumer<Intent>
+) : DockInterface {
 
     private val numItems: Int
     private val car: Car
@@ -64,5 +69,17 @@ class DockViewController(userContext: Context, view: DockView, intentDelegate: C
     /** Method to stop the dock. Call this upon View being destroyed. */
     fun destroy() {
         car.disconnect()
+    }
+
+    override fun appPinned(componentName: ComponentName) {
+        // TODO("Not yet implemented")
+    }
+
+    override fun appLaunched(componentName: ComponentName) {
+        // TODO("Not yet implemented")
+    }
+
+    override fun appUnpinned(componentName: ComponentName) {
+        // TODO("Not yet implemented")
     }
 }
