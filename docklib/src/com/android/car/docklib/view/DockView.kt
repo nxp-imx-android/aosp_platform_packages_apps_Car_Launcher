@@ -18,7 +18,7 @@ constructor(
     defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes) {
 
-    val recyclerView: RecyclerView
+    private val recyclerView: RecyclerView
 
     init {
         inflate(context, R.layout.dock_view, this)
@@ -40,5 +40,11 @@ constructor(
                 }
             }
         )
+    }
+
+    fun getAdapter() = recyclerView.adapter as DockAdapter
+
+    fun setAdapter(adapter: DockAdapter) {
+        recyclerView.adapter = adapter
     }
 }

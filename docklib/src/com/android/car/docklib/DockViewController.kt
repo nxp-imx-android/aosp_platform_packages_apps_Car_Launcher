@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
+import java.lang.ref.WeakReference
 import java.util.function.Consumer
 
 /**
@@ -30,23 +31,30 @@ import java.util.function.Consumer
  * initializing, it will listen to broadcast events, and update the view.
  *
  * @param userContext the foreground user context, since the view may be hosted on system context
- * @param view the inflated dock view
+ * @param dockView the inflated dock view
  * @param intentDelegate the system context will need to handle clicks and actions on the icons
  */
 class DockViewController(
     userContext: Context,
-    view: DockView,
+    dockView: DockView,
     intentDelegate: Consumer<Intent>
 ) : DockInterface {
 
     private val numItems: Int
     private val car: Car
+    private val dockViewWeakReference: WeakReference<DockView>
+    private val dockViewModel: DockViewModel
     private lateinit var dockHelper: DockHelper
 
     init {
         numItems = userContext.resources.getInteger(R.integer.config_numDockApps)
         val adapter = DockAdapter(numItems, intentDelegate, userContext)
-        view.recyclerView.adapter = adapter
+        dockView.setAdapter(adapter)
+        dockViewWeakReference = WeakReference(dockView)
+        dockViewModel = DockViewModel(numItems) { updatedApps ->
+            dockViewWeakReference.get()?.getAdapter()?.setItems(updatedApps)
+                ?: throw NullPointerException("the View referenced does not exist")
+        }
         car =
             Car.createCar(
                 userContext,
@@ -59,7 +67,7 @@ class DockViewController(
                         carPackageManager?.let { carPM ->
                             adapter.setCarPackageManager(carPM)
                             dockHelper = DockHelper(userContext, carPM)
-                            adapter.setItems(dockHelper.defaultApps)
+                            dockViewModel.updateDefaultApps(dockHelper.defaultApps)
                         }
                     }
                 }
@@ -69,6 +77,7 @@ class DockViewController(
     /** Method to stop the dock. Call this upon View being destroyed. */
     fun destroy() {
         car.disconnect()
+        dockViewModel.destroy()
     }
 
     override fun appPinned(componentName: ComponentName) {
@@ -76,7 +85,11 @@ class DockViewController(
     }
 
     override fun appLaunched(componentName: ComponentName) {
-        // TODO("Not yet implemented")
+        if (dockHelper.excludedPackages.contains(componentName.packageName)) return
+        if (dockHelper.excludedComponents.contains(componentName.flattenToString())) return
+
+        val appItem = dockHelper.toDockAppItem(componentName)
+        dockViewModel.addDynamicItem(appItem)
     }
 
     override fun appUnpinned(componentName: ComponentName) {
