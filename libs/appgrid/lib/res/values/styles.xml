@@ -17,7 +17,7 @@
 <resources>
 
     <style name="AppDisplayNameStyle">
-        <item name="android:textSize">@*android:dimen/car_body2_size</item>
+        <item name="android:textSize">28sp</item>
         <item name="android:textColor">@color/app_name_color</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:ellipsize">end</item>
@@ -26,8 +26,8 @@
 
     <style name="HorizontalLineDivider">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">@*android:dimen/car_list_divider_height</item>
-        <item name="android:background">@*android:color/car_list_divider</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">#1fffffff</item>
     </style>
 
     <style name="BannerButton">

@@ -15,13 +15,13 @@
   ~ limitations under the License.
   -->
 <resources>
-    <color name="icon_tint">@*android:color/car_tint</color>
-    <color name="recent_apps_line_divider_color">@*android:color/car_list_divider</color>
-    <color name="shortcuts_icon_color">@*android:color/white</color>
-    <color name="page_indicator_bar_color">@*android:color/car_accent_light</color>
-    <color name="app_item_on_hover_border_color">@*android:color/car_accent_light</color>
-    <color name="app_item_on_hover_background_color">#3d66b5ff</color>
-    <color name="app_name_color">@*android:color/car_grey_200</color>
+    <color name="icon_tint">#FFF8F9FA</color>
+    <color name="recent_apps_line_divider_color">#1FFFFFFF</color>
+    <color name="shortcuts_icon_color">#FFFFFFFF</color>
+    <color name="page_indicator_bar_color">#FF66B5FF</color>
+    <color name="app_item_on_hover_border_color">#FF66B5FF</color>
+    <color name="app_item_on_hover_background_color">#3D66B5FF</color>
+    <color name="app_name_color">#FFE8EAED</color>
     <color name="banner_background_color">#2E3134</color>
     <color name="banner_button_text_color">#66B5FF</color>
     <color name="banner_title_text_color">#FFFFFF</color>
