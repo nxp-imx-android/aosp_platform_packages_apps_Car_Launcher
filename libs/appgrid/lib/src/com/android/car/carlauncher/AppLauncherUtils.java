@@ -20,6 +20,8 @@ import static android.car.settings.CarSettings.Secure.KEY_PACKAGES_DISABLED_ON_R
 import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
 import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
 
+import static com.android.car.carlauncher.hidden.HiddenApiAccess.hasBaseUserRestriction;
+
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.app.Activity;
@@ -114,7 +116,7 @@ public class AppLauncherUtils {
      */
     public static void launchApp(Context context, Intent intent) {
         ActivityOptions options = ActivityOptions.makeBasic();
-        options.setLaunchDisplayId(context.getDisplayId());
+        options.setLaunchDisplayId(context.getDisplay().getDisplayId());
         context.startActivity(intent, options.toBundle());
     }
 
@@ -516,7 +518,7 @@ public class AppLauncherUtils {
     }
 
     private static boolean isCurrentMediaSource(CarMediaManager carMediaManager,
-            String packageName, @CarMediaManager.MediaSourceMode int mode) {
+            String packageName, int mode) {
         ComponentName componentName = carMediaManager.getMediaSource(mode);
         if (componentName == null) {
             //There is no current media source.
@@ -531,7 +533,7 @@ public class AppLauncherUtils {
      */
     private static void maybeReplaceMediaSource(CarMediaManager carMediaManager, String packageName,
             Map<ComponentName, ResolveInfo> allMediaServices,
-            @CarMediaManager.MediaSourceMode int mode) {
+            int mode) {
         if (!isCurrentMediaSource(carMediaManager, packageName, mode)) {
             return;
         }
@@ -565,7 +567,7 @@ public class AppLauncherUtils {
             return false;
         }
         UserHandle user = UserHandle.getUserHandleForUid(appInfo.uid);
-        if (userManager.hasBaseUserRestriction(restriction, user)) {
+        if (hasBaseUserRestriction(userManager, restriction, user)) {
             Log.d(TAG, " Disabled because " + user + " has " + restriction
                     + " restriction");
             return true;

@@ -24,6 +24,7 @@ import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_LAUNCHABLES;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_MEDIA_SERVICES;
+import static com.android.car.carlauncher.hidden.HiddenApiAccess.getDragSurface;
 
 import android.animation.ValueAnimator;
 import android.app.AlertDialog;
@@ -44,7 +45,6 @@ import android.content.ServiceConnection;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -107,6 +107,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         AppGridPageSnapper.PageSnapListener, AppItemViewHolder.AppItemDragListener,
         AppLauncherUtils.ShortcutsListener, PaginationController.DimensionUpdateListener {
     private static final String TAG = "AppGridActivity";
+    private static final boolean DEBUG_BUILD = false;
     private static final String MODE_INTENT_EXTRA = "com.android.car.carlauncher.mode";
     private static CarUiShortcutsPopup sCarUiShortcutsPopup;
 
@@ -352,7 +353,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
 
             toolbar.setNavButtonMode(NavButtonMode.CLOSE);
 
-            if (Build.IS_DEBUGGABLE) {
+            if (DEBUG_BUILD) {
                 toolbar.setMenuItems(Collections.singletonList(MenuItem.builder(this)
                         .setDisplayBehavior(MenuItem.DisplayBehavior.NEVER)
                         .setTitle(R.string.hide_debug_apps)
@@ -663,7 +664,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         int itemCount = Math.min(mNumOfCols, statsSize);
         while (itemsAdded < itemCount && currentIndex < statsSize) {
             UsageStats usageStats = stats.get(currentIndex);
-            String packageName = usageStats.mPackageName;
+            String packageName = usageStats.getPackageName();
             currentIndex++;
 
             // do not include self
@@ -874,7 +875,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 if (action == DragEvent.ACTION_DROP) {
                     return false;
                 } else {
-                    animateDropEnded(event.getDragSurface());
+                    animateDropEnded(getDragSurface(event));
                 }
             }
             return true;
@@ -883,6 +884,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
 
     private void animateDropEnded(@Nullable SurfaceControl dragSurface) {
         if (dragSurface == null) {
+            Log.d(TAG, "animateDropEnded, dragSurface unavailable");
             return;
         }
         // update default animation for the drag shadow after user lifts their finger
@@ -914,7 +916,9 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private void updateTosBannerVisibility() {
 
         if (AppLauncherUtils.showTosBanner(this)) {
-            getMainThreadHandler().post(() -> mBanner.setVisibility(View.VISIBLE));
+            runOnUiThread(() -> {
+                mBanner.setVisibility(View.VISIBLE);
+            });
         } else {
             mBanner.setVisibility(View.GONE);
         }

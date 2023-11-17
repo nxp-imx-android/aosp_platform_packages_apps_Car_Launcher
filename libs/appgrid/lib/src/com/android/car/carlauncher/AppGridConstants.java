@@ -16,7 +16,7 @@
 
 package com.android.car.carlauncher;
 
-import android.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /**
  * Defines the constants used for custom state attributes (e.g. scrolling state, drag state) and
