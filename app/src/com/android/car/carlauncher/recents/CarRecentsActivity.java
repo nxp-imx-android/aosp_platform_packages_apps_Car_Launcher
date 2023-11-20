@@ -52,6 +52,8 @@ public class CarRecentsActivity extends AppCompatActivity implements
         RecentTasksViewModel.RecentTasksChangeListener {
     public static final String OPEN_RECENT_TASK_ACTION =
             "com.android.car.carlauncher.recents.OPEN_RECENT_TASK_ACTION";
+    private static final RecentsStatsLogHelper sStatsLogHelper =
+            RecentsStatsLogHelper.getInstance();
     private RecentsRecyclerView mRecentsRecyclerView;
     private GridLayoutManager mGridLayoutManager;
     private RecentTasksViewModel mRecentTasksViewModel;
@@ -91,6 +93,9 @@ public class CarRecentsActivity extends AppCompatActivity implements
             throw new UnsupportedOperationException(
                     "Only classes that inherit GridLayoutManager are supported");
         }
+        // getting an instance initializes StatsLogHelper
+        sStatsLogHelper.setPackageManager(getPackageManager());
+
         mGridLayoutManager = (GridLayoutManager) mRecentsRecyclerView.getLayoutManager();
         int gridSpanCount = mGridLayoutManager.getSpanCount();
         mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -148,6 +153,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mRecentTasksViewModel.fetchRecentTaskList();
         resetViewState();
         mRecentsRecyclerView.resetPadding();
+        sStatsLogHelper.logSessionStarted();
     }
 
     @Override
@@ -159,6 +165,7 @@ public class CarRecentsActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
+        sStatsLogHelper.logSessionFinished();
         mRecentTasksViewModel.clearCache();
     }
 
