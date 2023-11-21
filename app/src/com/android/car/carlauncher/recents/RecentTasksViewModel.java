@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class RecentTasksViewModel {
+    private static final RecentsStatsLogHelper sStatsLogHelper =
+            RecentsStatsLogHelper.getInstance();
     private static RecentTasksViewModel sInstance;
     private final RecentTasksProviderInterface mDataStore;
     private final Set<RecentTasksChangeListener> mRecentTasksChangeListener;
@@ -222,6 +224,10 @@ public class RecentTasksViewModel {
     public void openRecentTask(int index) {
         if (safeCheckIndex(mRecentTaskIds, index) &&
                 mDataStore.openRecentTask(mRecentTaskIds.get(index))) {
+            // TODO(b/311427536): log a boolean to indicate if openRecentTask finished successfully
+            ComponentName name = mDataStore.getRecentTaskComponentName(mRecentTaskIds.get(index));
+            sStatsLogHelper.logAppLaunched(/* totalTaskCount */ getRecentTasksSize(),
+                    /* eventTaskIndex */ index, /* componentName */ name.getPackageName());
             return;
         }
         // failure to open recent task
@@ -247,9 +253,12 @@ public class RecentTasksViewModel {
         if (!safeCheckIndex(mRecentTaskIds, index)) {
             return;
         }
+        ComponentName name = getRecentTaskComponentName(index);
         removeTaskWithId(mRecentTaskIds.get(index));
         mRecentTaskIds.remove(index);
         mRecentTasksChangeListener.forEach(l -> l.onRecentTaskRemoved(index));
+        sStatsLogHelper.logAppDismissed(/* totalTaskCount */ getRecentTasksSize(),
+                /* eventTaskIndex */ index, /* packageName */ name.getPackageName());
     }
 
     /**
@@ -259,6 +268,7 @@ public class RecentTasksViewModel {
         for (int recentTaskId : mRecentTaskIds) {
             removeTaskWithId(recentTaskId);
         }
+        sStatsLogHelper.logClearAll(getRecentTasksSize());
         clearCache();
     }
 
