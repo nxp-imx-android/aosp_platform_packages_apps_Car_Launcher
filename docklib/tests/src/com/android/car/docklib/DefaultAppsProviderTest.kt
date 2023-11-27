@@ -18,6 +18,7 @@ package com.android.car.docklib
 
 import android.car.content.pm.CarPackageManager
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
@@ -25,57 +26,68 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class DefaultAppsProviderTest {
+    val carPackageManagerMock = mock<CarPackageManager> {}
+    val packageManagerMock = mock<PackageManager> {}
+    val resourcesMock = mock<Resources> {}
+    private val context = mock<Context> {
+        on { resources } doReturn resourcesMock
+        on { packageManager } doReturn packageManagerMock
+    }
 
     @Test
     fun defaultApps_getCorrectAppsFromConfig() {
-        val context = mock(Context::class.java)
-        val carPackageManager = mock(CarPackageManager::class.java)
-        val packageManager = mock(PackageManager::class.java)
-        val resources = mock(Resources::class.java)
-        val item1 =
-            TestUtils.createAppItem(
-                app = "item1",
-                icon = mock(Drawable::class.java),
-                isDrivingOptimized = true
-            )
-        val item2 =
-            TestUtils.createAppItem(
-                app = "item2",
-                icon = mock(Drawable::class.java),
-                isDrivingOptimized = false
-            )
-        `when`(context.resources).thenReturn(resources)
-        `when`(context.packageManager).thenReturn(packageManager)
-        `when`(resources.getStringArray(anyInt()))
-            .thenReturn(
+        val item1 = TestUtils.createAppItem(
+            app = "item1",
+            icon = mock<Drawable> {},
+            isDrivingOptimized = true
+        )
+        val item2 = TestUtils.createAppItem(
+            app = "item2",
+            icon = mock<Drawable> {},
+            isDrivingOptimized = false
+        )
+        val ai1 = mock<ActivityInfo> {}
+        ai1.name = item1.name
+        val ai2 = mock<ActivityInfo> {}
+        ai2.name = item2.name
+        whenever(resourcesMock.getStringArray(eq(R.array.config_defaultDockApps))) doReturn
                 arrayOf(item1.component.flattenToString(), item2.component.flattenToString())
+        whenever(
+            packageManagerMock.getActivityInfo(
+                eq(item1.component), any<PackageManager.ComponentInfoFlags>()
             )
-        `when`(packageManager.getApplicationIcon(item1.component.packageName))
-            .thenReturn(item1.icon)
-        `when`(packageManager.getApplicationIcon(item2.component.packageName))
-            .thenReturn(item2.icon)
-        `when`(
-                carPackageManager.isActivityDistractionOptimized(
-                    item1.component.packageName,
-                    item1.component.className
-                )
+        ) doReturn ai1
+        whenever(
+            packageManagerMock.getActivityInfo(
+                eq(item2.component), any<PackageManager.ComponentInfoFlags>()
             )
-            .thenReturn(item1.isDistractionOptimized)
-        `when`(
-                carPackageManager.isActivityDistractionOptimized(
-                    item2.component.packageName,
-                    item2.component.className
-                )
+        ) doReturn ai2
+        whenever(packageManagerMock.getApplicationIcon(eq(item1.component.packageName))) doReturn
+                item1.icon
+        whenever(packageManagerMock.getApplicationIcon(eq(item2.component.packageName))) doReturn
+                item2.icon
+        whenever(
+            carPackageManagerMock.isActivityDistractionOptimized(
+                eq(item1.component.packageName),
+                eq(item1.component.className)
             )
-            .thenReturn(item2.isDistractionOptimized)
+        ) doReturn item1.isDistractionOptimized
+        whenever(
+            carPackageManagerMock.isActivityDistractionOptimized(
+                eq(item2.component.packageName),
+                eq(item2.component.className)
+            )
+        ) doReturn item2.isDistractionOptimized
 
-        val defaultApps = DefaultAppsProvider(context, carPackageManager).defaultApps
+        val defaultApps = DefaultAppsProvider(context, carPackageManagerMock).defaultApps
 
         assertThat(defaultApps.size).isEqualTo(2)
         assertThat(defaultApps[0]).isEqualTo(item1)

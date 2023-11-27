@@ -23,7 +23,7 @@ class DockViewController(userContext: Context, view: DockView, intentDelegate: C
 
     init {
         numItems = userContext.resources.getInteger(R.integer.config_numDockApps)
-        val adapter = DockAdapter(numItems, intentDelegate)
+        val adapter = DockAdapter(numItems, intentDelegate, userContext)
         view.recyclerView.adapter = adapter
         car =
             Car.createCar(
@@ -35,6 +35,7 @@ class DockViewController(userContext: Context, view: DockView, intentDelegate: C
                     if (ready) {
                         val carPackageManager = car.getCarManager(CarPackageManager::class.java)
                         carPackageManager?.let { carPM ->
+                            adapter.setCarPackageManager(carPM)
                             adapter.setItems(DefaultAppsProvider(userContext, carPM).defaultApps)
                         }
                     }

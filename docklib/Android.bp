@@ -30,10 +30,12 @@ android_library {
 
     static_libs: [
         "androidx.recyclerview_recyclerview",
+        "androidx.core_core-animation-nodeps",
         "car-ui-lib-no-overlayable",
         "dagger2",
         "jsr330",
         "androidx.lifecycle_lifecycle-extensions",
+        "com.google.android.material_material",
         "CarDockUtilLib",
     ],
 
