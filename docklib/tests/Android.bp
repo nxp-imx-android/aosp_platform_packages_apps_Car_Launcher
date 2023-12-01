@@ -39,6 +39,7 @@ android_test {
         "androidx.test.runner",
         "androidx.test.ext.junit",
         "mockito-target-extended",
+        "mockito-kotlin2",
         "truth",
         "CarDockLib",
     ],
@@ -46,6 +47,8 @@ android_test {
     manifest: "AndroidManifest.xml",
 
     instrumentation_for: "CarDockLib",
+
+    platform_apis: true,
 
     dex_preopt: {
         enabled: false,

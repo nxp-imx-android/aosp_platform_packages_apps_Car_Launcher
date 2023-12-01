@@ -19,6 +19,9 @@
 
     <!-- Default size and spacing for an icon on the Dock  -->
     <dimen name="dock_item_size">72dp</dimen>
-    <dimen name="dock_item_spacing">12dp</dimen>
+    <dimen name="dock_item_spacing">2dp</dimen>
+
+    <dimen name="icon_stroke_width">6dp</dimen>
+    <dimen name="icon_stroke_width_excited">30dp</dimen>
 
 </resources>

@@ -26,4 +26,6 @@
         <item>com.android.car.dialer/com.android.car.dialer.ui.TelecomActivity</item>
         <item>com.google.android.apps.maps/com.google.android.maps.MapsActivity</item>
     </string-array>
+
+    <integer name="drag_drop_animate_in_duration">800</integer>
 </resources>
