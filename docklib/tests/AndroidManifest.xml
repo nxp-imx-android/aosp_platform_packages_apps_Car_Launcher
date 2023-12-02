@@ -16,7 +16,16 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.car.docklib.test">
+    package="com.android.car.docklib.test"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <permission
+        android:name="com.android.car.docklib.permission.BROADCAST_SENDER"
+        tools:node="remove" />
+
+    <permission
+        android:name="com.android.car.docklib.permission.BROADCAST_RECEIVER"
+        tools:node="remove" />
 
     <application android:debuggable="true">
         <uses-library android:name="android.test.runner"/>

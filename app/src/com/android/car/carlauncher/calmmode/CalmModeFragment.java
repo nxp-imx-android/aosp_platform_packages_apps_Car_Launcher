@@ -216,7 +216,7 @@ public final class CalmModeFragment extends Fragment {
             Log.v(TAG, "updateMediaTitle mediaTitle = " + mediaTitle);
         }
 
-        if (mediaTitle == null || mediaTitle.isEmpty()) {
+        if (mediaTitle == null || mediaTitle.length() == 0) {
             mMediaGroup.setVisibility(View.GONE);
             mMediaTitleView.setText("");
             return;

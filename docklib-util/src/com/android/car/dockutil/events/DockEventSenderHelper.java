@@ -35,12 +35,11 @@ public class DockEventSenderHelper {
     public static final String EXTRA_COMPONENT = "EXTRA_COMPONENT";
 
     private final Context mContext;
-    private final ComponentName mReceiverComponent;
+    private final boolean mIsDockEnabled;
 
     public DockEventSenderHelper(Context context) {
         mContext = context;
-        mReceiverComponent = new ComponentName(context.getString(R.string.config_dockViewPackage),
-                context.getString(R.string.config_dockReceiver));
+        mIsDockEnabled = mContext.getResources().getBoolean(R.bool.config_enableDock);
     }
 
     /**
@@ -78,11 +77,14 @@ public class DockEventSenderHelper {
     }
 
     private void sendEventBroadcast(@NonNull DockEvent event, @NonNull ComponentName component) {
+        if (!mIsDockEnabled) {
+            return;
+        }
+
         Intent intent = new Intent();
-        intent.setComponent(mReceiverComponent);
         intent.setAction(event.toString());
         intent.putExtra(EXTRA_COMPONENT, component);
-        mContext.sendBroadcast(intent);
+        mContext.sendBroadcast(intent, DockPermission.DOCK_RECEIVER_PERMISSION.toString());
     }
 
     @Nullable
