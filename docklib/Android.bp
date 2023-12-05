@@ -35,7 +35,10 @@ android_library {
         "androidx.lifecycle_lifecycle-extensions",
         "com.google.android.material_material",
         "CarDockUtilLib",
+        "SystemUISharedLib"
     ],
+
+    platform_apis: true,
 
     manifest: "AndroidManifest.xml",
 }

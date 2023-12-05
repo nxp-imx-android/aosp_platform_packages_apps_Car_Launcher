@@ -27,9 +27,13 @@ data class DockAppItem(
     val icon: Drawable,
     val isDistractionOptimized: Boolean,
 ) {
-    enum class Type {
-        DYNAMIC,
-        STATIC
+    enum class Type(val value: String) {
+        DYNAMIC("DYNAMIC"),
+        STATIC("STATIC");
+
+        override fun toString(): String {
+            return value
+        }
     }
 
     override fun equals(other: Any?): Boolean {
@@ -43,5 +47,10 @@ data class DockAppItem(
         if (this.isDistractionOptimized != other.isDistractionOptimized) return false
 
         return true
+    }
+
+    override fun toString(): String {
+        return ("DockAppItem#${hashCode()}{name: $name, component: $component, type: $type, " +
+                "isDistractionOptimized: $isDistractionOptimized, icon: $icon}")
     }
 }
