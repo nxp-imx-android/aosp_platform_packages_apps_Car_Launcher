@@ -22,8 +22,8 @@ import com.android.car.docklib.TestUtils
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 class DockAppItemTest {
@@ -61,10 +61,10 @@ class DockAppItemTest {
 
     @Test
     fun compareAppItems_notEqual_differentIcons() {
-        val icon1 = mock(Drawable::class.java)
-        `when`(icon1.constantState).thenReturn(null)
-        val icon2 = mock(Drawable::class.java)
-        `when`(icon2.constantState).thenReturn(mock(Drawable.ConstantState::class.java))
+        val icon1 = mock<Drawable>()
+        whenever(icon1.constantState).thenReturn(null)
+        val icon2 = mock<Drawable>()
+        whenever(icon2.constantState).thenReturn(mock<Drawable.ConstantState>())
 
         val item1: DockAppItem = TestUtils.createAppItem(icon = icon1)
         val item2: DockAppItem = TestUtils.createAppItem(icon = icon2)

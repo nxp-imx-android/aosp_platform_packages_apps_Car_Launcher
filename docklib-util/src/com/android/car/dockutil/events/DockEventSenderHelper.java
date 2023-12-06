@@ -64,11 +64,18 @@ public class DockEventSenderHelper {
     }
 
     /**
-     * Used to send unpin event to the dock. Generally used when an app should be unpinned from the
-     * dock.
+     * @see #sendUnpinEvent(ComponentName)
      */
     public void sendUnpinEvent(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         sendEventBroadcast(DockEvent.UNPIN, taskInfo);
+    }
+
+    /**
+     * Used to send unpin event to the dock. Generally used when an app should be unpinned from the
+     * dock.
+     */
+    public void sendUnpinEvent(@NonNull ComponentName componentName) {
+        sendEventBroadcast(DockEvent.UNPIN, componentName);
     }
 
     @VisibleForTesting
