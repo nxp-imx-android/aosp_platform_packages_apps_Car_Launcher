@@ -29,6 +29,7 @@ android_library {
 
     static_libs: [
         "androidx.lifecycle_lifecycle-extensions",
+        "com.google.android.material_material",
     ],
 
     manifest: "AndroidManifest.xml",

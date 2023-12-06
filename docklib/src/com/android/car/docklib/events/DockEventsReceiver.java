@@ -25,12 +25,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.android.car.docklib.DockController;
 import com.android.car.docklib.DockInterface;
-import com.android.car.dockutil.R;
 import com.android.car.dockutil.events.DockEvent;
 import com.android.car.dockutil.events.DockPermission;
 
@@ -38,12 +38,10 @@ import com.android.car.dockutil.events.DockPermission;
  * BroadcastReceiver for Dock Events.
  */
 public class DockEventsReceiver extends BroadcastReceiver {
+    private static final String TAG = "DockEventsReceiver";
+    private static final boolean DEBUG = Build.isDebuggable();
     // Extras key for the ComponentName associated with the Event
     private final DockInterface mDockController;
-
-    public DockEventsReceiver() {
-        this(new DockController());
-    }
 
     public DockEventsReceiver(DockInterface dockController) {
         mDockController = dockController;
@@ -56,6 +54,11 @@ public class DockEventsReceiver extends BroadcastReceiver {
 
         if (event == null || component == null) {
             return;
+        }
+
+        if (DEBUG) {
+            Log.d(TAG, "DockEvent received of type " + event + " with component: "
+                    + component);
         }
 
         switch (event) {
@@ -74,20 +77,25 @@ public class DockEventsReceiver extends BroadcastReceiver {
     /**
      * Helper method to register {@link DockEventsReceiver} through context and listen to dock
      * events from packages with required permissions.
+     *
+     * @param context the context through which the DockEventsReceiver is registered
+     * @return successfully registered DockEventsReceiver.
      */
-    public static void registerDockReceiver(@NonNull Context context) {
-        boolean isDockEnabled = context.getResources().getBoolean(R.bool.config_enableDock);
-        if (!isDockEnabled) {
-            return;
-        }
-
+    public static DockEventsReceiver registerDockReceiver(
+            @NonNull Context context,
+            @NonNull DockInterface dockController
+    ) {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(DockEvent.LAUNCH.toString());
         intentFilter.addAction(DockEvent.PIN.toString());
         intentFilter.addAction(DockEvent.UNPIN.toString());
-        DockEventsReceiver receiver = new DockEventsReceiver();
+        DockEventsReceiver receiver = new DockEventsReceiver(dockController);
         context.registerReceiver(receiver, intentFilter,
                 DockPermission.DOCK_SENDER_PERMISSION.toString(),
                 /* handler= */null, RECEIVER_EXPORTED);
+        if (DEBUG) {
+            Log.d(TAG, "DockReceiver registered from: " + context.getPackageName());
+        }
+        return receiver;
     }
 }

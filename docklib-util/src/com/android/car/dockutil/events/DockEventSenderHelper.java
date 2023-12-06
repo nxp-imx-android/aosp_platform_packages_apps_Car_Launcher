@@ -50,10 +50,17 @@ public class DockEventSenderHelper {
     }
 
     /**
-     * Used to send pin event to the dock. Generally used when an app should be pinned to the dock.
+     * @see #sendPinEvent(ComponentName)
      */
     public void sendPinEvent(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         sendEventBroadcast(DockEvent.PIN, taskInfo);
+    }
+
+    /**
+     * Used to send pin event to the dock. Generally used when an app should be pinned to the dock.
+     */
+    public void sendPinEvent(@NonNull ComponentName componentName) {
+        sendEventBroadcast(DockEvent.PIN, componentName);
     }
 
     /**

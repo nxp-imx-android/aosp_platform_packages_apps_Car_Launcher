@@ -27,5 +27,16 @@
         <item>com.google.android.apps.maps/com.google.android.maps.MapsActivity</item>
     </string-array>
 
+    <!-- A list of components that are excluded from being shown on Dock -->
+    <string-array name="config_packagesExcludedFromDock" translatable="false">
+        <item>com.android.car.carlauncher</item>
+    </string-array>
+
+    <!-- A list of components that are excluded from being shown on Dock -->
+    <string-array name="config_componentsExcludedFromDock" translatable="false">
+        <item>com.google.android.apps.maps/com.google.android.apps.gmm.car.embedded.activity.LimitedMapsActivity</item>
+        <item>com.google.android.carassistant/com.google.android.libraries.assistant.auto.tng.assistant.ui.activity.AutoAssistantActivity</item>
+    </string-array>
+
     <integer name="drag_drop_animate_in_duration">800</integer>
 </resources>
