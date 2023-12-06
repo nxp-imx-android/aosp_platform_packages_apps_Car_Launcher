@@ -34,6 +34,5 @@
     <string name="recents_empty_state_text" msgid="8228569970506899117">"কোনো শেহতীয়া বস্তু নাই"</string>
     <string name="recents_clear_all_text" msgid="3594272268167720553">"আটাইবোৰ মচক"</string>
     <string name="failure_opening_recent_task_message" msgid="963567570097465902">"এপ্‌টো উপলব্ধ নহয়"</string>
-    <!-- no translation found for calm_mode_title (4364804976931157567) -->
-    <skip />
+    <string name="calm_mode_title" msgid="4364804976931157567">"শান্ত ম’ড"</string>
 </resources>
