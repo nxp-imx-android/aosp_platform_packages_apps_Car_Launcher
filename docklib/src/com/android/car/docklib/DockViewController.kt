@@ -21,9 +21,13 @@ import android.car.content.pm.CarPackageManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 import com.android.car.docklib.events.DockEventsReceiver
+import com.android.car.docklib.task.DockTaskStackChangeListener
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
+import com.android.systemui.shared.system.TaskStackChangeListeners
 import java.lang.ref.WeakReference
 import java.util.function.Consumer
 
@@ -40,13 +44,19 @@ class DockViewController(
     dockView: DockView,
     intentDelegate: Consumer<Intent>
 ) : DockInterface {
+    private companion object {
+        private const val TAG = "DockViewController"
+        private val DEBUG = Build.isDebuggable()
+    }
 
     private val numItems: Int
     private val car: Car
     private val dockViewWeakReference: WeakReference<DockView>
     private val dockViewModel: DockViewModel
-    private lateinit var dockHelper: DockHelper
+    private var dockHelper: DockHelper? = null
     private val dockEventsReceiver: DockEventsReceiver
+    private val taskStackChangeListeners: TaskStackChangeListeners
+    private val dockTaskStackChangeListener: DockTaskStackChangeListener
 
     init {
         numItems = userContext.resources.getInteger(R.integer.config_numDockApps)
@@ -68,20 +78,26 @@ class DockViewController(
                         val carPackageManager = car.getCarManager(CarPackageManager::class.java)
                         carPackageManager?.let { carPM ->
                             adapter.setCarPackageManager(carPM)
+                            // todo(b/314859963): create the DockHelper without depending on carPM
                             dockHelper = DockHelper(userContext, carPM)
-                            dockViewModel.updateDefaultApps(dockHelper.defaultApps)
+                            dockHelper?.let { dockViewModel.updateDefaultApps(it.defaultApps) }
                         }
                     }
                 }
             }
         dockEventsReceiver = DockEventsReceiver.registerDockReceiver(userContext, this)
+        dockTaskStackChangeListener = DockTaskStackChangeListener { appLaunched(it) }
+        taskStackChangeListeners = TaskStackChangeListeners.getInstance()
+        taskStackChangeListeners.registerTaskStackListener(dockTaskStackChangeListener)
     }
 
     /** Method to stop the dock. Call this upon View being destroyed. */
     fun destroy() {
+        if (DEBUG) Log.d(TAG, "Destroy called")
         car.disconnect()
         userContext.unregisterReceiver(dockEventsReceiver)
         dockViewModel.destroy()
+        taskStackChangeListeners.unregisterTaskStackListener(dockTaskStackChangeListener)
     }
 
     override fun appPinned(componentName: ComponentName) {
@@ -89,11 +105,15 @@ class DockViewController(
     }
 
     override fun appLaunched(componentName: ComponentName) {
-        if (dockHelper.excludedPackages.contains(componentName.packageName)) return
-        if (dockHelper.excludedComponents.contains(componentName.flattenToString())) return
+        if (DEBUG) Log.d(TAG, "App launched: $componentName")
+        dockHelper?.let {
+            if (it.excludedPackages.contains(componentName.packageName)) return
+            if (it.excludedComponents.contains(componentName.flattenToString())) return
 
-        val appItem = dockHelper.toDockAppItem(componentName)
-        dockViewModel.addDynamicItem(appItem)
+            val appItem = it.toDockAppItem(componentName)
+            if (DEBUG) Log.d(TAG, "Dynamic app add to dock: $appItem")
+            dockViewModel.addDynamicItem(appItem)
+        }
     }
 
     override fun appUnpinned(componentName: ComponentName) {
