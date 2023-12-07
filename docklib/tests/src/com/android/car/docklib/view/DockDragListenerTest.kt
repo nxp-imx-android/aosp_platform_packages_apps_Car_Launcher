@@ -230,7 +230,7 @@ class DockDragListenerTest {
 
         dockDragListener.onDrag(viewMock, dragEventMock)
 
-        verify(callbackMock).dragAccepted(componentNameCaptor.capture())
+        verify(callbackMock).dropSuccessful(componentNameCaptor.capture())
         assertThat(componentNameCaptor.firstValue).isNotNull()
         assertThat(componentNameCaptor.firstValue.flattenToString()).isEqualTo(VALID_COMPONENT_NAME)
     }

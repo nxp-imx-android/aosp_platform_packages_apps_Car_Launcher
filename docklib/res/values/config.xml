@@ -39,4 +39,5 @@
     </string-array>
 
     <integer name="drag_drop_animate_in_duration">800</integer>
+    <integer name="excite_icon_animation_duration">100</integer>
 </resources>

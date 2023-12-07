@@ -9,6 +9,7 @@ import android.view.DragEvent
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.View
+import androidx.annotation.OpenForTesting
 import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
 import androidx.core.animation.PropertyValuesHolder
@@ -19,10 +20,11 @@ import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 
 /**
- * {@link View.OnDragListener} for Dock. Receives a drop and moves it to correct location,
+ * [View.OnDragListener] for Dock. Receives a drop and moves it to correct location,
  * transformed to the given size. This should be applied to all individual items in the dock that
  * wants to receive a drop.
  */
+@OpenForTesting
 open class DockDragListener(
     private val viewHolder: RecyclerView.ViewHolder,
     private val callback: Callback
@@ -108,23 +110,15 @@ open class DockDragListener(
 
                 // todo(b/312718542): hidden api(dragEvent.dragSurface) usage
                 dragEvent.dragSurface?.let {
-                    callback.dragAccepted(component)
+                    callback.dropSuccessful(component)
                     animateSurfaceIn(it, dragEvent)
                     return true
                 } ?: run {
                     if (DEBUG) Log.d(TAG, "Could not retrieve the drag surface")
                     // drag is success but animation is not possible since there is no dragSurface
-                    callback.dragAccepted(component)
+                    callback.dropSuccessful(component)
                     return false
                 }
-            }
-
-            DragEvent.ACTION_DRAG_ENDED -> {
-                if (!dragEvent.result) {
-                    // if drop was accepted the drop action should handle resetting
-                    callback.resetView()
-                }
-                return true
             }
         }
         return false
@@ -154,9 +148,8 @@ open class DockDragListener(
     }
 
     /**
-     * Get the animator responsible for animating the {@code surfaceControl} from
-     * {@code fromX, fromY} to its final position {@code toX, toY} with correct scale
-     * {@code toScaleX, toScaleY}.
+     * Get the animator responsible for animating the [surfaceControl] from [fromX], [fromY]
+     * to its final position [toX], [toY] with correct scale [toScaleX], [toScaleY].
      * Default values are added to make this method easier to test. Generally all parameters are
      * expected to be sent by the caller.
      */
@@ -198,7 +191,7 @@ open class DockDragListener(
     /**
      * Not expected to be used directly or overridden.
      *
-     * @param trx Transaction used to animate the {@code SurfaceControl} in place.
+     * @param trx Transaction used to animate the [surfaceControl] in place.
      */
     @VisibleForTesting
     fun getAnimatorUpdateListener(
@@ -223,10 +216,10 @@ open class DockDragListener(
 
     /**
      * Not expected to be used directly or overridden.
-     * {@code trx} and {@code cleanupTrx} will be closed by this listener.
+     * [trx] and [cleanupTrx] will be closed by this listener.
      *
-     * @param trx Transaction used to animate the {@code SurfaceControl} in place.
-     * @param cleanupTrx Transaction used to animate out and hide {@code SurfaceControl}
+     * @param trx Transaction used to animate the [SurfaceControl] in place.
+     * @param cleanupTrx Transaction used to animate out and hide [surfaceControl]
      */
     @VisibleForTesting
     fun getAnimatorListener(
@@ -269,14 +262,14 @@ open class DockDragListener(
     }
 
     /**
-     * {@link DockDragListener} communicates events back and requests data from the caller using
+     * [DockDragListener] communicates events back and requests data from the caller using
      * this callback.
      */
     interface Callback {
         /**
-         * Drag is accepted/successful for the {@code componentName}
+         * Drop is accepted/successful for the [componentName]
          */
-        fun dragAccepted(componentName: ComponentName) {}
+        fun dropSuccessful(componentName: ComponentName) {}
 
         /**
          * Excite the view to indicate the item can be dropped in this position when dragged inside
