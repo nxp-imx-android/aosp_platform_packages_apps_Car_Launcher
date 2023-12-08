@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import android.view.View;
 
+import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
@@ -48,11 +49,13 @@ public class AssistiveCardPresenterTest {
     @Mock
     private View mFragmentView;
     @Mock
-    private HomeCardInterface.View mView;
+    private HomeCardFragment mView;
     @Mock
-    private HomeCardInterface.Model mModel;
+    private AssistiveModel mModel;
     @Mock
     private ProjectionModel mOtherModel;
+
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
 
     @Before
     public void setUp() {
@@ -61,41 +64,37 @@ public class AssistiveCardPresenterTest {
         when(mModel.getCardContent()).thenReturn(CARD_CONTENT);
         mPresenter = new AssistiveCardPresenter();
         mPresenter.setView(mView);
+        mOnModelUpdateListener = mPresenter.mOnModelUpdateListener;
     }
 
     @Test
     public void onModelUpdated_updatesFragment() {
-        mPresenter.onModelUpdated(mModel);
-        mPresenter.onViewClicked(mFragmentView);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         verify(mView).updateHeaderView(CARD_HEADER);
         verify(mView).updateContentView(CARD_CONTENT);
-        verify(mModel).onClick(mFragmentView);
     }
 
     @Test
     public void onModelUpdated_nullDifferentModel_doesNotUpdate() {
         when(mOtherModel.getCardHeader()).thenReturn(null);
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
         reset(mView);
 
-        mPresenter.onModelUpdated(mOtherModel);
-        mPresenter.onViewClicked(mFragmentView);
+        mOnModelUpdateListener.onModelUpdate(mOtherModel);
 
         verify(mView, never()).hideCard();
         verify(mView, never()).updateHeaderView(any());
         verify(mView, never()).updateContentView(any());
-        verify(mModel).onClick(mFragmentView);
-        verify(mOtherModel, never()).onClick(any());
     }
 
     @Test
     public void onModelUpdated_nullSameModel_updatesFragment() {
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
         reset(mView);
         when(mModel.getCardHeader()).thenReturn(null);
 
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         verify(mView).hideCard();
     }
@@ -104,7 +103,7 @@ public class AssistiveCardPresenterTest {
     public void onModelUpdated_nullModelAndNullCurrentModel_doesNotUpdate() {
         when(mModel.getCardHeader()).thenReturn(null);
 
-        mPresenter.onModelUpdated(mModel);
+        mOnModelUpdateListener.onModelUpdate(mModel);
 
         verify(mView, never()).hideCard();
     }

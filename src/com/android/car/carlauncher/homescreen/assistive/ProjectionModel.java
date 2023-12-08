@@ -27,13 +27,10 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.icu.text.MessageFormat;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
@@ -45,11 +42,9 @@ import java.util.Map;
  * The {@link HomeCardInterface.Model} for projection status
  */
 public class ProjectionModel implements CarProjectionManager.ProjectionStatusListener,
-        HomeCardInterface.Model {
+        AssistiveModel {
 
     private static final String TAG = "ProjectionModel";
-
-    private HomeCardInterface.Presenter mPresenter;
     @Nullable
     private Car mCar;
     @Nullable
@@ -64,17 +59,22 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
     private CharSequence mTapToLaunchText;
     private Intent mIntent;
 
+    private OnModelUpdateListener mOnModelUpdateListener;
+
     @Override
     public void onCreate(Context context) {
         mCar = Car.createCar(context.getApplicationContext(), null,
                 Car.CAR_WAIT_TIMEOUT_DO_NOT_WAIT,
                 (Car car, boolean ready) -> {
                     if (ready) {
-                        mCarProjectionManager = (CarProjectionManager)
-                                car.getCarManager(Car.PROJECTION_SERVICE);
-                        mCarProjectionManager.registerProjectionStatusListener(this);
+                        mCarProjectionManager = car.getCarManager(CarProjectionManager.class);
                     } else {
                         mCarProjectionManager = null;
+                    }
+
+                    if (mCarProjectionManager != null) {
+                        mCarProjectionManager.registerProjectionStatusListener(this);
+                    } else {
                         onProjectionStatusChanged(
                                 ProjectionStatus.PROJECTION_STATE_INACTIVE, null, null);
                     }
@@ -110,21 +110,13 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
     }
 
     @Override
-    public void onClick(View v) {
-        if (mIntent.resolveActivity(v.getContext().getPackageManager()) != null) {
-            v.getContext().startActivity(mIntent);
-        } else {
-            Log.e(TAG, "No activity component found to handle intent with action: "
-                    + mIntent.getAction());
-            Toast.makeText(v.getContext(),
-                    mResources.getString(R.string.projected_onclick_launch_error_toast_text),
-                    Toast.LENGTH_SHORT).show();
-        }
+    public Intent getIntent() {
+        return mIntent;
     }
 
     @Override
-    public void setPresenter(HomeCardInterface.Presenter presenter) {
-        mPresenter = presenter;
+    public void setOnModelUpdateListener(OnModelUpdateListener onModelUpdateListener) {
+        mOnModelUpdateListener = onModelUpdateListener;
     }
 
     @Override
@@ -136,7 +128,7 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
         if (state == ProjectionStatus.PROJECTION_STATE_INACTIVE || packageName == null) {
             if (mAppName != null) {
                 mAppName = null;
-                mPresenter.onModelUpdated(this);
+                mOnModelUpdateListener.onModelUpdate(this);
             }
             return;
         }
@@ -153,7 +145,7 @@ public class ProjectionModel implements CarProjectionManager.ProjectionStatusLis
         mAppIcon = applicationInfo.loadIcon(mPackageManager);
         mStatusMessage = getStatusMessage(packageName, details);
         mIntent = mPackageManager.getLaunchIntentForPackage(packageName);
-        mPresenter.onModelUpdated(this);
+        mOnModelUpdateListener.onModelUpdate(this);
     }
 
     @Nullable

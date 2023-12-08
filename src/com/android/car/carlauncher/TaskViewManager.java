@@ -48,6 +48,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.WindowManagerGlobal;
 import android.window.TaskAppearedInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.car.carlauncher.taskstack.TaskStackChangeListeners;
@@ -104,6 +105,7 @@ public final class TaskViewManager {
     private CarUserManager mCarUserManager;
     private Activity mContext;
     private Car mCar;
+    private boolean mReleased = false;
 
     private final TaskStackListener mTaskStackListener = new TaskStackListener() {
         @Override
@@ -232,7 +234,7 @@ public final class TaskViewManager {
             ShellTaskOrganizer shellTaskOrganizer, SyncTransactionQueue syncQueue,
             Transitions transitions, ShellInit shellInit, ShellController shellController,
             StartingWindowController startingWindowController) {
-        if (DBG) Slog.d(TAG, "TaskViewManager(): " + context);
+        if (DBG) Slog.d(TAG, "TaskViewManager(), u=" + context.getUserId());
         mContext = context;
         mShellExecutor = handlerExecutor;
         mTaskOrganizer = shellTaskOrganizer;
@@ -348,6 +350,18 @@ public final class TaskViewManager {
     }
 
     /**
+     * updates the window visibility associated with {@link WindowContainerToken}
+     *
+     * @param token {@link WindowContainerToken} of the window that needs to be hidden
+     * @param visibility {true} if window needs to be displayed {false} otherwise
+     */
+    public void updateTaskVisibility(WindowContainerToken token, boolean visibility) {
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setHidden(token, !visibility);
+        mSyncQueue.queue(wct);
+    }
+
+    /**
      * Creates a {@link SemiControlledCarTaskView}.
      *
      * @param callbackExecutor the executor which the {@link SemiControlledCarTaskViewCallbacks}
@@ -372,9 +386,9 @@ public final class TaskViewManager {
      * Releases {@link TaskViewManager} and unregisters the underlying {@link ShellTaskOrganizer}.
      * It also removes all TaskViews which are created by this {@link TaskViewManager}.
      */
-    private void release() {
+    void release() {
         mShellExecutor.execute(() -> {
-            if (DBG) Slog.d(TAG, "TaskViewManager.release");
+            if (DBG) Slog.d(TAG, "TaskViewManager.release, u=" + mContext.getUser());
 
             if (mCarUserManager != null) {
                 mCarUserManager.removeListener(mUserLifecycleListener);
@@ -410,6 +424,7 @@ public final class TaskViewManager {
             if (mCar != null) {
                 mCar.disconnect();
             }
+            mReleased = true;
         });
     }
 
@@ -515,9 +530,71 @@ public final class TaskViewManager {
      * Returns the {@link android.app.ActivityManager.RunningTaskInfo} of the top task inside the
      * launch root car task view.
      */
-    @VisibleForTesting
     public ActivityManager.RunningTaskInfo getTopTaskInLaunchRootTask() {
         return mLaunchRootCarTaskView != null
                 ? mLaunchRootCarTaskView.getTopTaskInLaunchRootTask() : null;
+    }
+
+    boolean isReleased() {
+        return mReleased;
+    }
+
+    /**
+     * Adds {@code activities} to allowed list of {@code carTaskView} if this car task view is a
+     * known {@link SemiControlledCarTaskView}.
+     */
+    public void addAllowListedActivities(@NonNull CarTaskView carTaskView,
+            List<ComponentName> activities) {
+        if (activities.size() == 0) {
+            if (DBG) {
+                Log.d(TAG, "No activity to add to allowlist");
+            }
+            return;
+        }
+        for (SemiControlledCarTaskView semiControlledCarTaskView: mSemiControlledTaskViews) {
+            if (semiControlledCarTaskView.equals(carTaskView)) {
+                semiControlledCarTaskView.addAllowListedActivities(activities);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Removes {@code activities} from allowed list of {@code carTaskView} if this CarTaskView is a
+     * known SemiControlledCarTaskView.
+     */
+    public void removeAllowListedActivities(@NonNull CarTaskView carTaskView,
+            List<ComponentName> activities) {
+        if (activities.size() == 0) {
+            if (DBG) {
+                Log.d(TAG, "No activity to remove from allowlist");
+            }
+            return;
+        }
+        for (SemiControlledCarTaskView semiControlledCarTaskView: mSemiControlledTaskViews) {
+            if (semiControlledCarTaskView.equals(carTaskView)) {
+                semiControlledCarTaskView.removeAllowListedActivities(activities);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Sets {@code activities} to be the allowed list of {@code carTaskView} if this CarTaskView
+     * is a known SemiControlledCarTaskView.
+     */
+    public void setAllowListedActivities(CarTaskView carTaskView, List<ComponentName> activities) {
+        if (activities.size() == 0) {
+            if (DBG) {
+                Log.d(TAG, "No activity to remove from allowlist");
+            }
+            return;
+        }
+        for (SemiControlledCarTaskView semiControlledCarTaskView: mSemiControlledTaskViews) {
+            if (semiControlledCarTaskView.equals(carTaskView)) {
+                semiControlledCarTaskView.setAllowListedActivities(activities);
+                return;
+            }
+        }
     }
 }

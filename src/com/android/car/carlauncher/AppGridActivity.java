@@ -162,7 +162,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         CONTROL_BAR, DEFAULT, FULL
     }
 
-    private enum Mode {
+    public enum Mode {
         ALL_APPS(R.string.app_launcher_title_all_apps,
                 APP_TYPE_LAUNCHABLES + APP_TYPE_MEDIA_SERVICES,
                 true),
@@ -202,6 +202,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                             .isRequiresDistractionOptimization();
                 }
                 mAdapter.setIsDistractionOptimizationRequired(isDistractionOptimizationRequired);
+                mAdapter.setMode(mMode);
                 // set listener to update the app grid components and apply interaction restrictions
                 // when driving state changes
                 mCarUxRestrictionsManager.registerListener(restrictionInfo -> {
@@ -294,8 +295,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                         mAdapter.setLauncherItems(launcherItems);
                         mNextScrollDestination = mSnapCallback.getSnapPosition();
                         updateScrollState();
-                        //TODO: b/275079533 Disable drag and drop ability in AppGrid with
-                        // only Media apps
                         if (mMode == Mode.ALL_APPS) {
                             mLauncherModel.maybeSaveAppsOrder();
                         }

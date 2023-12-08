@@ -16,13 +16,19 @@
 
 package com.android.car.carlauncher.homescreen.assistive;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import android.car.Car;
+import android.car.CarProjectionManager;
 import android.car.projection.ProjectionStatus;
 import android.content.Context;
 import android.icu.text.MessageFormat;
@@ -38,8 +44,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.MockitoSession;
+import org.mockito.quality.Strictness;
 
 import java.util.Collections;
 import java.util.Map;
@@ -80,63 +88,96 @@ public class ProjectionModelTest {
                     NONPROJECTING_DEVICE).build();
 
     private ProjectionModel mModel;
+    private MockitoSession mSession;
 
     @Mock
-    private HomeCardInterface.Presenter mPresenter;
+    private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
+    @Mock
+    private Car mMockCar;
+    @Mock
+    private CarProjectionManager mProjectionManager;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        mModel = new ProjectionModel();
-        mModel.setPresenter(mPresenter);
-        mModel.onCreate(mContext);
-        reset(mPresenter);
+        mSession = mockitoSession()
+                .initMocks(this)
+                .mockStatic(Car.class)
+                .strictness(Strictness.LENIENT)
+                .startMocking();
+        when(mMockCar.getCarManager(CarProjectionManager.class)).thenReturn(mProjectionManager);
+        when(Car.createCar(any(), any(), anyLong(), any())).thenReturn(mMockCar);
     }
 
     @After
     public void tearDown() {
         mModel.onDestroy(mContext);
+        if (mSession != null) {
+            mSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void onCreate_carConnected_registerProjectionStatusListener() {
+        ArgumentCaptor<Car.CarServiceLifecycleListener> carLifecycleCaptor =
+                ArgumentCaptor.forClass(Car.CarServiceLifecycleListener.class);
+        when(Car.createCar(any(), any(), anyLong(), carLifecycleCaptor.capture())).then(
+                invocation -> {
+                    Car.CarServiceLifecycleListener listener = carLifecycleCaptor.getValue();
+                    listener.onLifecycleChanged(mMockCar, true);
+                    return mMockCar;
+                });
+
+        createModel();
+
+        verify(() -> Car.createCar(any(), any(), anyLong(), any()));
+        verify(mProjectionManager).registerProjectionStatusListener(any());
     }
 
     @Test
     public void noChange_doesNotCallPresenter() {
-        verify(mPresenter, never()).onModelUpdated(any());
+        createModel();
+
+        verify(mOnModelUpdateListener, never()).onModelUpdate(any());
         assertNull(mModel.getCardHeader());
         assertNull(mModel.getCardContent());
     }
 
     @Test
     public void changeProjectionStatusToProjectingDevice_callsPresenter() {
+        createModel();
         sendProjectionStatus(mProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
         assertEquals(PROJECTING_DEVICE_NAME, String.valueOf(content.getSubtitle()));
     }
 
     @Test
     public void changeProjectionStatusToNonProjectingDevice_callsPresenter() {
+        createModel();
         sendProjectionStatus(mNonProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
         assertEquals(NONPROJECTING_DEVICE_NAME, String.valueOf(content.getSubtitle()));
     }
 
     @Test
     public void changeProjectionStatusToSingleProjectingAndNonProjectingDevice_callsPresenter() {
+        createModel();
         sendProjectionStatus(mProjectingAndNonProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
         assertEquals(PROJECTING_DEVICE_NAME, String.valueOf(content.getSubtitle()));
     }
 
     @Test
     public void changeProjectionStatusToMultipleProjectingAndNonProjectingDevice_callsPresenter() {
+        createModel();
         sendProjectionStatus(mProjectingMultipleAndNonProjectingDeviceProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         DescriptiveTextView content = (DescriptiveTextView) mModel.getCardContent();
 
         String formattedPluralString = MessageFormat.format(mContext.getString(
@@ -149,18 +190,26 @@ public class ProjectionModelTest {
 
     @Test
     public void changeProjectionStatusToInactive_callsPresenter() {
+        createModel();
         sendProjectionStatus(mProjectingDeviceProjectionStatus);
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
 
         sendProjectionStatus(mInactiveProjectionStatus);
 
-        verify(mPresenter).onModelUpdated(mModel);
+        verify(mOnModelUpdateListener).onModelUpdate(mModel);
         assertNull(mModel.getCardHeader());
         assertNull(mModel.getCardContent());
     }
 
+    private void createModel() {
+        mModel = new ProjectionModel();
+        mModel.setOnModelUpdateListener(mOnModelUpdateListener);
+        mModel.onCreate(mContext);
+        reset(mOnModelUpdateListener);
+    }
+
     private void sendProjectionStatus(ProjectionStatus status) {
-        reset(mPresenter);
+        reset(mOnModelUpdateListener);
         mModel.onProjectionStatusChanged(
                 status.getState(),
                 status.getPackageName(),

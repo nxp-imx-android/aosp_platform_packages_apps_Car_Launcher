@@ -25,7 +25,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.view.WindowMetrics;
 import android.widget.Toast;
@@ -40,7 +39,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.recents.view.RecentTasksAdapter;
 import com.android.car.carlauncher.recents.view.RecentsRecyclerView;
-import com.android.car.carlauncher.recents.view.TaskSnapHelper;
 import com.android.car.carlauncher.recents.view.TaskTouchHelperCallback;
 
 import java.util.HashSet;
@@ -62,8 +60,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
     private Animator mClearAllAnimator;
     private NonDODisabledTaskProvider mNonDODisabledTaskProvider;
     private Set<String> mPackagesToHideFromRecents;
-    private TaskSnapHelper mTaskSnapHelper;
-    private ViewTreeObserver.OnTouchModeChangeListener mOnTouchModeChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +96,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                if (position == 0) {
+                boolean isLastPosition = mRecentsRecyclerView != null
+                        && mRecentsRecyclerView.getAdapter() != null
+                        && position == mRecentsRecyclerView.getAdapter().getItemCount() - 1;
+                if (position == 0 || isLastPosition) {
                     return gridSpanCount;
                 }
                 return 1;
@@ -122,23 +121,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
                 getResources().getFloat(R.dimen.recent_task_swiped_threshold)));
         itemTouchHelper.attachToRecyclerView(mRecentsRecyclerView);
 
-        mTaskSnapHelper = new TaskSnapHelper(gridSpanCount,
-                getResources().getInteger(R.integer.config_recents_columns_per_page));
-        mTaskSnapHelper.attachToRecyclerView(mRecentsRecyclerView);
-
-        mOnTouchModeChangeListener = isInTouchMode -> {
-            if (isInTouchMode) {
-                mTaskSnapHelper.attachToRecyclerView(mRecentsRecyclerView);
-            } else {
-                mTaskSnapHelper.attachToRecyclerView(null);
-            }
-        };
-        mRecentsRecyclerView.getViewTreeObserver()
-                .addOnTouchModeChangeListener(mOnTouchModeChangeListener);
-
-        mRecentsRecyclerView.setAdapter(new RecentTasksAdapter(this, getLayoutInflater(),
-                itemTouchHelper));
-
         mClearAllAnimator = AnimatorInflater.loadAnimator(this,
                 R.animator.recents_clear_all);
         mClearAllAnimator.addListener(new AnimatorListenerAdapter() {
@@ -150,8 +132,10 @@ public class CarRecentsActivity extends AppCompatActivity implements
             }
         });
         mClearAllAnimator.setTarget(mRecentsRecyclerView);
-        View clearAllButton = findViewById(R.id.clear_all_button);
-        clearAllButton.setOnClickListener(v -> mClearAllAnimator.start());
+        View.OnClickListener clearAllOnClickListener = v -> mClearAllAnimator.start();
+
+        mRecentsRecyclerView.setAdapter(new RecentTasksAdapter(this, getLayoutInflater(),
+                itemTouchHelper, clearAllOnClickListener));
     }
 
     @Override
@@ -185,8 +169,6 @@ public class CarRecentsActivity extends AppCompatActivity implements
         mRecentTasksViewModel.terminate();
         mClearAllAnimator.end();
         mClearAllAnimator.removeAllListeners();
-        mRecentsRecyclerView.getViewTreeObserver()
-                .removeOnTouchModeChangeListener(mOnTouchModeChangeListener);
     }
 
     @Override

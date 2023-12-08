@@ -30,7 +30,7 @@ import java.util.Collections;
  * Home screen card that displays general assistive content including projection status and
  * static weather data.
  */
-public class AssistiveCard implements HomeCardModule {
+public class AssistiveCardModule implements HomeCardModule {
 
     private ViewModelProvider mViewModelProvider;
     private AssistiveCardPresenter mAssistiveCardPresenter;
@@ -62,7 +62,6 @@ public class AssistiveCard implements HomeCardModule {
         if (mAssistiveCardView == null) {
             mAssistiveCardView = new HomeCardFragment();
             getCardPresenter().setView(mAssistiveCardView);
-            mAssistiveCardView.setPresenter(getCardPresenter());
         }
         return mAssistiveCardView;
     }

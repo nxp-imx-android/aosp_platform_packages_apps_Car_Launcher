@@ -82,7 +82,6 @@
         <item>com.google.android.embedded.projection</item>
         <item>com.android.car.bugreport</item>
         <item>com.android.car.trust</item>
-        <item>com.android.car.datacenter</item>
         <item>com.google.android.car.diagnosticrecorder</item>
         <item>com.google.android.car.diskwriteapp</item>
         <item>com.android.documentsui</item>

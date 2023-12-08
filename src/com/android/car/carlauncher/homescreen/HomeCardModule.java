@@ -51,12 +51,12 @@ public interface HomeCardModule {
     /**
      * Returns the card's {@link Presenter}
      */
-    CardPresenter getCardPresenter();
+    HomeCardInterface.Presenter getCardPresenter();
 
 
     /**
      * Returns the card's {@link View}
      */
-    HomeCardFragment getCardView();
+    HomeCardInterface.View getCardView();
 
 }
