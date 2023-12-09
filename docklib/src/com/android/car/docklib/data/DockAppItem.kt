@@ -27,6 +27,7 @@ data class DockAppItem(
     val icon: Drawable,
     val isDistractionOptimized: Boolean,
 ) {
+    // todo(b/315210225): handle getting icon lazily
     enum class Type(val value: String) {
         DYNAMIC("DYNAMIC"),
         STATIC("STATIC");

@@ -18,4 +18,5 @@
 <resources>
     <!-- todo(b/314817575): update the string to final value -->
     <string name="dock_pin_shortcut_label">Pin to the dock</string>
+    <string name="dock_unpin_shortcut_label">Unpin from the dock</string>
 </resources>
