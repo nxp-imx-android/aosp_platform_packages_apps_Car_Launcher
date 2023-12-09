@@ -58,6 +58,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.car.dockutil.events.DockEventSenderHelper;
+import com.android.car.dockutil.shortcuts.PinShortcutItem;
 import com.android.car.media.common.source.MediaSourceUtil;
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup;
 
@@ -496,27 +497,11 @@ public class AppLauncherUtils {
 
     private static CarUiShortcutsPopup.ShortcutItem buildPinToDockShortcut(
             ComponentName componentName, Context context) {
-        // todo(b/314835197): fix pinning/opening media apps
-        return new CarUiShortcutsPopup.ShortcutItem() {
-            @Override
-            public CarUiShortcutsPopup.ItemData data() {
-                return new CarUiShortcutsPopup.ItemData(/* leftDrawable= */ R.drawable.ic_dock_pin,
-                        /* shortcutName= */
-                        context.getResources().getString(R.string.dock_pin_shortcut_label));
-            }
-
-            @Override
-            public boolean onClick() {
-                DockEventSenderHelper mHelper = new DockEventSenderHelper(context);
-                mHelper.sendPinEvent(componentName);
-                return true;
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return true;
-            }
-        };
+        DockEventSenderHelper mHelper = new DockEventSenderHelper(context);
+        return new PinShortcutItem(context.getResources(), /* isItemPinned= */ false,
+                /* pinItemClickDelegate= */ () -> mHelper.sendPinEvent(componentName),
+                /* unpinItemClickDelegate= */ () -> mHelper.sendUnpinEvent(componentName)
+        );
     }
 
     /**
