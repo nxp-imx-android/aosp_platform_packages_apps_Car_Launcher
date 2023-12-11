@@ -91,6 +91,7 @@ public class CarLauncherUtils {
     public static boolean isSmallCanvasOptimizedMapIntentConfigured(Context context) {
         String intentString = context.getString(R.string.config_smallCanvasOptimizedMapIntent);
         if (intentString.isEmpty()) {
+            Log.d(TAG, "Empty intent URI in config_smallCanvasOptimizedMapIntent");
             return false;
         }
 
@@ -98,6 +99,8 @@ public class CarLauncherUtils {
             Intent.parseUri(intentString, Intent.URI_INTENT_SCHEME);
             return true;
         } catch (URISyntaxException e) {
+            Log.w(TAG, "Invalid intent URI in config_smallCanvasOptimizedMapIntent: \""
+                    + intentString);
             return false;
         }
     }
