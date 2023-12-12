@@ -20,6 +20,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,8 @@ import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.fragment.app.FragmentActivity;
 
 import com.android.car.apps.common.BitmapUtils;
 import com.android.car.apps.common.ImageUtils;
@@ -55,6 +58,8 @@ public class AudioFragment extends HomeCardFragment {
          */
         void onMediaViewInitialized();
     }
+
+    private static final String TAG = AudioFragment.class.getSimpleName();
 
     private Chronometer mChronometer;
     private View mChronometerSeparator;
@@ -251,7 +256,12 @@ public class AudioFragment extends HomeCardFragment {
      * Updates the seekbar/progress bar progress and times
      */
     public void updateProgress(SeekBarViewModel seekBarViewModel, boolean updateProgress) {
-        requireActivity().runOnUiThread(() -> {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            Log.w(TAG, "attempting to update progress without activity");
+            return;
+        }
+        activity.runOnUiThread(() -> {
             updateSeekBarAndTimes(seekBarViewModel, updateProgress);
         });
     }
