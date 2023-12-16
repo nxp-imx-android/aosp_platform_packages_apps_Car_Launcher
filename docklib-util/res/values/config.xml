@@ -16,10 +16,7 @@
   -->
 
 <resources>
-    <!-- Package that contains the dock view -->
-    <string name="config_dockViewPackage" translatable="false">com.android.systemui</string>
-    <!-- BroadcastReceiver class that receives dock events -->
-    <string name="config_dockReceiver" translatable="false">
-        com.android.car.docklib.events.DockEventsReceiver
-    </string>
+    <!-- Flag to enable/disable dock -->
+    <!-- todo(b/304320644): remove flag -->
+    <bool name="config_enableDock">false</bool>
 </resources>

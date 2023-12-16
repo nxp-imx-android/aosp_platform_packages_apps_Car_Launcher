@@ -23,6 +23,7 @@ import static com.android.car.dockutil.events.DockEventSenderHelper.EXTRA_COMPON
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,6 +33,7 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -47,12 +49,12 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
 public class DockEventSenderHelperTest {
-    private static final String DOCK_RECEIVER_PKG = "DOCK_RECEIVER_PKG";
-    private static final String DOCK_RECEIVER_CLS = "DOCK_RECEIVER_CLS";
     @Mock
     public ActivityManager.RunningTaskInfo mRunningTaskInfo;
     @Mock
     public Context mContext;
+    @Mock
+    public Resources mResources;
     @Mock
     public Intent mIntent;
     @Mock
@@ -64,8 +66,8 @@ public class DockEventSenderHelperTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        when(mContext.getString(eq(R.string.config_dockViewPackage))).thenReturn(DOCK_RECEIVER_PKG);
-        when(mContext.getString(eq(R.string.config_dockReceiver))).thenReturn(DOCK_RECEIVER_CLS);
+        when(mContext.getResources()).thenReturn(mResources);
+        when(mResources.getBoolean(R.bool.config_enableDock)).thenReturn(true);
         mDockEventSenderHelper = new DockEventSenderHelper(mContext);
     }
 
@@ -75,7 +77,7 @@ public class DockEventSenderHelperTest {
 
         mDockEventSenderHelper.sendEventBroadcast(DockEvent.LAUNCH, mRunningTaskInfo);
 
-        verify(mContext, never()).sendBroadcast(any(Intent.class));
+        verify(mContext, never()).sendBroadcast(any(Intent.class), anyString());
     }
 
     @Test
@@ -87,21 +89,18 @@ public class DockEventSenderHelperTest {
 
         mDockEventSenderHelper.sendEventBroadcast(DockEvent.LAUNCH, mRunningTaskInfo);
 
-        verify(mContext, never()).sendBroadcast(any(Intent.class));
+        verify(mContext, never()).sendBroadcast(any(Intent.class), anyString());
     }
 
     @Test
-    public void sendEventBroadcast_broadcastSent_receiverPackageSet() {
+    public void sendEventBroadcast_broadcastSent_receiverPermissionSet() {
         when(mRunningTaskInfo.getDisplayId()).thenReturn(DEFAULT_DISPLAY);
         mRunningTaskInfo.baseActivity = mAppComponent;
 
         mDockEventSenderHelper.sendEventBroadcast(DockEvent.LAUNCH, mRunningTaskInfo);
 
-        verify(mContext).sendBroadcast(mIntentCaptor.capture());
-        Intent intentSent = mIntentCaptor.getValue();
-        assertThat(intentSent.getComponent()).isNotNull();
-        assertThat(intentSent.getComponent().getPackageName())
-                .isEqualTo(DOCK_RECEIVER_PKG);
+        verify(mContext).sendBroadcast(any(Intent.class),
+                eq(DockPermission.DOCK_RECEIVER_PERMISSION.toString()));
     }
 
 
@@ -112,7 +111,7 @@ public class DockEventSenderHelperTest {
 
         mDockEventSenderHelper.sendEventBroadcast(DockEvent.LAUNCH, mRunningTaskInfo);
 
-        verify(mContext).sendBroadcast(mIntentCaptor.capture());
+        verify(mContext).sendBroadcast(mIntentCaptor.capture(), anyString());
         Intent intentSent = mIntentCaptor.getValue();
         assertThat(intentSent.getAction()).isEqualTo(DockEvent.LAUNCH.toString());
         assertThat(intentSent.getExtras()).isNotNull();
@@ -127,7 +126,7 @@ public class DockEventSenderHelperTest {
 
         mDockEventSenderHelper.sendEventBroadcast(DockEvent.PIN, mRunningTaskInfo);
 
-        verify(mContext).sendBroadcast(mIntentCaptor.capture());
+        verify(mContext).sendBroadcast(mIntentCaptor.capture(), anyString());
         Intent intentSent = mIntentCaptor.getValue();
         assertThat(intentSent.getAction()).isEqualTo(DockEvent.PIN.toString());
         assertThat(intentSent.getExtras()).isNotNull();
@@ -143,7 +142,7 @@ public class DockEventSenderHelperTest {
 
         mDockEventSenderHelper.sendEventBroadcast(DockEvent.UNPIN, mRunningTaskInfo);
 
-        verify(mContext).sendBroadcast(mIntentCaptor.capture());
+        verify(mContext).sendBroadcast(mIntentCaptor.capture(), anyString());
         Intent intentSent = mIntentCaptor.getValue();
         assertThat(intentSent.getAction()).isEqualTo(DockEvent.UNPIN.toString());
         assertThat(intentSent.getExtras()).isNotNull();

@@ -18,6 +18,7 @@ package com.android.car.carlauncher.homescreen;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.android.car.apps.common.CrossfadeImageView;
 import com.android.car.carlauncher.R;
@@ -50,6 +52,8 @@ import com.android.internal.util.ArrayUtils;
  * {@link TextBlockView}: card_content_text_block, card_content_tap_for_more_text
  */
 public class HomeCardFragment extends Fragment implements HomeCardInterface.View {
+
+    private static final String TAG = HomeCardFragment.class.getSimpleName();
 
     private Size mSize;
     private View mCardBackground;
@@ -192,7 +196,12 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
      * Updates the card's header: name and icon of source app
      */
     public void updateHeaderView(CardHeader header) {
-        requireActivity().runOnUiThread(() -> {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            Log.w(TAG, "attempting to update header without activity");
+            return;
+        }
+        activity.runOnUiThread(() -> {
             mRootView.setVisibility(View.VISIBLE);
             mCardTitle.setText(header.getCardTitle());
             mCardIcon.setImageDrawable(header.getCardIcon());
@@ -203,7 +212,12 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
      * Updates the card's content
      */
     public final void updateContentView(CardContent content) {
-        requireActivity().runOnUiThread(() -> {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            Log.w(TAG, "attempting to update content without activity");
+            return;
+        }
+        activity.runOnUiThread(() -> {
             hideAllViews();
             updateContentViewInternal(content);
         });

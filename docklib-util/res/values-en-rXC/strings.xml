@@ -17,6 +17,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="broadcast_sender_permission_label" msgid="5796194170732286003">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‏‏‏‎‏‎‎‎‎‎‏‏‏‎‎‎‎‎‎‏‏‎‏‏‏‏‏‏‎‎‎‏‏‏‎‎‎‎‎‏‏‏‎‏‏‎‎‎‎‎‎‎‏‎‎‎‎‎‎‏‏‎‎‏‏‎Dock broadcast sender‎‏‎‎‏‎"</string>
-    <string name="broadcast_sender_permission_desc" msgid="8345272264908051930">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‏‏‏‏‏‎‎‏‏‏‏‎‏‎‎‎‎‎‏‎‏‏‏‎‎‏‏‏‎‏‎‎‎‏‏‏‎‎‏‏‏‏‏‎‎‎‎‏‏‏‎‎‏‎‏‎‏‏‏‎‏‏‎‏‎‎Permission required for package to broadcast events to the Dock.‎‏‎‎‏‎"</string>
+    <string name="dock_pin_shortcut_label" msgid="1238309271276139881">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‎‏‏‎‎‎‏‎‎‏‎‏‏‏‏‎‏‎‏‏‎‏‏‏‎‏‏‏‎‎‎‏‎‏‎‏‏‎‎‎‏‏‏‏‏‎‎‏‎‏‏‎‏‎‏‎‏‏‎‏‎‎‏‎Pin to the dock‎‏‎‎‏‎"</string>
+    <!-- no translation found for dock_unpin_shortcut_label (3838672705638173078) -->
+    <skip />
 </resources>

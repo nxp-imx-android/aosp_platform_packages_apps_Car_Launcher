@@ -17,6 +17,7 @@
 package com.android.car.carlauncher.calmmode;
 
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -103,11 +104,10 @@ public class CalmModeQCProvider extends BaseQCProvider {
     @VisibleForTesting
     QCItem getQCItem() {
         Resources resources = mContext.getResources();
-        String packageName = resources.getString(R.string.config_calmMode_packageName);
-        String activityName = resources.getString(R.string.config_calmMode_activityName);
-
+        ComponentName componentName = ComponentName.unflattenFromString(
+                resources.getString(R.string.config_calmMode_componentName));
         Intent intent = new Intent();
-        intent.setClassName(packageName, activityName);
+        intent.setComponent(componentName);
         PendingIntent ambientModeIntent = PendingIntent.getActivity(mContext, 0, intent,
                 PendingIntent.FLAG_IMMUTABLE);
 

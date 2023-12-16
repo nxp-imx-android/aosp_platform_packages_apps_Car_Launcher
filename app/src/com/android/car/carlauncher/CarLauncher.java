@@ -20,23 +20,17 @@ import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 
+import static com.android.car.carlauncher.CarLauncherViewModel.CarLauncherViewModelFactory;
+
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.TaskStackListener;
 import android.car.Car;
-import android.car.app.CarActivityManager;
-import android.car.app.CarTaskViewController;
-import android.car.app.CarTaskViewControllerCallback;
-import android.car.app.ControlledRemoteCarTaskView;
-import android.car.app.ControlledRemoteCarTaskViewCallback;
-import android.car.app.ControlledRemoteCarTaskViewConfig;
 import android.car.user.CarUserManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserManager;
@@ -46,7 +40,6 @@ import android.view.Display;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
 import androidx.collection.ArraySet;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -76,15 +69,13 @@ import java.util.Set;
  */
 public class CarLauncher extends FragmentActivity {
     public static final String TAG = "CarLauncher";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-    private static boolean sAutoRestartOnCrash = false;
+    public static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private ActivityManager mActivityManager;
     private TaskViewManager mTaskViewManager;
 
     private Car mCar;
     private CarTaskView mTaskView;
-    private ControlledRemoteCarTaskView mRemoteCarTaskView;
     private int mCarLauncherTaskId = INVALID_TASK_ID;
     private Set<HomeCardModule> mHomeCardModules;
 
@@ -93,6 +84,7 @@ public class CarLauncher extends FragmentActivity {
     private boolean mUseSmallCanvasOptimizedMap;
     private boolean mUseRemoteCarTaskView;
     private ViewGroup mMapsCard;
+    private CarLauncherViewModel mCarLauncherViewModel;
 
     @VisibleForTesting
     ContentObserver mTosContentObserver;
@@ -212,93 +204,17 @@ public class CarLauncher extends FragmentActivity {
     }
 
     private void setupRemoteCarTaskView(ViewGroup parent) {
-        long createCarStartTime = System.nanoTime();
-        mCar = Car.createCar(this);
-        if (DEBUG) {
-            long createCarEndTime = System.nanoTime();
-            Log.d(TAG, "Initialization of the CarApi took "
-                    + (createCarEndTime - createCarStartTime)
-                    + " nanoseconds");
-        }
-        CarActivityManager carAM = mCar.getCarManager(CarActivityManager.class);
+        mCarLauncherViewModel = new ViewModelProvider(this,
+                new CarLauncherViewModelFactory(this, getMapsIntent()))
+                .get(CarLauncherViewModel.class);
 
-        if (Build.IS_USER) {
-            sAutoRestartOnCrash = true;
-        }
+        getLifecycle().addObserver(mCarLauncherViewModel);
 
-        carAM.getCarTaskViewController(
-                this,
-                getMainExecutor(),
-                new CarTaskViewControllerCallback() {
-                    @Override
-                    public void onConnected(
-                            CarTaskViewController carTaskViewController) {
-                        carTaskViewController.createControlledRemoteCarTaskView(
-                                new ControlledRemoteCarTaskViewConfig.Builder()
-                                        .setActivityIntent(getMapsIntent())
-                                        .setShouldAutoRestartOnTaskRemoval(sAutoRestartOnCrash)
-                                        .build(),
-                                getMainExecutor(),
-                                new ControlledRemoteCarTaskViewCallback() {
-                                    @Override
-                                    public void onTaskViewCreated(
-                                            ControlledRemoteCarTaskView taskView) {
-                                        mRemoteCarTaskView = taskView;
-                                        parent.addView(taskView);
-                                    }
-
-                                    @Override
-                                    public void onTaskViewInitialized() {
-                                        maybeLogReady();
-                                    }
-
-                                    @Override
-                                    public void onTaskViewReleased() {
-                                        mRemoteCarTaskView = null;
-                                        parent.removeAllViews();
-                                    }
-
-                                    @Override
-                                    public void onTaskAppeared(
-                                            @NonNull ActivityManager.RunningTaskInfo taskInfo) {
-                                        if (DEBUG) {
-                                            Log.d(TAG, "MapsTaskView: onTaskAppeared: taskId="
-                                                    + taskInfo.taskId + " at "
-                                                    + System.currentTimeMillis() + " milliseconds");
-                                        }
-                                        if (!sAutoRestartOnCrash) {
-                                            mRemoteCarTaskView.setBackgroundColor(
-                                                    Color.TRANSPARENT);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onTaskVanished(
-                                            @NonNull ActivityManager.RunningTaskInfo taskInfo) {
-                                        if (DEBUG) {
-                                            Log.d(TAG, "MapsTaskView: onTaskVanished: taskId="
-                                                    + taskInfo.taskId + " at "
-                                                    + System.currentTimeMillis() + " milliseconds");
-                                        }
-                                        if (!sAutoRestartOnCrash) {
-                                            // RemoteCarTaskView color is set to red to indicate
-                                            // that nothing is wrong with the task view but maps
-                                            // in the task view has crashed. More details in
-                                            // b/247156851.
-                                            mRemoteCarTaskView.setBackgroundColor(Color.RED);
-                                        }
-                                    }
-                                });
-                    }
-
-                    @Override
-                    public void onDisconnected(
-                            CarTaskViewController carTaskViewController) {
-                        Log.d(TAG, "onDisconnected");
-                        mRemoteCarTaskView = null;
-                        parent.removeAllViews();
-                    }
-                });
+        mCarLauncherViewModel.getRemoteCarTaskView().observe(this, taskView -> {
+            if (taskView != null && taskView.getParent() == null) {
+                parent.addView(taskView);
+            }
+        });
     }
 
     private void setUpTaskView(ViewGroup parent) {
@@ -361,25 +277,22 @@ public class CarLauncher extends FragmentActivity {
         release();
     }
 
-    private boolean isTaskViewInitialized() {
-        return (mTaskView != null && mTaskView.isInitialized())
-                || (mRemoteCarTaskView != null && mRemoteCarTaskView.isInitialized());
-    }
-
     private int getTaskViewTaskId() {
         if (mTaskView != null) {
             return mTaskView.getTaskId();
         }
-        if (mRemoteCarTaskView != null) {
-            return mRemoteCarTaskView.getTaskInfo() == null
-                    ? INVALID_TASK_ID : mRemoteCarTaskView.getTaskInfo().taskId;
+        if (mCarLauncherViewModel != null) {
+            return mCarLauncherViewModel.getRemoteCarTaskViewTaskId();
         }
         return INVALID_TASK_ID;
     }
 
     private void release() {
         mTaskView = null;
-        mRemoteCarTaskView = null;
+        // When using a ViewModel for the RemoteCarTaskViews, the task view can still be attached
+        // to the mMapsCard due to which the CarLauncher activity does not get garbage collected
+        // during activity recreation.
+        mMapsCard = null;
         if (mCar != null) {
             mCar.disconnect();
             mCar = null;
@@ -424,7 +337,7 @@ public class CarLauncher extends FragmentActivity {
     /** Logs that the Activity is ready. Used for startup time diagnostics. */
     private void maybeLogReady() {
         boolean isResumed = isResumed();
-        boolean taskViewInitialized = isTaskViewInitialized();
+        boolean taskViewInitialized = mTaskView != null && mTaskView.isInitialized();
         if (DEBUG) {
             Log.d(TAG, "maybeLogReady(" + getUserId() + "): mapsReady="
                     + taskViewInitialized + ", started=" + isResumed + ", alreadyLogged: "

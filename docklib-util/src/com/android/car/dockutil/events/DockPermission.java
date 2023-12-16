@@ -13,13 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.car.docklib
 
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+package com.android.car.dockutil.events;
 
-@Module
-internal class DockModule {
-    @Provides @Singleton fun providesDockInterface(): DockInterface = DockController()
+/**
+ * Permission stings declared to be used by dock.
+ */
+public enum DockPermission {
+    DOCK_SENDER_PERMISSION("com.android.car.docklib.permission.BROADCAST_SENDER"),
+    DOCK_RECEIVER_PERMISSION("com.android.car.docklib.permission.BROADCAST_RECEIVER");
+
+    private final String mStr;
+
+    DockPermission(String str) {
+        mStr = str;
+    }
+
+    @Override
+    public String toString() {
+        return mStr;
+    }
 }

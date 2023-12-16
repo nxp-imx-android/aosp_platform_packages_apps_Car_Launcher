@@ -20,12 +20,12 @@
     android:layout_width="wrap_content">
     <TextClock
         android:id="@+id/date"
-        style="@style/CalmMode.Text.Date"
+        style="@style/CalmModeText.Date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:layout_marginTop="@dimen/calm_mode_padding"
-        android:layout_marginEnd="@dimen/calm_mode_padding"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
+        android:layout_marginEnd="@dimen/calm_mode_padding_horizontal"
         app:layout_constraintEnd_toStartOf="@id/temperature_icon"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -38,8 +38,8 @@
 
     <ImageView
         android:id="@+id/temperature_icon"
-        style="@style/CalmMode.Icon.Temperature"
-        android:layout_marginEnd="@dimen/calm_mode_padding"
+        style="@style/CalmModeIcon.Temperature"
+        android:layout_marginEnd="@dimen/calm_mode_padding_horizontal"
         android:src="@drawable/ic_temperature"
         app:layout_constraintEnd_toStartOf="@id/temperature"
         app:layout_constraintTop_toTopOf="@id/temperature"
@@ -47,11 +47,11 @@
 
     <TextView
         android:id="@+id/temperature"
-        style="@style/CalmMode.Text"
+        style="@style/CalmModeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/calm_mode_padding"
-        android:layout_marginEnd="@dimen/calm_mode_padding"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
+        android:layout_marginEnd="@dimen/calm_mode_padding_horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
