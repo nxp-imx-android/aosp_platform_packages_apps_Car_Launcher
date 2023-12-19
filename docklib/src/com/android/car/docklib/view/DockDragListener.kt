@@ -1,7 +1,24 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.car.docklib.view
 
 import android.content.ClipData
 import android.content.ComponentName
+import android.content.res.Resources
 import android.graphics.Point
 import android.os.Build
 import android.util.Log
@@ -14,10 +31,8 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
 import androidx.core.animation.PropertyValuesHolder
 import androidx.core.animation.ValueAnimator
-import androidx.recyclerview.widget.RecyclerView
 import com.android.car.docklib.R
-import java.lang.Exception
-import java.lang.IndexOutOfBoundsException
+import java.util.function.Consumer
 
 /**
  * [View.OnDragListener] for Dock. Receives a drop and moves it to correct location,
@@ -26,7 +41,7 @@ import java.lang.IndexOutOfBoundsException
  */
 @OpenForTesting
 open class DockDragListener(
-    private val viewHolder: RecyclerView.ViewHolder,
+    resources: Resources,
     private val callback: Callback
 ) : View.OnDragListener {
     companion object {
@@ -49,12 +64,13 @@ open class DockDragListener(
         private val DEBUG = Build.isDebuggable()
     }
 
-    private val animateInDuration: Int
-
-    init {
-        val resources = viewHolder.itemView.context.resources
-        animateInDuration = resources.getInteger(R.integer.drag_drop_animate_in_duration)
-    }
+    private val scaleDownDuration =
+        resources.getInteger(R.integer.drop_animation_scale_down_duration_ms).toLong()
+    private val scaleUpDuration =
+        resources.getInteger(R.integer.drop_animation_scale_up_duration_ms).toLong()
+    private val scaleDownWidth =
+        resources.getDimension(R.dimen.drop_animation_scale_down_width)
+    private var surfaceControl: SurfaceControl? = null
 
     override fun onDrag(view: View, dragEvent: DragEvent): Boolean {
         when (dragEvent.action) {
@@ -72,13 +88,6 @@ open class DockDragListener(
             }
 
             DragEvent.ACTION_DROP -> {
-                if (viewHolder.bindingAdapterPosition == RecyclerView.NO_POSITION) {
-                    if (DEBUG) Log.d(TAG, "Drop at invalid position")
-                    callback.resetView()
-                    return false
-                }
-                if (DEBUG) Log.d(TAG, "Drop at position: " + viewHolder.bindingAdapterPosition)
-
                 val item: ClipData.Item
                 try {
                     item = dragEvent.clipData.getItemAt(0)
@@ -110,8 +119,8 @@ open class DockDragListener(
 
                 // todo(b/312718542): hidden api(dragEvent.dragSurface) usage
                 dragEvent.dragSurface?.let {
-                    callback.dropSuccessful(component)
-                    animateSurfaceIn(it, dragEvent)
+                    surfaceControl = it
+                    animateSurfaceIn(it, dragEvent, component)
                     return true
                 } ?: run {
                     if (DEBUG) Log.d(TAG, "Could not retrieve the drag surface")
@@ -131,6 +140,7 @@ open class DockDragListener(
     private fun animateSurfaceIn(
         surfaceControl: SurfaceControl,
         dragEvent: DragEvent,
+        component: ComponentName
     ) {
         val dropContainerLocation = callback.getDropContainerLocation()
         // todo(b/312718542): hidden api(offsetX and offsetY) usage
@@ -138,13 +148,61 @@ open class DockDragListener(
         val fromY: Float = dropContainerLocation.y + (dragEvent.y - dragEvent.offsetY)
 
         val dropLocation = callback.getDropLocation()
-        val toX: Float = dropLocation.x.toFloat()
-        val toY: Float = dropLocation.y.toFloat()
+        val toFinalX: Float = dropLocation.x.toFloat()
+        val toFinalY: Float = dropLocation.y.toFloat()
+        val toScaleDownLocationX = toFinalX + scaleDownWidth
+        val toScaleDownLocationY = toFinalY + scaleDownWidth
 
-        val toScaleX: Float = callback.getDropWidth() / surfaceControl.width
-        val toScaleY: Float = callback.getDropHeight() / surfaceControl.height
+        val toFinalWidth: Float = callback.getDropWidth()
+        val toFinalHeight: Float = callback.getDropHeight()
+        val toFinalScaleX: Float = toFinalWidth / surfaceControl.width
+        val toFinalScaleY: Float = toFinalHeight / surfaceControl.height
+        val toScaleDownX: Float =
+            ((toFinalWidth - (scaleDownWidth * 2)) / surfaceControl.width).coerceAtLeast(0f)
+        val toScaleDownY: Float =
+            ((toFinalHeight - (scaleDownWidth * 2)) / surfaceControl.height).coerceAtLeast(0f)
+        if (DEBUG && (toScaleDownX <= 0 || toScaleDownY <= 0)) {
+            Log.w(
+                TAG,
+                "Reached negative/zero scale, decrease the value of " +
+                        "drop_animation_scale_down_width"
+            )
+        }
 
-        getAnimator(surfaceControl, fromX, fromY, toX, toY, toScaleX, toScaleY).start()
+        val scaleDownAnimator = getAnimator(
+            surfaceControl,
+            fromX = fromX,
+            fromY = fromY,
+            toX = toScaleDownLocationX,
+            toY = toScaleDownLocationY,
+            toScaleX = toScaleDownX,
+            toScaleY = toScaleDownY,
+            animationDuration = scaleDownDuration,
+        )
+        val scaleUpAnimator = getAnimator(
+            surfaceControl,
+            fromX = toScaleDownLocationX,
+            fromY = toScaleDownLocationY,
+            toX = toFinalX,
+            toY = toFinalY,
+            fromScaleX = toScaleDownX,
+            fromScaleY = toScaleDownY,
+            toScaleX = toFinalScaleX,
+            toScaleY = toFinalScaleY,
+            animationDuration = scaleUpDuration,
+        )
+
+        scaleDownAnimator.addListener(getAnimatorListener(onAnimationEnd = { isCancelled ->
+            if (!isCancelled) {
+                callback.dropAnimationScaleDownComplete(component)
+                scaleUpAnimator.start()
+            }
+        }))
+        scaleUpAnimator.addListener(getAnimatorListener(onAnimationEnd = { isCancelled ->
+            if (!isCancelled) callback.dropSuccessful(component, getCleanUpCallback(surfaceControl))
+        }))
+
+        scaleDownAnimator.start()
     }
 
     /**
@@ -160,17 +218,33 @@ open class DockDragListener(
         fromY: Float = 0f,
         toX: Float = 0f,
         toY: Float = 0f,
+        fromScaleX: Float = 1f,
+        fromScaleY: Float = 1f,
         toScaleX: Float = 1f,
-        toScaleY: Float = 1f
+        toScaleY: Float = 1f,
+        animationDuration: Long = 0L,
     ): ValueAnimator {
+        if (DEBUG) {
+            Log.d(
+                TAG,
+                "getAnimator{ " +
+                        "surfaceControl: $surfaceControl, " +
+                        "(fromX: $fromX, fromY: $fromY), " +
+                        "(toX: $toX, toY: $toY), " +
+                        "(fromScaleX: $fromScaleX, fromScaleY: $fromScaleY), " +
+                        "(toScaleX: $toScaleX, toScaleY: $toScaleY) " +
+                        "}"
+            )
+        }
+
         val pvhX: PropertyValuesHolder =
             PropertyValuesHolder.ofFloat(PVH_POSITION_X, fromX, toX)
         val pvhY: PropertyValuesHolder =
             PropertyValuesHolder.ofFloat(PVH_POSITION_Y, fromY, toY)
         val pvhScaleX =
-            PropertyValuesHolder.ofFloat(PVH_SCALE_X, 1f, toScaleX)
+            PropertyValuesHolder.ofFloat(PVH_SCALE_X, fromScaleX, toScaleX)
         val pvhScaleY =
-            PropertyValuesHolder.ofFloat(PVH_SCALE_Y, 1f, toScaleY)
+            PropertyValuesHolder.ofFloat(PVH_SCALE_Y, fromScaleY, toScaleY)
 
         val animator: ValueAnimator =
             ValueAnimator.ofPropertyValuesHolder(
@@ -179,12 +253,10 @@ open class DockDragListener(
                 pvhScaleX,
                 pvhScaleY
             )
-        animator.setDuration(animateInDuration.toLong())
+        animator.setDuration(animationDuration)
         val trx = Transaction()
         animator.addUpdateListener(getAnimatorUpdateListener(surfaceControl, trx))
-        animator.addListener(
-            getAnimatorListener(surfaceControl, trx, cleanupTrx = Transaction())
-        )
+        animator.addListener(getAnimatorListener { trx.close() })
         return animator
     }
 
@@ -198,8 +270,7 @@ open class DockDragListener(
         surfaceControl: SurfaceControl,
         trx: Transaction
     ): Animator.AnimatorUpdateListener {
-        return Animator.AnimatorUpdateListener {
-                updatedAnimation ->
+        return Animator.AnimatorUpdateListener { updatedAnimation ->
             if (updatedAnimation is ValueAnimator) {
                 trx.setPosition(
                     surfaceControl,
@@ -215,17 +286,12 @@ open class DockDragListener(
     }
 
     /**
-     * Not expected to be used directly or overridden.
-     * [trx] and [cleanupTrx] will be closed by this listener.
-     *
-     * @param trx Transaction used to animate the [SurfaceControl] in place.
-     * @param cleanupTrx Transaction used to animate out and hide [surfaceControl]
+     * @param onAnimationEnd called with boolean(isCancelled) set to false when animation is ended
+     * and to true when cancelled.
      */
     @VisibleForTesting
     fun getAnimatorListener(
-        surfaceControl: SurfaceControl,
-        trx: Transaction,
-        cleanupTrx: Transaction
+        onAnimationEnd: Consumer<Boolean>
     ): Animator.AnimatorListener {
         return object : Animator.AnimatorListener {
             private var isCancelled = false
@@ -235,28 +301,31 @@ open class DockDragListener(
 
             override fun onAnimationEnd(var1: Animator) {
                 if (!isCancelled) {
-                    cleanup()
+                    onAnimationEnd.accept(isCancelled)
                 }
             }
 
             override fun onAnimationCancel(var1: Animator) {
                 isCancelled = true
-                cleanup()
+                onAnimationEnd.accept(isCancelled)
             }
 
             override fun onAnimationRepeat(var1: Animator) {
                 // no-op
             }
+        }
+    }
 
-            fun cleanup() {
-                trx.close()
-                if (surfaceControl.isValid) {
-                    // todo(b/312737692): add animations
-                    cleanupTrx.hide(surfaceControl)
-                    cleanupTrx.remove(surfaceControl)
-                    cleanupTrx.apply()
-                    cleanupTrx.close()
-                }
+    private fun getCleanUpCallback(surfaceControl: SurfaceControl): () -> Unit {
+        return {
+            if (DEBUG) Log.d(TAG, "cleanup callback called")
+            if (surfaceControl.isValid) {
+                if (DEBUG) Log.d(TAG, "Surface is valid")
+                val cleanupTrx = Transaction()
+                cleanupTrx.hide(surfaceControl)
+                cleanupTrx.remove(surfaceControl)
+                cleanupTrx.apply()
+                cleanupTrx.close()
             }
         }
     }
@@ -268,8 +337,15 @@ open class DockDragListener(
     interface Callback {
         /**
          * Drop is accepted/successful for the [componentName]
+         *
+         * @param cleanupCallback [Runnable] to be called when the dropped item is ready/drawn.
          */
-        fun dropSuccessful(componentName: ComponentName) {}
+        fun dropSuccessful(componentName: ComponentName, cleanupCallback: Runnable? = null) {}
+
+        /**
+         * Drop animation scale down completed.
+         */
+        fun dropAnimationScaleDownComplete(componentName: ComponentName) {}
 
         /**
          * Excite the view to indicate the item can be dropped in this position when dragged inside
