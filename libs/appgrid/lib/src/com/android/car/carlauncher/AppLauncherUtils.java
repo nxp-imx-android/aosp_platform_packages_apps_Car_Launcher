@@ -800,16 +800,6 @@ public class AppLauncherUtils {
     }
 
     /**
-     * Check if the tos banner has to be displayed
-     * @param context The application context
-     * @return true if the banner needs to be displayed, false otherwise
-     */
-    static boolean showTosBanner(Context context) {
-        // TODO (b/277235742): Add backoff strategy to dismiss banner
-        return !tosAccepted(context);
-    }
-
-    /**
      * Check if a user has accepted TOS
      *
      * @param context The application context
