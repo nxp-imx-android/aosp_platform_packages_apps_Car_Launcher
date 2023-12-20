@@ -39,4 +39,10 @@
         msg_mirroring_redirect_uri_key
     </string>
 
+    <!--- The number of days to wait before resurfacing the terms of service banner
+         on the app grid after being dismissed
+
+         * Integer value 0 implies to show the banner after every reboot
+   -->
+    <integer name="config_tos_banner_resurface_time_days">0</integer>
 </resources>

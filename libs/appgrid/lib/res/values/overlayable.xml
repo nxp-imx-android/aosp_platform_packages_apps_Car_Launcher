@@ -98,6 +98,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="integer" name="config_msg_register_mirroring_pkg_code"/>
       <item type="integer" name="config_msg_send_mirroring_pkg_code"/>
       <item type="integer" name="config_msg_unregister_mirroring_pkg_code"/>
+      <item type="integer" name="config_tos_banner_resurface_time_days"/>
       <item type="integer" name="ms_background_highlight_duration"/>
       <item type="integer" name="ms_drop_animation_delay"/>
       <item type="integer" name="ms_long_press_animation_duration"/>
