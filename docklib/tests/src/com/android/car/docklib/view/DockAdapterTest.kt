@@ -21,6 +21,7 @@ class DockAdapterTest {
     private val contextMock = mock<Context> {}
     private val intentConsumerMock = mock<Consumer<Intent>> {}
     private val dockItemViewHolderMock = mock<DockItemViewHolder> {}
+    private val runnableMock = mock<Runnable> {}
 
     @Test
     fun setItems_dockSizeEqualToListSize_adapterHasDockSize() {
@@ -89,6 +90,7 @@ class DockAdapterTest {
     @Test
     fun onBindViewHolder_payloadOfIncorrectType_onBindViewHolderWithoutPayloadCalled() {
         class DummyPayload
+
         val adapter = spy(DockAdapter(3, intentConsumerMock, contextMock))
 
         adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {
@@ -99,7 +101,7 @@ class DockAdapterTest {
     }
 
     @Test
-    fun onBindViewHolder_payload_CHANGE_SAME_ITEM_TYPE_itemTypeChangedCalled() {
+    fun onBindViewHolder_payload_CHANGE_ITEM_TYPE_itemTypeChangedCalled() {
         val dockAppItem0 = mock<DockAppItem> {}
         val dockAppItem1 = mock<DockAppItem> {}
         val dockAppItem2 = mock<DockAppItem> {}
@@ -113,10 +115,35 @@ class DockAdapterTest {
         )
 
         adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {
-            DockAdapter.PayloadType.CHANGE_SAME_ITEM_TYPE
+            DockAdapter.DockPayload(DockAdapter.PayloadType.CHANGE_ITEM_TYPE)
         })
 
         verify(adapter, never()).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
         verify(dockItemViewHolderMock).itemTypeChanged(eq(dockAppItem1))
+    }
+
+    @Test
+    fun onBindViewHolder_payload_PIN_WITH_CLEANUP_bindWithRunnable() {
+        val dockAppItem0 = mock<DockAppItem> {}
+        val dockAppItem1 = mock<DockAppItem> {}
+        val dockAppItem2 = mock<DockAppItem> {}
+        val adapter = spy(
+            DockAdapter(
+                numItems = 3,
+                intentConsumerMock,
+                contextMock,
+                items = arrayOf(dockAppItem0, dockAppItem1, dockAppItem2)
+            )
+        )
+
+        adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {
+            DockAdapter.DockPayload(
+                DockAdapter.PayloadType.PIN_WITH_CLEANUP,
+                attachment = runnableMock
+            )
+        })
+
+        verify(adapter, never()).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
+        verify(dockItemViewHolderMock).bind(eq(dockAppItem1), eq(runnableMock))
     }
 }

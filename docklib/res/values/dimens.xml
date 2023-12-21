@@ -25,4 +25,7 @@
     <dimen name="icon_stroke_width_excited">20dp</dimen>
 
     <item name="icon_colorFilter_alpha_excited" format="float" type="dimen">0.3</item>
+
+    <!-- Width to scale down the drop animation before scaling it back to required size  -->
+    <dimen name="drop_animation_scale_down_width">6dp</dimen>
 </resources>
