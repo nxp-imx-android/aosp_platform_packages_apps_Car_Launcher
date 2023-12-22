@@ -52,6 +52,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -70,6 +71,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.car.carlauncher.AppLauncherUtils.LauncherAppsInfo;
@@ -90,6 +92,7 @@ import com.android.car.ui.toolbar.NavButtonMode;
 import com.android.car.ui.toolbar.ToolbarController;
 
 import java.net.URISyntaxException;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,6 +102,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Launcher activity that shows a grid of apps.
@@ -109,6 +113,8 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private static final String TAG = "AppGridActivity";
     private static final boolean DEBUG_BUILD = false;
     private static final String MODE_INTENT_EXTRA = "com.android.car.carlauncher.mode";
+    @VisibleForTesting
+    static final String TOS_BANNER_DISMISS_TIME_KEY = "TOS_BANNER_DISMISS_TIME";
     private static CarUiShortcutsPopup sCarUiShortcutsPopup;
 
     private boolean mShowAllApps = true;
@@ -156,6 +162,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private Messenger mMessenger;
     private String mMirroringPackageName;
     private Intent mMirroringIntentRedirect;
+    private Clock mClock;
     @VisibleForTesting
     ContentObserver mTosContentObserver;
     @VisibleForTesting
@@ -307,6 +314,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         );
         mCar = Car.createCar(this, mCarConnectionListener);
         mHiddenApps.addAll(Arrays.asList(getResources().getStringArray(R.array.hidden_apps)));
+        mClock = Clock.systemUTC();
         setContentView(R.layout.app_grid_activity);
         updateMode();
 
@@ -443,7 +451,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         mPaginationController = new PaginationController(windowBackground, dimensionUpdateCallback);
 
         mBanner = requireViewById(R.id.tos_banner);
-        updateTosBanner();
+        setupTosBanner();
 
         setupContentObserversForTos();
     }
@@ -904,18 +912,20 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         delayedDismissAnimator.start();
     }
 
-    private void updateTosBanner() {
+    private void setupTosBanner() {
         mBanner.setFirstButtonOnClickListener(v -> {
             Intent tosIntent = AppLauncherUtils.getIntentForTosAcceptanceFlow(v.getContext());
             AppLauncherUtils.launchApp(v.getContext(), tosIntent);
         });
         mBanner.setSecondButtonOnClickListener(
-                v -> mBanner.setVisibility(View.GONE));
+                v -> {
+                    mBanner.setVisibility(View.GONE);
+                    saveTosBannerDismissalTime();
+                });
     }
 
     private void updateTosBannerVisibility() {
-
-        if (AppLauncherUtils.showTosBanner(this)) {
+        if (showTosBanner(/* context = */ this)) {
             runOnUiThread(() -> {
                 mBanner.setVisibility(View.VISIBLE);
             });
@@ -974,6 +984,38 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
             getContentResolver().unregisterContentObserver(mTosDisabledAppsContentObserver);
             mTosDisabledAppsContentObserver = null;
         }
+    }
+
+    @VisibleForTesting
+    boolean showTosBanner(Context context) {
+        if (AppLauncherUtils.tosAccepted(context)) {
+            return false;
+        }
+        // Convert days to seconds
+        long bannerResurfaceTimeInSeconds = TimeUnit.DAYS.toSeconds(context.getResources()
+                .getInteger(R.integer.config_tos_banner_resurface_time_days));
+        long bannerDismissTime = PreferenceManager.getDefaultSharedPreferences(context)
+                .getLong(TOS_BANNER_DISMISS_TIME_KEY, /* defValue = */ 0);
+
+        // Show on next drive / reboot, when banner has not been dismissed in current session
+        if (bannerResurfaceTimeInSeconds == 0) {
+            // If banner is dismissed in current drive session, it will have a timestamp greater
+            // than the system boot time timestamp.
+            return bannerDismissTime < getSystemBootTime();
+        }
+        return mClock.instant().getEpochSecond() - bannerDismissTime > bannerResurfaceTimeInSeconds;
+    }
+
+    private void saveTosBannerDismissalTime() {
+        long dismissTime = mClock.instant().getEpochSecond();
+        PreferenceManager.getDefaultSharedPreferences(/* context = */ this)
+                .edit().putLong(TOS_BANNER_DISMISS_TIME_KEY, dismissTime).apply();
+    }
+
+    @VisibleForTesting
+    long getSystemBootTime() {
+        long uptimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(SystemClock.elapsedRealtime());
+        return mClock.instant().getEpochSecond() - uptimeInSeconds;
     }
 
     @VisibleForTesting

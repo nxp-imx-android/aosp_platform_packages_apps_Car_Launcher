@@ -24,13 +24,17 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.car.drivingstate.CarUxRestrictionsManager;
 import android.content.Intent;
@@ -38,13 +42,17 @@ import android.provider.Settings;
 import android.testing.TestableContext;
 
 import androidx.lifecycle.Lifecycle;
-import androidx.test.InstrumentationRegistry;
+import androidx.preference.PreferenceManager;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.time.Clock;
 
 
 /**
@@ -55,9 +63,13 @@ public class AppGridActivityTest {
     private ActivityScenario<AppGridActivity> mActivityScenario;
     private CarUxRestrictionsManager mCarUxRestrictionsManager;
     private PageIndicator mPageIndicator;
+    @Rule
+    public TestableContext mContext =
+            new TestableContext(InstrumentationRegistry.getInstrumentation().getContext());
 
     @After
     public void tearDown() {
+        saveTosBannerDismissalTime(/* epochSecond = */ 0); // Reset tos banner dismiss time
         if (mActivityScenario != null) {
             mActivityScenario.close();
         }
@@ -101,7 +113,6 @@ public class AppGridActivityTest {
 
     @Test
     public void onCreate_tosIsAccepted_tosContentObserversAreNull() {
-        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
         Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 2);
 
 
@@ -115,7 +126,6 @@ public class AppGridActivityTest {
 
     @Test
     public void afterTosIsAccepted_unregisterTosContentObservers() {
-        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
         Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
 
         mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
@@ -138,7 +148,6 @@ public class AppGridActivityTest {
 
     @Test
     public void tosUninitialized_changesToTosUnaccepted_doNotUnregisterTosContentObservers() {
-        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
         Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 0);
 
         mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
@@ -162,7 +171,6 @@ public class AppGridActivityTest {
     @Test
     public void
             tosNotAccepted_tosDisabledAppsUpdate_doNotUnregisterTosDisabledAppsContentObserver() {
-        TestableContext mContext = new TestableContext(InstrumentationRegistry.getContext());
         Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
         Settings.Secure.putString(
                 mContext.getContentResolver(),
@@ -187,5 +195,65 @@ public class AppGridActivityTest {
             assertNotNull(activity.mTosContentObserver);
             assertNotNull(activity.mTosDisabledAppsContentObserver);
         });
+    }
+
+    @Test
+    public void showTosBanner_whenTosAccepted_shouldBeFalse() {
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 2);
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> assertFalse(activity.showTosBanner(mContext)));
+    }
+
+    @Test
+    public void showTosBanner_tosUnacceptedAndCurTimeIsLessThanBannerResurfaceTime_shouldBeFalse() {
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+        // Default banner resurface time is 1 day
+        saveTosBannerDismissalTime(Clock.systemUTC().instant().getEpochSecond());
+
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> assertFalse(activity.showTosBanner(mContext)));
+    }
+
+    @Test
+    public void showTosBanner_tosUnacceptedAndSystemRebooted_shouldBeTrue() {
+        // Setup resurface config to display banner on next reboot
+        mContext.getOrCreateTestableResources()
+                .addOverride(R.integer.config_tos_banner_resurface_time_days, 0);
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+
+        // Simulate dismissing banner in current session
+        saveTosBannerDismissalTime(Clock.systemUTC().instant().getEpochSecond());
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+        // Banner has been dismissed in current drive session, showTosBanner should be false
+        mActivityScenario.onActivity(activity -> assertFalse(activity.showTosBanner(mContext)));
+
+
+        // Banner should be visible on next drive session
+        mActivityScenario.onActivity(activity -> {
+            AppGridActivity spyActivity = spy(activity);
+            // Mock system boot time to simulate a reboot
+            when(spyActivity.getSystemBootTime())
+                    .thenReturn(Clock.systemUTC().instant().getEpochSecond() + 10L);
+            assertTrue(spyActivity.showTosBanner(mContext));
+        });
+
+        mContext.getOrCreateTestableResources()
+                .removeOverride(R.integer.config_tos_banner_resurface_time_days);
+    }
+
+    @Test
+    public void showTosBanner_whenTosNotAcceptedAndBannerNotDismissed_shouldReturnTrue() {
+        Settings.Secure.putInt(mContext.getContentResolver(), KEY_USER_TOS_ACCEPTED, 1);
+        mActivityScenario = ActivityScenario.launch(new Intent(mContext, AppGridActivity.class));
+
+        mActivityScenario.onActivity(activity -> assertTrue(activity.showTosBanner(mContext)));
+    }
+
+    private void saveTosBannerDismissalTime(long epochSecond) {
+        PreferenceManager.getDefaultSharedPreferences(mContext)
+                .edit().putLong(AppGridActivity.TOS_BANNER_DISMISS_TIME_KEY, epochSecond).apply();
     }
 }

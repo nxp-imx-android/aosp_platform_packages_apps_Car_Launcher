@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.android.car.docklib.view
 
 import android.car.content.pm.CarPackageManager
@@ -10,6 +26,7 @@ import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.VisibleForTesting
 import androidx.recyclerview.widget.RecyclerView
 import com.android.car.docklib.R
 import com.android.car.docklib.data.DockAppItem
@@ -34,27 +51,15 @@ class DockAdapter(
     private var carPackageManager: CarPackageManager? = null
 
     enum class PayloadType {
-        CHANGE_SAME_ITEM_TYPE,
+        CHANGE_ITEM_TYPE,
+        PIN_WITH_CLEANUP,
     }
 
-    override fun onBindViewHolder(
-        viewHolder: DockItemViewHolder,
-        position: Int,
-        payloads: MutableList<Any>
-    ) {
-        if (payloads.isEmpty() ||
-            payloads.getOrNull(0) == null ||
-            payloads[0] !is PayloadType
-        ) {
-            return super.onBindViewHolder(viewHolder, position, payloads)
-        }
-        when (payloads[0]) {
-            PayloadType.CHANGE_SAME_ITEM_TYPE ->
-                items[position]?.let {
-                    viewHolder.itemTypeChanged(it)
-                }
-        }
-    }
+    @VisibleForTesting
+    class DockPayload(
+        val type: PayloadType,
+        val attachment: Any? = null
+    )
 
     override fun onCreateViewHolder(parent: ViewGroup, p1: Int): DockItemViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
@@ -66,6 +71,28 @@ class DockAdapter(
     }
 
     override fun getItemCount() = numItems
+
+    override fun onBindViewHolder(
+        viewHolder: DockItemViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isEmpty() ||
+            payloads.getOrNull(0) == null ||
+            payloads[0] !is DockPayload
+        ) {
+            return super.onBindViewHolder(viewHolder, position, payloads)
+        }
+        (payloads[0] as DockPayload).let { payload ->
+            when (payload.type) {
+                PayloadType.CHANGE_ITEM_TYPE ->
+                    items[position]?.let { viewHolder.itemTypeChanged(it) }
+
+                PayloadType.PIN_WITH_CLEANUP ->
+                    viewHolder.bind(items[position], payload.attachment as? Runnable)
+            }
+        }
+    }
 
     override fun onBindViewHolder(viewHolder: DockItemViewHolder, position: Int) {
         viewHolder.bind(items[position])
@@ -83,7 +110,7 @@ class DockAdapter(
     /**
      * Pin new app to the given position
      */
-    fun pinItemAt(position: Int, componentName: ComponentName) {
+    fun pinItemAt(position: Int, componentName: ComponentName, cleanupSurface: Runnable? = null) {
         // todo(b/315222570): move to controller
         if (!isValidPosition(position)) {
             return
@@ -101,7 +128,10 @@ class DockAdapter(
                     componentName.className
                 ) ?: false
             )
-            notifyItemChanged(position)
+            notifyItemChanged(
+                position,
+                DockPayload(type = PayloadType.PIN_WITH_CLEANUP, attachment = cleanupSurface)
+            )
         } catch (e: NameNotFoundException) {
             if (DEBUG) {
                 // don't need to crash for a failed pin, log error instead
@@ -133,7 +163,7 @@ class DockAdapter(
         }
         items[position]?.let {
             items[position] = it.copy(type = newItemType)
-            notifyItemChanged(position, PayloadType.CHANGE_SAME_ITEM_TYPE)
+            notifyItemChanged(position, DockPayload(type = PayloadType.CHANGE_ITEM_TYPE))
         }
     }
 
