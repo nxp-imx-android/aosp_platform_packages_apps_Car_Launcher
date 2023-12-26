@@ -16,6 +16,7 @@
 
 package com.android.car.docklib
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.car.docklib.data.DockAppItem
@@ -72,6 +73,15 @@ class DockViewModel(private val numItems: Int, private val observer: Observer<Li
         }
     }
 
+    /**
+     * Removes all items of the given [packageName] from the dock.
+     */
+    fun removeItems(packageName: String) {
+        // todo: Use createDockList instead of convertMapToList when ready
+        internalItems.entries.removeAll { it.value.component.packageName == packageName }
+        currentItems.value = convertMapToList(internalItems)
+    }
+
     fun destroy() {
         currentItems.removeObserver(observer)
     }
@@ -100,4 +110,11 @@ class DockViewModel(private val numItems: Int, private val observer: Observer<Li
     private fun convertMapToList(map: Map<Int, DockAppItem>) =
         List(numItems) { index -> map[index] }
     // TODO b/314409899: use a default DockItem when a position is empty
+
+    @VisibleForTesting
+    fun setDockItems(dockList: List<DockAppItem>) {
+        internalItems.clear()
+        dockList.forEachIndexed { index, item -> internalItems[index] = item }
+        currentItems.value = dockList
+    }
 }

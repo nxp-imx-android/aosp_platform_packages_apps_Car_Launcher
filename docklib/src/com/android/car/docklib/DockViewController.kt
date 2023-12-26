@@ -24,6 +24,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import com.android.car.docklib.events.DockEventsReceiver
+import com.android.car.docklib.events.DockPackageRemovedReceiver
 import com.android.car.docklib.task.DockTaskStackChangeListener
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
@@ -55,6 +56,7 @@ class DockViewController(
     private val dockViewModel: DockViewModel
     private var dockHelper: DockHelper? = null
     private val dockEventsReceiver: DockEventsReceiver
+    private val dockPackageRemovedReceiver: DockPackageRemovedReceiver
     private val taskStackChangeListeners: TaskStackChangeListeners
     private val dockTaskStackChangeListener: DockTaskStackChangeListener
 
@@ -86,6 +88,7 @@ class DockViewController(
                 }
             }
         dockEventsReceiver = DockEventsReceiver.registerDockReceiver(userContext, this)
+        dockPackageRemovedReceiver = DockPackageRemovedReceiver.registerReceiver(userContext, this)
         dockTaskStackChangeListener = DockTaskStackChangeListener { appLaunched(it) }
         taskStackChangeListeners = TaskStackChangeListeners.getInstance()
         taskStackChangeListeners.registerTaskStackListener(dockTaskStackChangeListener)
@@ -96,6 +99,7 @@ class DockViewController(
         if (DEBUG) Log.d(TAG, "Destroy called")
         car.disconnect()
         userContext.unregisterReceiver(dockEventsReceiver)
+        userContext.unregisterReceiver(dockPackageRemovedReceiver)
         dockViewModel.destroy()
         taskStackChangeListeners.unregisterTaskStackListener(dockTaskStackChangeListener)
     }
@@ -119,4 +123,6 @@ class DockViewController(
     override fun appUnpinned(componentName: ComponentName) {
         // TODO("Not yet implemented")
     }
+
+    override fun packageRemoved(packageName: String) = dockViewModel.removeItems(packageName)
 }

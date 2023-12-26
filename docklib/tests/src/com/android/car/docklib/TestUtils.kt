@@ -13,10 +13,12 @@ object TestUtils {
     fun createAppItem(
         type: DockAppItem.Type = DockAppItem.Type.DYNAMIC,
         app: String = "app",
+        pkg: String = app,
+        clazz: String = app,
         name: String = "app",
         icon: Drawable = this.icon,
         isDrivingOptimized: Boolean = true
     ): DockAppItem {
-        return DockAppItem(type, ComponentName(app, app), name, icon, isDrivingOptimized)
+        return DockAppItem(type, ComponentName(pkg, clazz), name, icon, isDrivingOptimized)
     }
 }

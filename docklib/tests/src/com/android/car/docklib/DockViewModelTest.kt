@@ -27,17 +27,17 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class DockViewModelTest {
-    @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private lateinit var items: List<DockAppItem?>
+    private var items: List<DockAppItem?> = List(0) { null }
     private lateinit var model: DockViewModel
-    private val apps =
-        listOf(
-            TestUtils.createAppItem(app = "a"),
-            TestUtils.createAppItem(app = "b"),
-            TestUtils.createAppItem(app = "c"),
-            TestUtils.createAppItem(app = "d"),
-        )
+    private val defaultAppsList = listOf(
+        TestUtils.createAppItem(app = "a"),
+        TestUtils.createAppItem(app = "b"),
+        TestUtils.createAppItem(app = "c"),
+        TestUtils.createAppItem(app = "d"),
+    )
 
     @Before
     fun setUp() {
@@ -46,13 +46,13 @@ class DockViewModelTest {
 
     @Test
     fun setDefaultApps_listSetInOrder() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
 
         assertThat(items.size).isEqualTo(4)
-        assertThat(items[0]).isEqualTo(apps[0])
-        assertThat(items[1]).isEqualTo(apps[1])
-        assertThat(items[2]).isEqualTo(apps[2])
-        assertThat(items[3]).isEqualTo(apps[3])
+        assertThat(items[0]).isEqualTo(defaultAppsList[0])
+        assertThat(items[1]).isEqualTo(defaultAppsList[1])
+        assertThat(items[2]).isEqualTo(defaultAppsList[2])
+        assertThat(items[3]).isEqualTo(defaultAppsList[3])
     }
 
     @Test
@@ -69,32 +69,32 @@ class DockViewModelTest {
         val dynamicItem = TestUtils.createAppItem(app = "da")
         model.addDynamicItem(dynamicItem)
 
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
 
         assertThat(items.size).isEqualTo(4)
         assertThat(items[0]).isEqualTo(dynamicItem)
-        assertThat(items[1]).isEqualTo(apps[1])
-        assertThat(items[2]).isEqualTo(apps[2])
-        assertThat(items[3]).isEqualTo(apps[3])
+        assertThat(items[1]).isEqualTo(defaultAppsList[1])
+        assertThat(items[2]).isEqualTo(defaultAppsList[2])
+        assertThat(items[3]).isEqualTo(defaultAppsList[3])
     }
 
     @Test
     fun addDynamicItem_allItemsDefault_index0Updated() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
 
         val dynamicItem = TestUtils.createAppItem(app = "da")
         model.addDynamicItem(dynamicItem)
 
         assertThat(items.size).isEqualTo(4)
         assertThat(items[0]).isEqualTo(dynamicItem)
-        assertThat(items[1]).isEqualTo(apps[1])
-        assertThat(items[2]).isEqualTo(apps[2])
-        assertThat(items[3]).isEqualTo(apps[3])
+        assertThat(items[1]).isEqualTo(defaultAppsList[1])
+        assertThat(items[2]).isEqualTo(defaultAppsList[2])
+        assertThat(items[3]).isEqualTo(defaultAppsList[3])
     }
 
     @Test
     fun addDynamicItem_someItemsDefault_index1Updated() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
         val dynamicItem1 = TestUtils.createAppItem(app = "da1")
         model.addDynamicItem(dynamicItem1)
 
@@ -104,13 +104,13 @@ class DockViewModelTest {
         assertThat(items.size).isEqualTo(4)
         assertThat(items[0]).isEqualTo(dynamicItem1)
         assertThat(items[1]).isEqualTo(dynamicItem2)
-        assertThat(items[2]).isEqualTo(apps[2])
-        assertThat(items[3]).isEqualTo(apps[3])
+        assertThat(items[2]).isEqualTo(defaultAppsList[2])
+        assertThat(items[3]).isEqualTo(defaultAppsList[3])
     }
 
     @Test
     fun addDynamicItem_someItemsDefault_index2Updated() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
         val dynamicItem1 = TestUtils.createAppItem(app = "da1")
         model.addDynamicItem(dynamicItem1)
         val dynamicItem2 = TestUtils.createAppItem(app = "da2")
@@ -123,12 +123,12 @@ class DockViewModelTest {
         assertThat(items[0]).isEqualTo(dynamicItem1)
         assertThat(items[1]).isEqualTo(dynamicItem2)
         assertThat(items[2]).isEqualTo(dynamicItem3)
-        assertThat(items[3]).isEqualTo(apps[3])
+        assertThat(items[3]).isEqualTo(defaultAppsList[3])
     }
 
     @Test
     fun addDynamicItem_oneItemDefault_index3Updated() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
         val dynamicItem1 = TestUtils.createAppItem(app = "da1")
         model.addDynamicItem(dynamicItem1)
         val dynamicItem2 = TestUtils.createAppItem(app = "da2")
@@ -148,7 +148,7 @@ class DockViewModelTest {
 
     @Test
     fun addDynamicItem_allItemsDynamic_leastRecentItemUpdated() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
         val dynamicItem1 = TestUtils.createAppItem(app = "da1")
         model.addDynamicItem(dynamicItem1)
         val dynamicItem2 = TestUtils.createAppItem(app = "da2")
@@ -170,7 +170,7 @@ class DockViewModelTest {
 
     @Test
     fun addDynamicItem_appInDock_itemsNotChanged() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
         val dynamicItem1 = TestUtils.createAppItem(app = "da1")
         model.addDynamicItem(dynamicItem1)
         val dynamicItem2 = TestUtils.createAppItem(app = "da2")
@@ -192,7 +192,7 @@ class DockViewModelTest {
 
     @Test
     fun addDynamicItem_appInDock_recencyRefreshed() {
-        model.updateDefaultApps(apps)
+        model.updateDefaultApps(defaultAppsList)
         val dynamicItem1 = TestUtils.createAppItem(app = "da1")
         model.addDynamicItem(dynamicItem1)
         val dynamicItem2 = TestUtils.createAppItem(app = "da2")
@@ -214,5 +214,39 @@ class DockViewModelTest {
         assertThat(items[1]).isEqualTo(dynamicItem2B)
         assertThat(items[2]).isEqualTo(dynamicItem6)
         assertThat(items[3]).isEqualTo(dynamicItem4)
+    }
+
+    @Test
+    fun removeItems_itemsWithPackageNameInDock_itemsRemoved() {
+        val pkgToBeRemoved = "pkgToBeRemoved"
+        val pkgOther = "pkgOther"
+        val dockList = listOf(
+            TestUtils.createAppItem(type = DockAppItem.Type.DYNAMIC, pkg = pkgToBeRemoved),
+            TestUtils.createAppItem(type = DockAppItem.Type.STATIC, pkg = pkgOther),
+            TestUtils.createAppItem(type = DockAppItem.Type.STATIC, pkg = pkgToBeRemoved),
+            TestUtils.createAppItem(type = DockAppItem.Type.DYNAMIC, pkg = pkgOther),
+        )
+        model.setDockItems(dockList)
+
+        model.removeItems(pkgToBeRemoved)
+
+        items.forEach { assertThat(it?.component?.packageName).isNotEqualTo(pkgToBeRemoved) }
+    }
+
+    @Test
+    fun removeItems_itemsWithPackageNameNotInDock_itemsNotRemoved() {
+        val pkgToBeRemoved = "pkgToBeRemoved"
+        val pkgOther = "pkgOther"
+        val dockList = listOf(
+            TestUtils.createAppItem(type = DockAppItem.Type.DYNAMIC, pkg = pkgOther),
+            TestUtils.createAppItem(type = DockAppItem.Type.STATIC, pkg = pkgOther),
+            TestUtils.createAppItem(type = DockAppItem.Type.STATIC, pkg = pkgOther),
+            TestUtils.createAppItem(type = DockAppItem.Type.DYNAMIC, pkg = pkgOther),
+        )
+        model.setDockItems(dockList)
+
+        model.removeItems(pkgToBeRemoved)
+
+        items.forEach { assertThat(it?.component?.packageName).isNotEqualTo(pkgToBeRemoved) }
     }
 }
