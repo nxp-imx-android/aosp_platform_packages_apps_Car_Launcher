@@ -18,6 +18,5 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="dock_pin_shortcut_label" msgid="1238309271276139881">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‎‏‏‎‎‎‏‎‎‏‎‏‏‏‏‎‏‎‏‏‎‏‏‏‎‏‏‏‎‎‎‏‎‏‎‏‏‎‎‎‏‏‏‏‏‎‎‏‎‏‏‎‏‎‏‎‏‏‎‏‎‎‏‎Pin to the dock‎‏‎‎‏‎"</string>
-    <!-- no translation found for dock_unpin_shortcut_label (3838672705638173078) -->
-    <skip />
+    <string name="dock_unpin_shortcut_label" msgid="3838672705638173078">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‏‎‏‏‎‏‎‏‎‏‎‎‎‏‎‏‏‎‏‏‎‏‎‎‎‏‏‏‏‏‎‎‏‏‎‏‎‏‎‎‏‎‎‎‏‏‎‏‎‎‎‎‏‎‎‏‏‎‎‏‎‏‏‎‎Unpin from the dock‎‏‎‎‏‎"</string>
 </resources>
