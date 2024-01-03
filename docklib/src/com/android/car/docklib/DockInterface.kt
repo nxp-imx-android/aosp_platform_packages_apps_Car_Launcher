@@ -27,4 +27,10 @@ interface DockInterface {
 
     /** called when an app should be removed from the Dock */
     fun appUnpinned(componentName: ComponentName)
+
+    /**
+     * called when an app is uninstalled/removed from the system or is inaccessible in the dock.
+     * @param packageName packageName of removed package
+     */
+    fun packageRemoved(packageName: String)
 }
