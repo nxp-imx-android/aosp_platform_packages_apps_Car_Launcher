@@ -17,6 +17,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.car.docklib">
+    <!-- Permission to allow Dock to launch apps -->
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS"/>
 
     <!-- Permission to allow packages to broadcast events to the dock -->
     <permission
