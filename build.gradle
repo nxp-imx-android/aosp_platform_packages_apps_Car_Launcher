@@ -32,7 +32,10 @@ buildscript {
     gradle.ext.platformSdkVersion = "34" // Change this to the most recent android API level.
 
     if (file(gradle.ext.soongBash).exists()) {
-        gradle.ext.platformSdkVersion = (gradle.ext.soongBash + " --dumpvar-mode PLATFORM_SDK_VERSION").execute().text.trim()
+        def soongPlatformSdkVersion = (gradle.ext.soongBash + " --dumpvar-mode PLATFORM_SDK_VERSION").execute().text.trim()
+        if (!soongPlatformSdkVersion.isEmpty()) {
+            gradle.ext.platformSdkVersion = soongPlatformSdkVersion
+        }
     }
 
     gradle.ext.getVersionCode = { ->
