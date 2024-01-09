@@ -25,10 +25,10 @@ import com.android.car.dockutil.shortcuts.PinShortcutItem
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup
 
 /**
- * {@link View.OnLongClickListener} for handling long clicks on dock item.
+ * [View.OnLongClickListener] for handling long clicks on dock item.
  * It is responsible to create and show th popup window
  *
- * @param dockAppItem the {@link DockAppItem} to be used on long click.
+ * @param dockAppItem the [DockAppItem] to be used on long click.
  * @param pinItemClickDelegate called when item should be pinned at that position
  * @param unpinItemClickDelegate called when item should be unpinned at that position
  */
@@ -56,7 +56,7 @@ open class DockItemLongClickListener(
     }
 
     /**
-     * Set the {@link DockAppItem} to be used on long click.
+     * Set the [DockAppItem] to be used on long click.
      */
     fun setDockAppItem(dockAppItem: DockAppItem) {
         this.dockAppItem = dockAppItem

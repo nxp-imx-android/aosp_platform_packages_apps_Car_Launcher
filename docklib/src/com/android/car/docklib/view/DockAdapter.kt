@@ -41,7 +41,7 @@ class DockAdapter(private val dockController: DockInterface) :
 
     private val positionToCallbackMap = HashMap<Int, Runnable>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, p1: Int): DockItemViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DockItemViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
                 R.layout.dock_app_item_view, // resource
                 parent,
