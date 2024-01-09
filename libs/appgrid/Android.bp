@@ -47,6 +47,13 @@ android_library {
         "car-ui-lib",
         "launcher_item",
         "CarDockUtilLib",
+        "androidx.lifecycle_lifecycle-runtime-ktx",
+        "androidx.lifecycle_lifecycle-viewmodel-ktx",
+        "androidx.activity_activity-ktx",
+        "androidx.fragment_fragment-ktx",
+        "androidx.core_core-ktx",
+        "kotlinx-coroutines-core",
+        "kotlinx-coroutines-android",
     ],
 
     libs: ["android.car"],
