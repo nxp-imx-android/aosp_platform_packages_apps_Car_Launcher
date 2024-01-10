@@ -37,6 +37,7 @@ import com.android.car.qc.QCRow;
 import com.android.car.qc.provider.BaseQCProvider;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Remote Quick Control provider for Calm mode in CarLauncher.
@@ -55,6 +56,7 @@ public class CalmModeQCProvider extends BaseQCProvider {
             .build();
     private Set<String> mAllowListedPackages;
     private Context mContext;
+    private AtomicInteger mPendingIntentRequestCode = new AtomicInteger(0);
     @VisibleForTesting
     QCItem mQCItem;
 
@@ -109,10 +111,13 @@ public class CalmModeQCProvider extends BaseQCProvider {
                 resources.getString(R.string.config_calmMode_componentName));
         Intent intent = new Intent();
         intent.setComponent(componentName);
+        intent.putExtra(CalmModeStatsLogHelper.INTENT_EXTRA_CALM_MODE_LAUNCH_TYPE,
+                CalmModeStatsLogHelper.CalmModeLaunchType.QUICK_CONTROLS);
         ActivityOptions activityOptions = ActivityOptions.makeBasic()
                 .setPendingIntentCreatorBackgroundActivityStartMode(
                         ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
-        PendingIntent calmModeIntent = PendingIntent.getActivity(mContext, 0, intent,
+        PendingIntent calmModeIntent = PendingIntent.getActivity(mContext,
+                mPendingIntentRequestCode.getAndAdd(1), intent,
                 PendingIntent.FLAG_IMMUTABLE, activityOptions.toBundle());
 
         QCRow calmModeRow = new QCRow.Builder()

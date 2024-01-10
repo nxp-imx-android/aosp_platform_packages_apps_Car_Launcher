@@ -233,4 +233,19 @@ public final class CalmModeFragment extends Fragment {
         mMediaTitleView.setText(medaTitleBuilder.toString());
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        int launchType = requireActivity().getIntent().getIntExtra(
+                CalmModeStatsLogHelper.INTENT_EXTRA_CALM_MODE_LAUNCH_TYPE,
+                CalmModeStatsLogHelper.CalmModeLaunchType.UNSPECIFIED_LAUNCH_TYPE);
+        CalmModeStatsLogHelper.getInstance().logSessionStarted(launchType);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        CalmModeStatsLogHelper.getInstance().logSessionFinished();
+    }
+
 }
