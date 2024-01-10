@@ -46,44 +46,46 @@ class DockItemLongClickListenerTest {
 
     @Test
     fun onLongClick_typeStatic_pinShortcutItem_parameterIsItemPinnedIsTrue() {
-        dockItemLongClickListener =
-            createDockItemLongClickListener(TestUtils.createAppItem(DockAppItem.Type.STATIC))
+        dockItemLongClickListener = createDockItemLongClickListener(
+                TestUtils.createAppItem(type = DockAppItem.Type.STATIC)
+        )
 
         dockItemLongClickListener.onLongClick(viewMock)
 
         verify(dockItemLongClickListener).createPinShortcutItem(
-            any<Resources>(),
-            eq(true),
-            any<Runnable>(),
-            any<Runnable>()
+                any<Resources>(),
+                eq(true),
+                any<Runnable>(),
+                any<Runnable>()
         )
     }
 
     @Test
     fun onLongClick_typeDynamic_pinShortcutItem_parameterIsItemPinnedIsFalse() {
-        dockItemLongClickListener =
-            createDockItemLongClickListener(TestUtils.createAppItem(DockAppItem.Type.DYNAMIC))
+        dockItemLongClickListener = createDockItemLongClickListener(
+                TestUtils.createAppItem(type = DockAppItem.Type.DYNAMIC)
+        )
 
         dockItemLongClickListener.onLongClick(viewMock)
 
         verify(dockItemLongClickListener).createPinShortcutItem(
-            any<Resources>(),
-            eq(false),
-            any<Runnable>(),
-            any<Runnable>()
+                any<Resources>(),
+                eq(false),
+                any<Runnable>(),
+                any<Runnable>()
         )
     }
 
     private fun createDockItemLongClickListener(
-        dockAppItem: DockAppItem = dockAppItemMock
+            dockAppItem: DockAppItem = dockAppItemMock
     ): DockItemLongClickListener {
         return spy(object : DockItemLongClickListener(
-            dockAppItem,
-            runnableMock1,
-            runnableMock2
+                dockAppItem,
+                runnableMock1,
+                runnableMock2
         ) {
             override fun createCarUiShortcutsPopupBuilder(): CarUiShortcutsPopup.Builder =
-                carUiShortcutsPopupBuilderMock
+                    carUiShortcutsPopupBuilderMock
         })
     }
 }

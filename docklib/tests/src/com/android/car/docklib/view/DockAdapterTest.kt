@@ -1,12 +1,10 @@
 package com.android.car.docklib.view
 
-import android.content.Context
-import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.car.docklib.TestUtils
+import com.android.car.docklib.DockInterface
 import com.android.car.docklib.data.DockAppItem
-import com.google.common.truth.Truth.assertThat
-import java.util.function.Consumer
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.spy
@@ -15,135 +13,81 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.verifyNoMoreInteractions
 
 @RunWith(AndroidJUnit4::class)
 class DockAdapterTest {
-    private val contextMock = mock<Context> {}
-    private val intentConsumerMock = mock<Consumer<Intent>> {}
+    private val dockInterfaceMock = mock<DockInterface> {}
     private val dockItemViewHolderMock = mock<DockItemViewHolder> {}
     private val runnableMock = mock<Runnable> {}
+    private val dockItemList: MutableList<DockAppItem> = mutableListOf()
+    private val dockAdapter: DockAdapter = spy(DockAdapter(dockInterfaceMock))
 
-    @Test
-    fun setItems_dockSizeEqualToListSize_adapterHasDockSize() {
-        val defaultApps =
-            listOf(TestUtils.createAppItem(app = "a"), TestUtils.createAppItem(app = "b"))
-        val adapter = spy(DockAdapter(defaultApps.size, intentConsumerMock, contextMock))
-
-        adapter.setItems(defaultApps)
-
-        assertThat(adapter.itemCount).isEqualTo(defaultApps.size)
-        verify(adapter).notifyItemChanged(0)
-        verify(adapter).notifyItemChanged(1)
+    @Before
+    fun setup() {
+        for (i in 0..5) {
+            dockItemList.add(mock<DockAppItem> {})
+        }
+        dockAdapter.submitList(dockItemList)
     }
 
-    @Test
-    fun setItems_dockSizeLessThanListSize_adapterHasDockSize() {
-        val defaultApps =
-            listOf(
-                TestUtils.createAppItem(app = "a"),
-                TestUtils.createAppItem(app = "b"),
-                TestUtils.createAppItem(app = "c")
-            )
-        val dockSize = 2
-        val adapter = spy(DockAdapter(dockSize, intentConsumerMock, contextMock))
-
-        adapter.setItems(defaultApps)
-
-        assertThat(adapter.itemCount).isEqualTo(dockSize)
-        verify(adapter).notifyItemChanged(0)
-        verify(adapter).notifyItemChanged(1)
-    }
-
-    @Test
-    fun setItems_dockSizeGreaterThanListSize_adapterHasDockSize() {
-        val defaultApps =
-            listOf(TestUtils.createAppItem(app = "a"), TestUtils.createAppItem(app = "b"))
-        val dockSize = 3
-        val adapter = spy(DockAdapter(dockSize, intentConsumerMock, contextMock))
-
-        adapter.setItems(defaultApps)
-
-        assertThat(adapter.itemCount).isEqualTo(dockSize)
-        verify(adapter).notifyItemChanged(0)
-        verify(adapter).notifyItemChanged(1)
-        verify(adapter, times(0)).notifyItemChanged(2)
+    @After
+    fun tearDown() {
+        dockItemList.clear()
     }
 
     @Test
     fun onBindViewHolder_emptyPayload_onBindViewHolderWithoutPayloadCalled() {
-        val adapter = spy(DockAdapter(3, intentConsumerMock, contextMock))
+        dockAdapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(0) {})
 
-        adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(0) {})
-
-        verify(adapter).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
+        verify(dockAdapter).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
     }
 
     @Test
-    fun onBindViewHolder_nullPayload_onBindViewHolderWithoutPayloadCalled() {
-        val adapter = spy(DockAdapter(3, intentConsumerMock, contextMock))
+    fun onBindViewHolder_nullPayload_noop() {
+        dockAdapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {})
 
-        adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {})
-
-        verify(adapter).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
+        verifyNoMoreInteractions(dockItemViewHolderMock)
     }
 
     @Test
-    fun onBindViewHolder_payloadOfIncorrectType_onBindViewHolderWithoutPayloadCalled() {
+    fun onBindViewHolder_payloadOfIncorrectType_noop() {
         class DummyPayload
 
-        val adapter = spy(DockAdapter(3, intentConsumerMock, contextMock))
+        dockAdapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) { DummyPayload() })
 
-        adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {
-            DummyPayload()
-        })
-
-        verify(adapter).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
+        verifyNoMoreInteractions(dockItemViewHolderMock)
     }
 
     @Test
-    fun onBindViewHolder_payload_CHANGE_ITEM_TYPE_itemTypeChangedCalled() {
-        val dockAppItem0 = mock<DockAppItem> {}
-        val dockAppItem1 = mock<DockAppItem> {}
-        val dockAppItem2 = mock<DockAppItem> {}
-        val adapter = spy(
-            DockAdapter(
-                numItems = 3,
-                intentConsumerMock,
-                contextMock,
-                items = arrayOf(dockAppItem0, dockAppItem1, dockAppItem2)
-            )
+    fun onBindViewHolder_payloadChangeItemType_itemTypeChangedCalled() {
+        dockAdapter.onBindViewHolder(
+                dockItemViewHolderMock,
+                1,
+                MutableList(1) { DockAdapter.PayloadType.CHANGE_ITEM_TYPE }
         )
 
-        adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {
-            DockAdapter.DockPayload(DockAdapter.PayloadType.CHANGE_ITEM_TYPE)
-        })
-
-        verify(adapter, never()).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
-        verify(dockItemViewHolderMock).itemTypeChanged(eq(dockAppItem1))
+        verify(dockAdapter, never()).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
+        verify(dockItemViewHolderMock).itemTypeChanged(eq(dockItemList[1]))
     }
 
     @Test
-    fun onBindViewHolder_payload_PIN_WITH_CLEANUP_bindWithRunnable() {
-        val dockAppItem0 = mock<DockAppItem> {}
-        val dockAppItem1 = mock<DockAppItem> {}
-        val dockAppItem2 = mock<DockAppItem> {}
-        val adapter = spy(
-            DockAdapter(
-                numItems = 3,
-                intentConsumerMock,
-                contextMock,
-                items = arrayOf(dockAppItem0, dockAppItem1, dockAppItem2)
-            )
+    fun onBindViewHolder_multiplePayloadChangeItemType_itemTypeChangedCalledMultipleTimes() {
+        dockAdapter.onBindViewHolder(
+                dockItemViewHolderMock,
+                1,
+                MutableList(3) { DockAdapter.PayloadType.CHANGE_ITEM_TYPE }
         )
 
-        adapter.onBindViewHolder(dockItemViewHolderMock, 1, MutableList(1) {
-            DockAdapter.DockPayload(
-                DockAdapter.PayloadType.PIN_WITH_CLEANUP,
-                attachment = runnableMock
-            )
-        })
+        verify(dockAdapter, never()).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
+        verify(dockItemViewHolderMock, times(3)).itemTypeChanged(eq(dockItemList[1]))
+    }
 
-        verify(adapter, never()).onBindViewHolder(eq(dockItemViewHolderMock), eq(1))
-        verify(dockItemViewHolderMock).bind(eq(dockAppItem1), eq(runnableMock))
+    @Test
+    fun onBindViewHolder_setCallback_bindWithRunnable() {
+        dockAdapter.setCallback(1, runnableMock)
+        dockAdapter.onBindViewHolder(dockItemViewHolderMock, 1)
+
+        verify(dockItemViewHolderMock).bind(eq(dockItemList[1]), eq(runnableMock))
     }
 }

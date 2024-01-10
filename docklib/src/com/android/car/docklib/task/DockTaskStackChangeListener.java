@@ -17,24 +17,41 @@ package com.android.car.docklib.task;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.os.Build;
+import android.util.Log;
+import android.view.Display;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.car.docklib.DockInterface;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 
-import java.util.function.Consumer;
-
 public class DockTaskStackChangeListener implements TaskStackChangeListener {
-    Consumer<ComponentName> mTaskLaunchDelegate;
-    public DockTaskStackChangeListener(Consumer<ComponentName> taskLaunchDelegate) {
-        mTaskLaunchDelegate = taskLaunchDelegate;
+    private static final String TAG = "DockTaskStackChangeListener";
+    private static final boolean DEBUG = Build.isDebuggable();
+
+    private final DockInterface mDockController;
+    private final int mCurrentUserId;
+
+    public DockTaskStackChangeListener(int currentUserId, @NonNull DockInterface dockController) {
+        mDockController = dockController;
+        mCurrentUserId = currentUserId;
     }
 
     @Override
     public void onTaskMovedToFront(ActivityManager.RunningTaskInfo taskInfo) {
+        if (taskInfo.displayId != Display.DEFAULT_DISPLAY || taskInfo.userId != mCurrentUserId) {
+            if (DEBUG) {
+                Log.d(TAG, "New task on display " + taskInfo.displayId
+                        + " and for user " + taskInfo.userId + " is not added to the dock");
+            }
+            return;
+        }
         ComponentName component = getComponentName(taskInfo);
-        mTaskLaunchDelegate.accept(component);
+        if (component != null) {
+            mDockController.appLaunched(component);
+        }
     }
 
     @Nullable
@@ -45,6 +62,4 @@ public class DockTaskStackChangeListener implements TaskStackChangeListener {
         return taskInfo.baseActivity != null ? taskInfo.baseActivity
                 : taskInfo.baseIntent.getComponent();
     }
-
-
 }
