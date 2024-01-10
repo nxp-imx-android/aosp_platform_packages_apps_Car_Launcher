@@ -44,5 +44,5 @@
 
          * Integer value 0 implies to show the banner after every reboot
    -->
-    <integer name="config_tos_banner_resurface_time_days">0</integer>
+    <integer name="config_tos_banner_resurface_time_days">1</integer>
 </resources>
