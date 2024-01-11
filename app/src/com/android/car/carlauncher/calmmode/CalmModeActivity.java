@@ -17,7 +17,10 @@
 package com.android.car.carlauncher.calmmode;
 
 import android.os.Bundle;
+import android.view.View;
+import android.view.WindowInsets;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
@@ -29,5 +32,15 @@ public class CalmModeActivity extends FragmentActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calm_mode_activity);
+
+        getWindow().getDecorView().setOnApplyWindowInsetsListener(
+                new View.OnApplyWindowInsetsListener() {
+                    @NonNull
+                    @Override
+                    public WindowInsets onApplyWindowInsets(
+                            @NonNull View v, @NonNull WindowInsets insets) {
+                        return insets;
+                    }
+                });
     }
 }

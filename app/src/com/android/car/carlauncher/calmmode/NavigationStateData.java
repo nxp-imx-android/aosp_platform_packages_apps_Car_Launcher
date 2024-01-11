@@ -32,7 +32,6 @@ import java.util.Locale;
 public class NavigationStateData {
     private static final boolean DEBUG = Build.isDebuggable();
     private static final String TAG = NavigationStateData.class.getSimpleName();
-    private static final String SEPARATOR = "  ";
     @NonNull
     private final String mTimeToDestination;
 
@@ -49,7 +48,7 @@ public class NavigationStateData {
     }
 
     /**
-     * @return new Builder instance for creating NavigationStateData
+     * @return new {@link Builder} instance for creating {@link NavigationStateData}
      */
     @NonNull
     public static Builder newBuilder() {
@@ -57,14 +56,18 @@ public class NavigationStateData {
     }
 
     /**
-     * @param navigationState NavigationStateData to use for building Trip Status string
-     * @param locale Locale to build Trip Status string
-     * @return String representing trip status with time and distance to next destination,
-     * returns null if arguments are invalid, uses default locale if input Locale is null
+     * Trip Status is a string containing time and distance remaining to reach next destination
+     * Example: "1hr 52 min | 100mi"
+     * @param navigationState {@link NavigationStateData} to use for building Trip Status string
+     * @param locale          {@link Locale} to build Trip Status string
+     * @param separator       Separator used to separate time and distance
+     * @return String representing trip status with time and distance to next destination, returns
+     * null if arguments are invalid, uses {@link Locale#getDefault()} if {@code locale} is null
      */
     @Nullable
     public static String buildTripStatusString(
-            @NonNull NavigationStateData navigationState, @NonNull Locale locale) {
+            @NonNull NavigationStateData navigationState, @NonNull Locale locale,
+            @NonNull String separator) {
 
         if (navigationState == null
                 || navigationState.getTimeToDestination() == null
@@ -86,7 +89,7 @@ public class NavigationStateData {
         }
         StringBuilder navStateTextBuilder = new StringBuilder();
         navStateTextBuilder.append(navigationState.getTimeToDestination());
-        navStateTextBuilder.append(SEPARATOR);
+        navStateTextBuilder.append(separator);
         navStateTextBuilder.append(NumberFormatter.withLocale(locale)
                         .notation(Notation.compactShort())
                         .precision(Precision.integer())

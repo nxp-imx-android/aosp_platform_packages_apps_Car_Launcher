@@ -161,7 +161,20 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
         String tempCExpected = "25°C";
         TemperatureData tempC = new TemperatureData.Builder().setValueCelsius(tempCVal).build();
 
-        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US);
+        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US,
+                /* showUnit = */ true);
+
+        assertEquals(tempCExpected, tempCActual);
+    }
+
+    @Test
+    public void testBuildTemperatureString_positiveCelsiusDoNotShowUnit_matchesForLocaleUS() {
+        float tempCVal = 25.12345f;
+        String tempCExpected = "25°";
+        TemperatureData tempC = new TemperatureData.Builder().setValueCelsius(tempCVal).build();
+
+        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US,
+                /* showUnit = */ false);
 
         assertEquals(tempCExpected, tempCActual);
     }
@@ -172,7 +185,20 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
         String tempFExpected = "77°F";
         TemperatureData tempF = new TemperatureData.Builder().setValueFahrenheit(tempFVal).build();
 
-        String tempFActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US);
+        String tempFActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US,
+                /* showUnit = */ true);
+
+        assertEquals(tempFExpected, tempFActual);
+    }
+
+    @Test
+    public void testBuildTemperatureString_positiveFahrenheitDoNotShowUnit_matchesForLocaleUS() {
+        float tempFVal = 77.2212f;
+        String tempFExpected = "77°";
+        TemperatureData tempF = new TemperatureData.Builder().setValueFahrenheit(tempFVal).build();
+
+        String tempFActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US,
+                /* showUnit = */ false);
 
         assertEquals(tempFExpected, tempFActual);
     }
@@ -183,7 +209,20 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
         String tempCExpected = "-20°C";
         TemperatureData tempC = new TemperatureData.Builder().setValueCelsius(tempCVal).build();
 
-        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US);
+        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US,
+                /* showUnit = */ true);
+
+        assertEquals(tempCExpected, tempCActual);
+    }
+
+    @Test
+    public void testBuildTemperatureString_negativeCelsiusDoNotShowUnit_matchesForLocaleUS() {
+        float tempCVal = -20f;
+        String tempCExpected = "-20°";
+        TemperatureData tempC = new TemperatureData.Builder().setValueCelsius(tempCVal).build();
+
+        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US,
+                /* showUnit = */ false);
 
         assertEquals(tempCExpected, tempCActual);
     }
@@ -194,7 +233,20 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
         String tempFExpected = "-4°F";
         TemperatureData tempF = new TemperatureData.Builder().setValueFahrenheit(tempFVal).build();
 
-        String tempFActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US);
+        String tempFActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US,
+                /* showUnit = */ true);
+
+        assertEquals(tempFExpected, tempFActual);
+    }
+
+    @Test
+    public void testBuildTemperatureString_negativeFahrenheitDoNotShowUnit_matchesForLocaleUS() {
+        float tempFVal = -4f;
+        String tempFExpected = "-4°";
+        TemperatureData tempF = new TemperatureData.Builder().setValueFahrenheit(tempFVal).build();
+
+        String tempFActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US,
+                /* showUnit = */ false);
 
         assertEquals(tempFExpected, tempFActual);
     }
@@ -205,7 +257,8 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
         String tempCExpected = "0°C";
         TemperatureData tempC = new TemperatureData.Builder().setValueCelsius(tempCVal).build();
 
-        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US);
+        String tempCActual = TemperatureData.buildTemperatureString(tempC, TEST_LOCALE_US,
+                /* showUnit = */ true);
 
         assertEquals(tempCExpected, tempCActual);
     }
@@ -216,7 +269,8 @@ public class TemperatureDataTest extends AbstractExtendedMockitoTestCase {
         String tempFExpected = "0°C";
         TemperatureData tempF = new TemperatureData.Builder().setValueCelsius(tempFVal).build();
 
-        String tempCActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US);
+        String tempCActual = TemperatureData.buildTemperatureString(tempF, TEST_LOCALE_US,
+                /* showUnit = */ true);
 
         assertEquals(tempFExpected, tempCActual);
     }

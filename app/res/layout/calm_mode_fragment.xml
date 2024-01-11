@@ -30,34 +30,44 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <TextClock
+        android:id="@+id/date"
+        style="@style/CalmModeText.Date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/temperature_icon"
+        app:layout_constraintHorizontal_chainStyle="packed" />
+
     <androidx.constraintlayout.widget.Group
-        android:id="@+id/media_group"
+        android:id="@+id/temperature_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="media_icon,media_title" />
-
-    <ImageView
-        android:id="@+id/media_icon"
-        style="@style/CalmModeIcon"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_media"
-        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
-        android:layout_marginStart="@dimen/calm_mode_padding_horizontal"
-        app:layout_constraintBottom_toTopOf="@id/barrier"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:constraint_referenced_ids="temperature_icon,temperature" />
 
     <TextView
-        android:id="@+id/media_title"
-        style="@style/CalmModeText.MediaTitle"
+        android:id="@+id/temperature_icon"
+        style="@style/CalmModeText.Temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/temperature"
+        app:layout_constraintStart_toEndOf="@id/date"
+        app:layout_constraintEnd_toStartOf="@id/temperature"
+        android:text="@string/calm_mode_separator" />
+
+    <TextView
+        android:id="@+id/temperature"
+        style="@style/CalmModeText.Temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/calm_mode_padding_vertical"
-        android:layout_marginStart="@dimen/calm_mode_icon_margin"
-        app:layout_constraintBottom_toTopOf="@id/barrier"
-        app:layout_constraintStart_toEndOf="@id/media_icon"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/temperature_icon"
+        app:layout_constraintEnd_toStartOf="@id/nav_state_icon" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/nav_group"
@@ -69,12 +79,15 @@
     <ImageView
         android:id="@+id/nav_state_icon"
         style="@style/CalmModeIcon"
+        android:layout_width="@dimen/calm_mode_icon_size_regular"
+        android:layout_height="@dimen/calm_mode_icon_size_regular"
+        android:layout_marginStart="@dimen/calm_mode_icon_margin"
         android:layout_marginEnd="@dimen/calm_mode_icon_margin"
         android:src="@drawable/ic_navigation"
-        android:layout_marginTop="@dimen/calm_mode_padding_vertical"
-        app:layout_constraintBottom_toTopOf="@id/barrier"
+        app:layout_constraintTop_toTopOf="@id/nav_state"
+        app:layout_constraintBottom_toBottomOf="@id/nav_state"
         app:layout_constraintEnd_toStartOf="@id/nav_state"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/temperature" />
 
     <TextView
         android:id="@+id/nav_state"
@@ -82,27 +95,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/calm_mode_padding_vertical"
-        android:layout_marginStart="@dimen/calm_mode_icon_margin"
-        app:layout_constraintBottom_toTopOf="@id/barrier"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <include
-        android:id="@+id/date_and_temperature_container"
-        layout="@layout/calm_mode_date_and_temperature"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:barrierAllowsGoneWidgets="true"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="media_icon, media_title, nav_icon, nav_state, date_and_temperature_container" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/nav_state_icon"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextClock
         android:id="@+id/clock"
@@ -110,8 +105,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/date"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barrier"/>
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/media_title"
+        style="@style/CalmModeText.MediaTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/calm_mode_clock_media_title_margin"
+        app:layout_constraintTop_toBottomOf="@id/clock"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
