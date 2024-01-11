@@ -18,14 +18,16 @@ package com.android.car.docklib.data
 
 import android.content.ComponentName
 import android.graphics.drawable.Drawable
+import java.util.UUID
 
 /** Data class that describes an app being showed on Dock */
 data class DockAppItem(
-    val type: Type,
-    val component: ComponentName,
-    val name: String,
-    val icon: Drawable,
-    val isDistractionOptimized: Boolean,
+        val id: @DockItemId UUID = UUID.randomUUID(),
+        val type: Type,
+        val component: ComponentName,
+        val name: String,
+        val icon: Drawable,
+        val isDistractionOptimized: Boolean,
 ) {
     // todo(b/315210225): handle getting icon lazily
     enum class Type(val value: String) {
@@ -38,16 +40,14 @@ data class DockAppItem(
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is DockAppItem) return false
-
-        if (this.type != other.type) return false
-        if (this.name != other.name) return false
-        if (this.component != other.component) return false
-        if (this.icon.constantState != other.icon.constantState) return false
-        if (this.isDistractionOptimized != other.isDistractionOptimized) return false
-
-        return true
+        return (this === other) ||
+                (other is DockAppItem &&
+                        this.id == other.id &&
+                        this.name == other.name &&
+                        this.type == other.type &&
+                        this.component == other.component &&
+                        this.icon.constantState == other.icon.constantState &&
+                        this.isDistractionOptimized == other.isDistractionOptimized)
     }
 
     override fun toString(): String {

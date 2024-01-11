@@ -17,20 +17,34 @@
 package com.android.car.docklib
 
 import android.content.ComponentName
+import com.android.car.docklib.data.DockItemId
+import java.util.UUID
 
 interface DockInterface {
-    /** called when an app is statically pinned to the Dock */
+    /** called when an app is pinned to the Dock */
     fun appPinned(componentName: ComponentName)
+
+    /** called when an app is pinned to the Dock at a particular position */
+    fun appPinned(componentName: ComponentName, index: Int)
+
+    /** called when an app already in the dock is pinned */
+    fun appPinned(@DockItemId id: UUID)
+
+    /** called when an app already in the dock is unpinned */
+    fun appUnpinned(componentName: ComponentName)
+
+    /** called when an app already in the dock is unpinned */
+    fun appUnpinned(@DockItemId id: UUID)
 
     /** called when an app is launched */
     fun appLaunched(componentName: ComponentName)
-
-    /** called when an app should be removed from the Dock */
-    fun appUnpinned(componentName: ComponentName)
 
     /**
      * called when an app is uninstalled/removed from the system or is inaccessible in the dock.
      * @param packageName packageName of removed package
      */
     fun packageRemoved(packageName: String)
+
+    /** called to launch an app */
+    fun launchApp(componentName: ComponentName)
 }

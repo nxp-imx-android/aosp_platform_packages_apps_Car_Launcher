@@ -40,7 +40,6 @@ import com.android.car.dockutil.events.DockPermission;
 public class DockEventsReceiver extends BroadcastReceiver {
     private static final String TAG = "DockEventsReceiver";
     private static final boolean DEBUG = Build.isDebuggable();
-    // Extras key for the ComponentName associated with the Event
     private final DockInterface mDockController;
 
     public DockEventsReceiver(DockInterface dockController) {
@@ -81,6 +80,7 @@ public class DockEventsReceiver extends BroadcastReceiver {
      * @param context the context through which the DockEventsReceiver is registered
      * @return successfully registered DockEventsReceiver.
      */
+    @NonNull
     public static DockEventsReceiver registerDockReceiver(
             @NonNull Context context,
             @NonNull DockInterface dockController

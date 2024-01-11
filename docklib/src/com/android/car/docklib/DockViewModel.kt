@@ -16,42 +16,144 @@
 
 package com.android.car.docklib
 
+import android.app.ActivityManager
+import android.app.ActivityTaskManager
+import android.car.content.pm.CarPackageManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import android.view.Display
+import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.car.docklib.data.DockAppItem
+import com.android.car.docklib.data.DockItemId
+import java.util.Collections
+import java.util.UUID
 
 /**
  * This class contains a live list of dock app items. All changes to dock items will go through it
  * and will be observed by the view layer.
  */
-class DockViewModel(private val numItems: Int, private val observer: Observer<List<DockAppItem?>>) {
-    private val currentItems = MutableLiveData<List<DockAppItem?>>()
+open class DockViewModel(
+        private val maxItemsInDock: Int,
+        private val context: Context,
+        private val packageManager: PackageManager,
+        private var carPackageManager: CarPackageManager? = null,
+        private val userId: Int = context.userId,
+        private val launcherActivities: List<ComponentName>? = null,
+        defaultPinnedItems: List<ComponentName>,
+        private val excludedComponents: Set<ComponentName>,
+        private val excludedPackages: Set<String>,
+        private val observer: Observer<List<DockAppItem>>,
+) {
 
-    /* Maintain a mapping of dock index to dock item, with the order of addition,
+    private companion object {
+        private const val TAG = "DockViewModel"
+        private val DEBUG = Build.isDebuggable()
+        private const val MAX_UNIQUE_ID_TRIES = 20
+        private const val MAX_TASKS_TO_FETCH = 20
+    }
+
+    private val noSpotAvailableToPinToastMsg = context.getString(R.string.pin_failed_no_spots)
+    private val currentItems = MutableLiveData<List<DockAppItem>>()
+
+    /*
+     * Maintain a mapping of dock index to dock item, with the order of addition,
      * so it's easier to find least recently updated position.
      * The order goes from least recently updated item to most recently updated item.
      * The key in each mapping is the index/position of the item being shown in Dock.
      */
-    private val internalItems = LinkedHashMap<Int, DockAppItem>()
+    @VisibleForTesting
+    val internalItems: MutableMap<Int, DockAppItem> =
+            Collections.synchronizedMap(LinkedHashMap<Int, DockAppItem>())
 
     init {
-        currentItems.value = List(numItems) { null }
+        defaultPinnedItems.forEachIndexed { index, component ->
+            if (index < maxItemsInDock) {
+                createDockItem(component, DockAppItem.Type.STATIC)?.let { dockItem ->
+                    internalItems[index] = dockItem
+                }
+            }
+        }
+        currentItems.value = createDockList()
         currentItems.observeForever(observer)
     }
 
-    /** Update default apps if the list is not populated */
-    fun updateDefaultApps(defaultApps: List<DockAppItem>) {
-        synchronized(internalItems) {
-            if (internalItems.size >= numItems) return
-            defaultApps.forEachIndexed { index, defaultAppItem ->
-                if (!internalItems.containsKey(index) && index < numItems) {
-                    // change to default app if the position is not populated
-                    internalItems[index] = defaultAppItem
+    /** Pin an existing dock item with given [id]. It is assumed the item is not pinned/static. */
+    fun pinItem(@DockItemId id: UUID) {
+        if (DEBUG) Log.d(TAG, "Pin Item, id: $id")
+        internalItems
+                .filter { mapEntry -> mapEntry.value.id == id }
+                .firstNotNullOfOrNull { it }
+                ?.let { mapEntry ->
+                    if (DEBUG) {
+                        Log.d(TAG, "Pinning ${mapEntry.value.component} at ${mapEntry.key}")
+                    }
+                    internalItems[mapEntry.key] =
+                            mapEntry.value.copy(type = DockAppItem.Type.STATIC)
                 }
+        // update list regardless to update the listeners
+        currentItems.value = createDockList()
+    }
+
+    /**
+     * Pin a new item that is not previously present in the dock. It is assumed the item is not
+     * pinned/static.
+     *
+     * @param component [ComponentName] of the pinned item.
+     * @param indexToPin the index to pin the item at. For null value, a suitable index is searched
+     * to pin to. If no index is suitable the user is notified.
+     */
+    fun pinItem(component: ComponentName, indexToPin: Int? = null) {
+        if (DEBUG) Log.d(TAG, "Pin Item, component: $component, indexToPin: $indexToPin")
+        createDockItem(component, DockAppItem.Type.STATIC)?.let { dockItem ->
+            if (indexToPin != null) {
+                if (indexToPin in 0..<maxItemsInDock) {
+                    if (DEBUG) Log.d(TAG, "Pinning $component at $indexToPin")
+                    internalItems[indexToPin] = dockItem
+                } else {
+                    if (DEBUG) Log.d(TAG, "Invalid index provided")
+                }
+            } else {
+                val index = findIndexToPin()
+                if (index == null) {
+                    if (DEBUG) Log.d(TAG, "No dynamic or empty spots available to pin")
+                    // if no dynamic or empty spots available, notify the user
+                    showToast(noSpotAvailableToPinToastMsg)
+                    return@pinItem
+                }
+                if (DEBUG) Log.d(TAG, "Pinning $component at $index")
+                internalItems[index] = dockItem
             }
-            currentItems.value = convertMapToList(internalItems)
         }
+        // update list regardless to update the listeners
+        currentItems.value = createDockList()
+    }
+
+    /** Removes item with the given [id] from the dock. */
+    fun removeItem(id: UUID) {
+        if (DEBUG) Log.d(TAG, "Unpin Item, id: $id")
+        internalItems
+                .filter { mapEntry -> mapEntry.value.id == id }
+                .firstNotNullOfOrNull { it }
+                ?.let { mapEntry ->
+                    if (DEBUG) {
+                        Log.d(TAG, "Unpinning ${mapEntry.value.component} at ${mapEntry.key}")
+                    }
+                    internalItems.remove(mapEntry.key)
+                }
+        // update list regardless to update the listeners
+        currentItems.value = createDockList()
+    }
+
+    /** Removes all items of the given [packageName] from the dock. */
+    fun removeItems(packageName: String) {
+        internalItems.entries.removeAll { it.value.component.packageName == packageName }
+        currentItems.value = createDockList()
     }
 
     /**
@@ -59,36 +161,119 @@ class DockViewModel(private val numItems: Int, private val observer: Observer<Li
      * refreshed. If not, and the dock has dynamic item(s) to update, then it will replace the least
      * recent dynamic item.
      */
-    fun addDynamicItem(appItem: DockAppItem) {
-        synchronized(internalItems) {
-            val indexToUpdate =
-                indexOfItemWithPackageName(appItem.component.packageName)
-                    ?: indexOfLeastRecentDynamicItemInDock()
-
-            indexToUpdate?.let {
-                internalItems.remove(it)
-                internalItems[it] = appItem
-                currentItems.value = convertMapToList(internalItems)
-            }
+    fun addDynamicItem(component: ComponentName) {
+        if (DEBUG) Log.d(TAG, "Add dynamic item, component: $component")
+        if (isItemExcluded(component)) {
+            if (DEBUG) Log.d(TAG, "Dynamic item is excluded")
+            return
         }
-    }
+        if (isItemInDock(component, DockAppItem.Type.STATIC)) {
+            if (DEBUG) Log.d(TAG, "Dynamic item is already present in the dock as static item")
+            return
+        }
+        val indexToUpdate =
+                indexOfItemWithPackageName(component.packageName)
+                        ?: indexOfLeastRecentDynamicItemInDock()
+        if (indexToUpdate == null || indexToUpdate >= maxItemsInDock) return
 
-    /**
-     * Removes all items of the given [packageName] from the dock.
-     */
-    fun removeItems(packageName: String) {
-        // todo: Use createDockList instead of convertMapToList when ready
-        internalItems.entries.removeAll { it.value.component.packageName == packageName }
-        currentItems.value = convertMapToList(internalItems)
+        createDockItem(component)?.let { newDockItem ->
+            if (DEBUG) Log.d(TAG, "Updating $component at $indexToUpdate")
+            internalItems.remove(indexToUpdate)
+            internalItems[indexToUpdate] = newDockItem
+            currentItems.value = createDockList()
+        }
     }
 
     fun destroy() {
         currentItems.removeObserver(observer)
     }
 
+    fun setCarPackageManager(carPackageManager: CarPackageManager) {
+        this.carPackageManager = carPackageManager
+        internalItems.forEach { mapEntry ->
+            internalItems[mapEntry.key] = mapEntry.value.copy(
+                    isDistractionOptimized = carPackageManager.isActivityDistractionOptimized(
+                            mapEntry.value.component.packageName,
+                            mapEntry.value.component.className
+                    )
+            )
+        }
+    }
+
+    @VisibleForTesting
+    fun createDockList(): List<DockAppItem> {
+        if (DEBUG) Log.d(TAG, "createDockList called")
+        // todo(b/312718542): hidden api(ActivityTaskManager.getTasks) usage
+        val runningTaskList = getRunningTasks().filter { it.userId == userId }
+
+        for (index in 0..<maxItemsInDock) {
+            if (internalItems.contains(index)) continue
+
+            var isItemFound = false
+            for (component in runningTaskList.mapNotNull {
+                it.baseActivity ?: it.baseIntent.component
+            }) {
+                if (!isItemExcluded(component) && !isItemInDock(component)) {
+                    createDockItem(component, DockAppItem.Type.DYNAMIC)?.let { dockItem ->
+                        if (DEBUG) {
+                            Log.d(TAG, "Adding recent item(${dockItem.component}) at $index")
+                        }
+                        internalItems[index] = dockItem
+                        isItemFound = true
+                    }
+                }
+                if (isItemFound) break
+            }
+
+            if (isItemFound) continue
+
+            launcherActivities?.shuffled()?.forEach {
+                if (!isItemExcluded(it) && !isItemInDock(it)) {
+                    createDockItem(componentName = it, DockAppItem.Type.DYNAMIC)?.let { dockItem ->
+                        if (DEBUG) {
+                            Log.d(TAG, "Adding recommended item(${dockItem.component}) at $index")
+                        }
+                        internalItems[index] = dockItem
+                        isItemFound = true
+                    }
+                }
+            }
+
+            if (!isItemFound) {
+                throw IllegalStateException("Cannot find enough apps to place in the dock")
+            }
+        }
+        return convertMapToList(internalItems)
+    }
+
+    /** Use the mapping index->item to create the ordered list of Dock items */
+    private fun convertMapToList(map: Map<Int, DockAppItem>): List<DockAppItem> =
+            List(maxItemsInDock) { index -> map[index] }.filterNotNull()
+    // TODO b/314409899: use a default DockItem when a position is empty
+
+    private fun findIndexToPin(): Int? {
+        var index: Int? = null
+        for (i in 0..<maxItemsInDock) {
+            if (!internalItems.contains(i)) {
+                index = i
+                break
+            }
+            if (internalItems[i]?.type == DockAppItem.Type.DYNAMIC) {
+                index = i
+                break
+            }
+        }
+        return index
+    }
+
     private fun indexOfLeastRecentDynamicItemInDock(): Int? {
-        // edge case - if there is no apps being shown, update first position
-        if (internalItems.size == 0) return 0
+        if (DEBUG) {
+            Log.d(
+                    TAG,
+                    "internalItems.size = ${internalItems.size}, maxItemsInDock= $maxItemsInDock"
+            )
+        }
+        if (internalItems.size < maxItemsInDock) return internalItems.size
         // since map is ordered from least recent to most recent, return first dynamic entry found
         internalItems.forEach { appItemEntry ->
             if (appItemEntry.value.type == DockAppItem.Type.DYNAMIC) return appItemEntry.key
@@ -106,15 +291,74 @@ class DockViewModel(private val numItems: Int, private val observer: Observer<Li
         return null
     }
 
-    /** Use the mapping index->item to create the ordered list of Dock items */
-    private fun convertMapToList(map: Map<Int, DockAppItem>) =
-        List(numItems) { index -> map[index] }
-    // TODO b/314409899: use a default DockItem when a position is empty
+    private fun isItemExcluded(component: ComponentName): Boolean =
+            (excludedPackages.contains(component.packageName) ||
+                    excludedComponents.contains(component))
 
+    private fun isItemInDock(component: ComponentName, ofType: DockAppItem.Type? = null): Boolean {
+        return internalItems.values
+                .filter { (ofType == null) || (it.type == ofType) }
+                .map { it.component.packageName }
+                .contains(component.packageName)
+    }
+
+    /* Creates Dock item from a ComponentName. */
+    private fun createDockItem(
+            componentName: ComponentName,
+            itemType: DockAppItem.Type = DockAppItem.Type.DYNAMIC,
+    ): DockAppItem? {
+        // TODO: Compare the component against LauncherApps to make sure the component
+        // is launchable, similar to what app grid has
+
+        try {
+            val ai = packageManager.getActivityInfo(
+                    componentName,
+                    PackageManager.ComponentInfoFlags.of(0L)
+            )
+            return DockAppItem(
+                    id = getUniqueDockItemId(),
+                    type = itemType,
+                    component = componentName,
+                    name = ai.name,
+                    icon = ai.loadIcon(packageManager),
+                    isDistractionOptimized =
+                    carPackageManager?.isActivityDistractionOptimized(
+                            componentName.packageName,
+                            componentName.className
+                    ) ?: false
+            )
+        } catch (e: PackageManager.NameNotFoundException) {
+            if (DEBUG) {
+                // don't need to crash for a failed creation, log error instead
+                Log.e(TAG, "Component $componentName not found, pinning failed", e)
+            }
+        }
+        return null
+    }
+
+    private fun getUniqueDockItemId(): @DockItemId UUID {
+        val existingKeys = internalItems.values.map { it.id }.toSet()
+        for (i in 0..MAX_UNIQUE_ID_TRIES) {
+            val id = UUID.randomUUID()
+            if (!existingKeys.contains(id)) return id
+        }
+        return UUID.randomUUID()
+    }
+
+    /** To be disabled for tests since [Toast] cannot be shown on that process */
     @VisibleForTesting
-    fun setDockItems(dockList: List<DockAppItem>) {
-        internalItems.clear()
-        dockList.forEachIndexed { index, item -> internalItems[index] = item }
-        currentItems.value = dockList
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    /** To be overridden in tests to pass mock values for RunningTasks */
+    @VisibleForTesting
+    fun getRunningTasks(): List<ActivityManager.RunningTaskInfo> {
+        return ActivityTaskManager.getInstance().getTasks(
+                MAX_TASKS_TO_FETCH,
+                false, // filterOnlyVisibleRecents
+                false, // keepIntentExtra
+                Display.DEFAULT_DISPLAY // displayId
+        )
     }
 }

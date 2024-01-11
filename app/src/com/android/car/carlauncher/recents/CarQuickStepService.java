@@ -166,6 +166,11 @@ public class CarQuickStepService extends Service {
         }
 
         @Override
+        public void onNavigationBarLumaSamplingEnabled(int displayId, boolean enable) {
+            // no-op
+        }
+
+        @Override
         public void enterStageSplitFromRunningApp(boolean leftOrTop) {
             // no-op
         }
