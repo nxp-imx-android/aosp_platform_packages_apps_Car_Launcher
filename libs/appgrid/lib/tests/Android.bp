@@ -18,61 +18,63 @@ package {
 }
 
 android_test {
-  name: "CarAppGridTests",
+    name: "CarAppGridTests",
 
-  srcs: ["src/**/*.java"],
+    srcs: ["src/**/*.java"],
 
-  resource_dirs: ["res"],
+    resource_dirs: ["res"],
 
-  libs: [
-      "android.car",
-      "android.test.base",
-      "android.car-system-stubs",
-  ],
+    libs: [
+        "android.car",
+        "android.test.base",
+        "android.car-system-stubs",
+    ],
 
-  optimize: {
-      enabled: false,
-  },
+    optimize: {
+        enabled: false,
+    },
 
-  static_libs: [
-      "android.car.testapi",
-      "android.car.test.utils",
-      "androidx.test.core",
-      "androidx.test.runner",
-      "androidx.test.rules",
-      "androidx.test.espresso.core",
-      "androidx.test.espresso.contrib",
-      "androidx.test.espresso.intents",
-      "androidx.test.ext.junit",
-      "hamcrest-library",
-      "mockito-target-extended",
-      "truth",
-      "testables",
-      "CarAppGrid-lib"
-  ],
+    static_libs: [
+        "android.car.testapi",
+        "android.car.test.utils",
+        "androidx.test.core",
+        "androidx.test.runner",
+        "androidx.test.rules",
+        "androidx.test.espresso.core",
+        "androidx.test.espresso.contrib",
+        "androidx.test.espresso.intents",
+        "androidx.test.ext.junit",
+        "hamcrest-library",
+        "mockito-target-extended",
+        "truth",
+        "testables",
+        "CarAppGrid-lib",
+    ],
 
-  platform_apis: true,
+    platform_apis: true,
 
-  certificate: "platform",
+    certificate: "platform",
 
-  privileged: true,
+    privileged: true,
 
-  manifest: "AndroidManifest.xml",
+    manifest: "AndroidManifest.xml",
 
-  instrumentation_for: "CarAppGrid-lib",
+    instrumentation_for: "CarAppGrid-lib",
 
-  dex_preopt: {
-      enabled: false,
-  },
+    dex_preopt: {
+        enabled: false,
+    },
 
-  jni_libs: [
-      // For mockito extended
-      "libdexmakerjvmtiagent",
-      "libstaticjvmtiagent",
-  ],
+    jni_libs: [
+        // For mockito extended
+        "libdexmakerjvmtiagent",
+        "libstaticjvmtiagent",
+    ],
 
-  test_suites: [
-      "automotive-tests",
-      "device-tests",
-  ],
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    // TODO(b/319708040): re-enable use_resource_processor
+    use_resource_processor: false,
 }

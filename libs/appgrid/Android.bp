@@ -25,16 +25,18 @@ java_library_static {
     },
     sdk_version: "module_current",
     min_sdk_version: "31",
-    srcs: ["lib/src/com/android/car/carlauncher/proto/launcher_item.proto"]
+    srcs: ["lib/src/com/android/car/carlauncher/proto/launcher_item.proto"],
 }
 
 android_library {
     name: "CarAppGrid-lib",
     platform_apis: true,
 
-    srcs: ["lib/src/**/*.java",
-    "lib/src/**/*.kt",
-    "lib/hidden_apis_enabled/**/*.java"],
+    srcs: [
+        "lib/src/**/*.java",
+        "lib/src/**/*.kt",
+        "lib/hidden_apis_enabled/**/*.java",
+    ],
 
     resource_dirs: ["lib/res"],
 
@@ -52,6 +54,8 @@ android_library {
     libs: ["android.car"],
 
     manifest: "lib/AndroidManifest.xml",
+    // TODO(b/319708040): re-enable use_resource_processor
+    use_resource_processor: false,
 }
 
 // Uses test key instead of the regular "platform" key
@@ -64,8 +68,10 @@ android_app {
 
     resource_dirs: ["app/src/main/res"],
 
-     srcs: ["app/src/**/*.java",
-        "app/src/**/*.kt",],
+    srcs: [
+        "app/src/**/*.java",
+        "app/src/**/*.kt",
+    ],
 
     platform_apis: true,
 
