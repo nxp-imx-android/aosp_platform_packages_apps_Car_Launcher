@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Toestemming nodig voordat pakket gebeurtenissen kan uitzenden naar het dockstation."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Dockontvanger"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Toestemming nodig voordat pakket kan luisteren naar transmissiegebeurtenissen voor het dock."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

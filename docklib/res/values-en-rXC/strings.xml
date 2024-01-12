@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‏‏‏‎‎‎‏‏‎‎‎‎‏‏‏‏‏‎‏‏‏‎‎‎‏‏‎‎‏‏‎‏‏‎‏‎‏‏‏‏‎‏‎‎‏‎‎‏‎‏‎‎‎‎‎‏‎‎‏‏‎‎‎‏‏‎Permission required for package to broadcast events to the Dock.‎‏‎‎‏‎"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‏‏‏‎‏‎‎‏‏‎‏‏‏‏‏‎‏‎‎‎‏‏‎‎‎‏‏‎‎‏‏‎‏‏‎‏‎‎‏‎‏‏‎‎‎‏‎‏‏‎‏‎‏‏‏‏‏‎‎‎‎‏‎‏‎‎Dock broadcast receiver‎‏‎‎‏‎"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"‎‏‎‎‎‎‎‏‎‏‏‏‎‎‎‏‎‎‏‏‎‎‎‎‎‎‏‏‏‏‏‎‏‏‎‏‏‎‏‎‎‎‎‏‏‎‎‎‎‏‎‎‎‎‎‎‎‎‏‏‏‎‏‎‎‏‏‎‎‏‏‎‏‏‎‎‏‏‏‎‎‏‏‏‏‏‎‎‏‎‏‎‏‏‎Permission required for package listen to broadcast events for the Dock.‎‏‎‎‏‎"</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

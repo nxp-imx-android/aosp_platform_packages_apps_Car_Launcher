@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Kudingeka imvume yephakheji yokusakaza imicimbi Kudokhi."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Dokha isamukeli somsakazi"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Kudingeka imvume yephakheji yokulalela imicimbi yokusakaza Yedokhi."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

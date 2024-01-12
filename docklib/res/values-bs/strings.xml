@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Potrebno je odobrenje da paket emitira događaje na priključnu stanicu."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Prijemnik emitiranog sadržaja na priključnoj stanici"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Potrebno je odobrenje za paketno slušanje radi emitiranja događaja za priključnu stanicu."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

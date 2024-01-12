@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Izin diperlukan agar paket dapat menyiarkan acara ke Dok."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Penerima siaran dok"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Izin diperlukan agar paket dapat memproses siaran acara untuk Dok."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

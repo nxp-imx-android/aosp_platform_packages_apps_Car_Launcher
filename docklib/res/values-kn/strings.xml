@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"ಈವೆಂಟ್‌ಗಳನ್ನು ಡಾಕ್‌ಗೆ ಪ್ರಸಾರ ಮಾಡಲು ಪ್ಯಾಕೇಜ್‌ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"ಡಾಕ್ ಪ್ರಸಾರ ಸ್ವೀಕರಿಸುವವರು"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ಈವೆಂಟ್‌ಗಳನ್ನು ಡಾಕ್‌ಗೆ ಪ್ರಸಾರ ಮಾಡಲು ಪ್ಯಾಕೇಜ್ ಆಲಿಸುವಿಕೆಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>
