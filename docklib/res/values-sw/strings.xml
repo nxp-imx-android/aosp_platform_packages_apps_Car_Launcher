@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Ruhusa inahitajika ili kifurushi kitoe arifa za matukio kwenye Dock."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Kipokeaji cha matangazo ya Dock"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Inahitaji ruhusa ya kipengele cha kusikiliza kifurushi ili kusambaza matukio ya Dock."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

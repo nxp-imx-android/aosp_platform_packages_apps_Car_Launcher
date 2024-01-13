@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"డాక్‌కి ఈవెంట్‌లను ప్రసారం చేయడానికి ప్యాకేజీకి అనుమతి అవసరం."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"డాక్ ప్రసార రిసీవర్"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"డాక్ చేయడం కోసం ప్రసార ఈవెంట్‌లను వినడానికి ప్యాకేజీకి అనుమతి అవసరం."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

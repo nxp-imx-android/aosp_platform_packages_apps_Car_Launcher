@@ -19,6 +19,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="broadcast_sender_permission_label" msgid="5269973644784898827">"डॉक ब्रॉडकास्ट पाठवणारा"</string>
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"डॉक वर इव्हेंट ब्रॉडकास्ट करण्यासाठी पॅकेजला परवानगी हवी आहे."</string>
-    <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"डॉक प्रसारण प्राप्‍तकर्ता"</string>
+    <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"डॉक ब्रॉडकास्ट प्राप्‍तकर्ता"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"डॉक साठीचे ब्रॉडकास्ट इव्हेंट ऐकण्याकरिता पॅकेजला परवानगी हवी आहे."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

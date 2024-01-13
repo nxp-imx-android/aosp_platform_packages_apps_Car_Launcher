@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"ডকে ইভেন্ট ব্রডকাস্ট করতে প্যাকেজের জন্য অনুমতি প্রয়োজন।"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"ডক ব্রডকাস্টের রিসিভার"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ডকের জন্য ইভেন্ট সম্প্রচার করতে প্যাকেজ শোনার ক্ষেত্রে অনুমতি প্রয়োজন।"</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

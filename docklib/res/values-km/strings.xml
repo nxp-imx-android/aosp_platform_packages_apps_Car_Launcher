@@ -21,4 +21,6 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"ការអនុញ្ញាតដែលតម្រូវឱ្យមានសម្រាប់កញ្ចប់ ដើម្បីផ្សាយព្រឹត្តិការណ៍ទៅធ្នើរ។"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"កម្មវិធី​ទទួលការផ្សាយរបស់ធ្នើរ"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ការអនុញ្ញាតដែលតម្រូវឱ្យមានសម្រាប់ការស្ដាប់កញ្ចប់ ដើម្បីផ្សាយព្រឹត្តិការណ៍សម្រាប់ធ្នើរ។"</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>

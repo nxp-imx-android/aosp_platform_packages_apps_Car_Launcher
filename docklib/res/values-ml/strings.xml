@@ -20,5 +20,7 @@
     <string name="broadcast_sender_permission_label" msgid="5269973644784898827">"ഡോക്ക് ബ്രോഡ്‌കാസ്റ്റ് സെൻഡർ"</string>
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"ഡോക്കിലേക്ക് ഇവന്റുകൾ ബ്രോഡ്‌കാസ്റ്റ് ചെയ്യാൻ പാക്കേജിന് അനുമതി ആവശ്യമാണ്."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"ഡോക്ക് ബ്രോഡ്‌കാസ്‌റ്റ് റിസീവർ"</string>
-    <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ഡോക്കിലേക്ക് ബ്രോഡ്‌കാസ്റ്റ് ചെയ്യുന്ന ഇവന്റുകൾ കേൾക്കാൻ പാക്കേജിന് അനുമതി ആവശ്യമാണ്."</string>
+    <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ഡോക്കിലേക്ക് ഇവന്റുകൾ ബ്രോഡ്‌കാസ്റ്റ് ചെയ്യുന്നതിന്, പാക്കേജ് കേൾക്കൽ അനുമതി ആവശ്യമാണ്."</string>
+    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
+    <skip />
 </resources>
