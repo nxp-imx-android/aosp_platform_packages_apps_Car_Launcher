@@ -31,6 +31,8 @@ android_robolectric_test {
         "mockito-kotlin2",
         "androidx.test.rules",
         "kotlinx_coroutines_test",
+        "androidx.test.core",
+        "android.car.testapi",
     ],
 
     test_suites: [
