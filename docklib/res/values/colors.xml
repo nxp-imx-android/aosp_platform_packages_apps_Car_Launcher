@@ -15,7 +15,7 @@ limitations under the License.
 -->
 <resources>
     <!-- todo(b/314859977): reset color to #000000 -->
-    <color name="icon_default_stroke_color">#FFFFFF</color>
+    <color name="icon_default_color">#FFFFFF</color>
     <color name="icon_static_stroke_color">#000000</color>
     <color name="icon_excited_stroke_color">#737272</color>
 </resources>

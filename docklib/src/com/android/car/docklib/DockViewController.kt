@@ -30,6 +30,7 @@ import com.android.car.docklib.events.DockPackageRemovedReceiver
 import com.android.car.docklib.task.DockTaskStackChangeListener
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
+import com.android.launcher3.icons.IconFactory
 import com.android.systemui.shared.system.TaskStackChangeListeners
 import java.lang.ref.WeakReference
 import java.util.UUID
@@ -81,6 +82,7 @@ class DockViewController(
                         .mapNotNull(ComponentName::unflattenFromString).toHashSet(),
                 excludedPackages = dockView.resources
                         .getStringArray(R.array.config_packagesExcludedFromDock).toHashSet(),
+                iconFactory = IconFactory.obtain(dockView.context)
         ) { updatedApps ->
             dockViewWeakReference.get()?.getAdapter()?.submitList(updatedApps)
                     ?: throw NullPointerException("the View referenced does not exist")
@@ -142,6 +144,9 @@ class DockViewController(
         // todo(b/312718542): hidden api(context.startActivityAsUser) usage
         userContext.startActivityAsUser(intent, userContext.user)
     }
+
+    override fun getIconColorWithScrim(componentName: ComponentName) =
+            dockViewModel.getIconColorWithScrim(componentName)
 
     override fun packageRemoved(packageName: String) = dockViewModel.removeItems(packageName)
 }

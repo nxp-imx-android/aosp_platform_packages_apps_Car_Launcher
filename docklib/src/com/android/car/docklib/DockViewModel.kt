@@ -21,7 +21,9 @@ import android.app.ActivityTaskManager
 import android.car.content.pm.CarPackageManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Log
 import android.view.Display
@@ -31,6 +33,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.car.docklib.data.DockAppItem
 import com.android.car.docklib.data.DockItemId
+import com.android.launcher3.icons.BaseIconFactory
+import com.android.launcher3.icons.ColorExtractor
+import com.android.launcher3.icons.IconFactory
 import java.util.Collections
 import java.util.UUID
 
@@ -48,6 +53,7 @@ open class DockViewModel(
         defaultPinnedItems: List<ComponentName>,
         private val excludedComponents: Set<ComponentName>,
         private val excludedPackages: Set<String>,
+        private val iconFactory: IconFactory = IconFactory.obtain(context),
         private val observer: Observer<List<DockAppItem>>,
 ) {
 
@@ -59,6 +65,11 @@ open class DockViewModel(
     }
 
     private val noSpotAvailableToPinToastMsg = context.getString(R.string.pin_failed_no_spots)
+    private val colorExtractor = ColorExtractor()
+    private val defaultIconColor = context.resources.getColor(
+            R.color.icon_default_color,
+            null // theme
+    )
     private val currentItems = MutableLiveData<List<DockAppItem>>()
 
     /*
@@ -182,6 +193,10 @@ open class DockViewModel(
             internalItems[indexToUpdate] = newDockItem
             currentItems.value = createDockList()
         }
+    }
+
+    fun getIconColorWithScrim(componentName: ComponentName): Int {
+        return DockAppItem.getIconColorWithScrim(getIconColor(componentName))
     }
 
     fun destroy() {
@@ -310,31 +325,48 @@ open class DockViewModel(
         // TODO: Compare the component against LauncherApps to make sure the component
         // is launchable, similar to what app grid has
 
+        val ai = getActivityInfo(componentName) ?: return null
+        // todo(b/315210225): handle getting icon lazily
+        val icon = ai.loadIcon(packageManager)
+        val iconColor = getIconColor(icon)
+        return DockAppItem(
+                id = getUniqueDockItemId(),
+                type = itemType,
+                component = componentName,
+                name = ai.name,
+                icon = icon,
+                iconColor = iconColor,
+                isDistractionOptimized =
+                carPackageManager?.isActivityDistractionOptimized(
+                        componentName.packageName,
+                        componentName.className
+                ) ?: false
+        )
+    }
+
+    private fun getActivityInfo(componentName: ComponentName): ActivityInfo? {
         try {
-            val ai = packageManager.getActivityInfo(
+            return packageManager.getActivityInfo(
                     componentName,
                     PackageManager.ComponentInfoFlags.of(0L)
             )
-            return DockAppItem(
-                    id = getUniqueDockItemId(),
-                    type = itemType,
-                    component = componentName,
-                    name = ai.name,
-                    icon = ai.loadIcon(packageManager),
-                    isDistractionOptimized =
-                    carPackageManager?.isActivityDistractionOptimized(
-                            componentName.packageName,
-                            componentName.className
-                    ) ?: false
-            )
         } catch (e: PackageManager.NameNotFoundException) {
             if (DEBUG) {
-                // don't need to crash for a failed creation, log error instead
-                Log.e(TAG, "Component $componentName not found, pinning failed", e)
+                // don't need to crash for this failure, log error instead
+                Log.e(TAG, "Component $componentName not found", e)
             }
         }
         return null
     }
+
+    private fun getIconColor(componentName: ComponentName): Int {
+        val ai = getActivityInfo(componentName) ?: return defaultIconColor
+        return getIconColor(ai.loadIcon(packageManager))
+    }
+
+    private fun getIconColor(icon: Drawable) = colorExtractor.findDominantColorByHue(
+            iconFactory.createScaledBitmap(icon, BaseIconFactory.MODE_DEFAULT)
+    )
 
     private fun getUniqueDockItemId(): @DockItemId UUID {
         val existingKeys = internalItems.values.map { it.id }.toSet()
