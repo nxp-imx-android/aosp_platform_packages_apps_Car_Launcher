@@ -62,12 +62,6 @@
     </string-array>
 
     <!--
-        Determines whether or not to use the RemoteCarTaskView from car-lib instead of the
-        CarTaskView that exists inside the CarLauncher.
-    -->
-    <bool name="config_useRemoteCarTaskView">true</bool>
-
-    <!--
         The Activity to use as a passenger Launcher, if empty, it assumes CarLauncher can do
         the passenger Launcher role too.
     -->
