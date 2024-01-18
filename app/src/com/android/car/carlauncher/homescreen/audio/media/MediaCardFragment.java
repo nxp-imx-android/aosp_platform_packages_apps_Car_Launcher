@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Google Inc.
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher.homescreen.audio;
+package com.android.car.carlauncher.homescreen.audio.media;
 
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -36,17 +36,17 @@ import com.android.car.apps.common.BitmapUtils;
 import com.android.car.apps.common.ImageUtils;
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.homescreen.HomeCardFragment;
+import com.android.car.carlauncher.homescreen.audio.MediaViewModel;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
 import com.android.car.carlauncher.homescreen.ui.SeekBarViewModel;
 import com.android.car.media.common.PlaybackControlsActionBar;
 
-
 /**
- * {@link HomeCardInterface.View} for the audio card. Displays and controls the current audio source
- * such as the currently playing (or last played) media item or an ongoing phone call.
+ * {@link HomeCardInterface.View} for the media audio card. Displays and controls the current
+ * audio source such as the currently playing (or last played) media item.
  */
-public class AudioFragment extends HomeCardFragment {
+public class MediaCardFragment extends HomeCardFragment {
 
     /**
      * Interface definition for a callback to be invoked when a media layout is inflated.
@@ -59,7 +59,7 @@ public class AudioFragment extends HomeCardFragment {
         void onMediaViewInitialized();
     }
 
-    private static final String TAG = AudioFragment.class.getSimpleName();
+    private static final String TAG = MediaCardFragment.class.getSimpleName();
 
     private Chronometer mChronometer;
     private View mChronometerSeparator;
@@ -104,13 +104,15 @@ public class AudioFragment extends HomeCardFragment {
             };
 
     private CardContent.CardBackgroundImage mCardBackgroundImage;
+    private Size mMediaSize;
     private View.OnLayoutChangeListener mOnRootLayoutChangeListener =
             (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                 boolean isWidthChanged = left - right != oldLeft - oldRight;
                 boolean isHeightChanged = top - bottom != oldTop - oldBottom;
                 boolean isSizeChanged = isWidthChanged || isHeightChanged;
                 if (isSizeChanged) {
-                    resizeCardBackgroundImage();
+                    mMediaSize = new Size(right - left, bottom - top);
+                    resizeCardBackgroundImage(mMediaSize);
                 }
             };
 
@@ -186,7 +188,7 @@ public class AudioFragment extends HomeCardFragment {
         return (PlaybackControlsActionBar) mMediaControlBarView;
     }
 
-    private void resizeCardBackgroundImage() {
+    private void resizeCardBackgroundImage(Size cardSize) {
         if (mCardBackgroundImage == null || mCardBackgroundImage.getForeground() == null) {
             mCardBackgroundImage = mDefaultCardBackgroundImage;
         }
@@ -194,8 +196,9 @@ public class AudioFragment extends HomeCardFragment {
                 getCardBackgroundImage().getHeight());
         // Prioritize size of background image view. Otherwise, use size of whole card
         if (maxDimen == 0) {
-            Size cardSize = getCardSize();
-
+            // This function may be called before a non-null cardSize is ready. Instead of waiting
+            // for the next CardContent update to trigger resizeCardBackgroundImage(), resize the
+            // card as soon as mOnRootChangeLayoutListener sets the mMediaSize.
             if (cardSize == null) {
                 return;
             }
@@ -221,7 +224,7 @@ public class AudioFragment extends HomeCardFragment {
 
     private void updateBackgroundImage(CardContent.CardBackgroundImage cardBackgroundImage) {
         mCardBackgroundImage = cardBackgroundImage;
-        resizeCardBackgroundImage();
+        resizeCardBackgroundImage(mMediaSize);
     }
 
     private void updateMediaView(CharSequence title, CharSequence subtitle) {
