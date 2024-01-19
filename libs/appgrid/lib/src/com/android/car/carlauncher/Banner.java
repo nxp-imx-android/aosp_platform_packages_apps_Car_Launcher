@@ -58,8 +58,8 @@ public class Banner extends ConstraintLayout {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         inflater.inflate(R.layout.banner, this);
 
-        mFirstButton = requireViewById(R.id.first_button);
-        mSecondButton = requireViewById(R.id.second_button);
+        mFirstButton = requireViewById(R.id.banner_first_button);
+        mSecondButton = requireViewById(R.id.banner_second_button);
         mTitleTextView = requireViewById(R.id.banner_title);
 
         TypedArray attrArray = context.getTheme().obtainStyledAttributes(
