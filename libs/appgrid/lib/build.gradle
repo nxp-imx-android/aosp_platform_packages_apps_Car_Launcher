@@ -95,6 +95,7 @@ dependencies {
 
     //Test dependencies
     testImplementation files(gradle.ext.lib_car_system_stubs)
+    testImplementation files(gradle.ext.lib_car_test_api)
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.test:core-ktx:1.5.0'
 

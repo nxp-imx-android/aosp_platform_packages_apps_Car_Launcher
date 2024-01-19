@@ -21,7 +21,8 @@
     <dimen name="dock_item_size">72dp</dimen>
     <dimen name="dock_item_spacing">2dp</dimen>
 
-    <dimen name="icon_stroke_width">6dp</dimen>
+    <dimen name="icon_stroke_width_static">0dp</dimen>
+    <dimen name="icon_stroke_width_dynamic">6dp</dimen>
     <dimen name="icon_stroke_width_excited">20dp</dimen>
 
     <item name="icon_colorFilter_alpha_excited" format="float" type="dimen">0.3</item>

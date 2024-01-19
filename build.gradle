@@ -27,6 +27,7 @@ buildscript {
     gradle.ext.lib_car_ui_lib_aar = gradle.ext.prebuiltSdkPath + "current/aaos-libs/car-ui-lib.aar"
     gradle.ext.lib_car_ui_lib_oem_apis = gradle.ext.prebuiltSdkPath + "current/aaos-libs/car-ui-lib-oem-apis.jar"
     gradle.ext.lib_system_stubs = gradle.ext.prebuiltSdkPath + gradle.ext.aaosLatestSDK + "/system/android.jar"
+    gradle.ext.lib_car_test_api = gradle.ext.prebuiltSdkPath + gradle.ext.aaosLatestSDK + "/system/android.car.testapi.jar"
     gradle.ext.debugCertPath = gradle.ext.repoRootPath + "/packages/apps/Car/Launcher/libs/appgrid/keys/com_android_car_launcher_test.jks"
     gradle.ext.soongBash = gradle.ext.repoRootPath + "/build/soong/soong_ui.bash"
     gradle.ext.platformSdkVersion = "34" // Change this to the most recent android API level.
