@@ -83,15 +83,15 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="app_name"/>
       <item type="id" name="apps_grid"/>
       <item type="id" name="apps_grid_background"/>
+      <item type="id" name="banner_first_button"/>
+      <item type="id" name="banner_icon"/>
+      <item type="id" name="banner_second_button"/>
       <item type="id" name="banner_title"/>
       <item type="id" name="divider"/>
-      <item type="id" name="first_button"/>
       <item type="id" name="focus_area"/>
-      <item type="id" name="icon"/>
       <item type="id" name="page_indicator"/>
       <item type="id" name="page_indicator_container"/>
       <item type="id" name="recent_apps_row"/>
-      <item type="id" name="second_button"/>
       <item type="id" name="tos_banner"/>
       <item type="integer" name="car_app_selector_column_number"/>
       <item type="integer" name="car_app_selector_row_number"/>

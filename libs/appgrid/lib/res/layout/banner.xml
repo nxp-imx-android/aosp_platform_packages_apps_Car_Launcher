@@ -22,7 +22,7 @@
     android:layout_height="wrap_content"
     android:background="@color/banner_background_color">
     <TextView
-        android:id="@+id/second_button"
+        android:id="@+id/banner_second_button"
         android:layout_marginEnd="56dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_max="@dimen/banner_button_maximum_width"
@@ -30,9 +30,9 @@
         style="@style/BannerButton"/>
     <TextView
         android:background="@android:color/transparent"
-        android:id="@+id/first_button"
+        android:id="@+id/banner_first_button"
         android:layout_marginEnd="72dp"
-        app:layout_constraintEnd_toStartOf="@id/second_button"
+        app:layout_constraintEnd_toStartOf="@id/banner_second_button"
         app:layout_constraintWidth_max="@dimen/banner_button_maximum_width"
         app:layout_constraintTop_toTopOf="parent"
         style="@style/BannerButton"/>
@@ -45,12 +45,12 @@
         android:layout_marginTop="@dimen/banner_content_margin"
         android:layout_width="0dp"
         android:textColor="@color/banner_title_text_color"
-        app:layout_constraintEnd_toStartOf="@id/first_button"
-        app:layout_constraintStart_toEndOf="@+id/icon"
+        app:layout_constraintEnd_toStartOf="@id/banner_first_button"
+        app:layout_constraintStart_toEndOf="@+id/banner_icon"
         app:layout_constraintTop_toTopOf="parent"/>
 
     <ImageView
-        android:id="@+id/icon"
+        android:id="@+id/banner_icon"
         android:layout_height="@dimen/banner_image_view_size"
         android:layout_marginStart="35dp"
         android:layout_marginTop="@dimen/banner_content_margin"
