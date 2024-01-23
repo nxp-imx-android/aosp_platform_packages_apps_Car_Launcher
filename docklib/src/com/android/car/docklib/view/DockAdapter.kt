@@ -16,6 +16,8 @@
 
 package com.android.car.docklib.view
 
+import android.car.media.CarMediaManager
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
@@ -28,12 +30,14 @@ import com.android.car.docklib.R
 import com.android.car.docklib.data.DockAppItem
 
 /** [RecyclerView.Adapter] used to bind Dock items */
-class DockAdapter(private val dockController: DockInterface) :
+class DockAdapter(private val dockController: DockInterface, private val userContext: Context) :
         ListAdapter<DockAppItem, DockItemViewHolder>(DIFF_CALLBACK) {
     companion object {
         private val DEBUG = Build.isDebuggable()
         private const val TAG = "DockAdapter"
     }
+
+    private var carMediaManager: CarMediaManager? = null
 
     enum class PayloadType {
         CHANGE_ITEM_TYPE,
@@ -47,7 +51,7 @@ class DockAdapter(private val dockController: DockInterface) :
                 parent,
                 false // attachToRoot
         )
-        return DockItemViewHolder(dockController, view)
+        return DockItemViewHolder(dockController, view, userContext, carMediaManager)
     }
 
     override fun onBindViewHolder(
@@ -84,6 +88,13 @@ class DockAdapter(private val dockController: DockInterface) :
     /** Used to set a callback for the [position] to be passed to the ViewHolder on the next bind. */
     fun setCallback(position: Int, callback: Runnable?) {
         callback?.let { positionToCallbackMap[position] = it }
+    }
+
+    /**
+     * Setter for carMediaManager
+     */
+    fun setCarMediaManager(carMediaManager: CarMediaManager) {
+        this.carMediaManager = carMediaManager
     }
 }
 

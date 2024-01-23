@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2023 The Android Open Source Project
+// Copyright (C) 2024 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+
 android_library {
-    name: "CarDockLib",
+    name: "CarLauncherCommon",
     srcs: [
         "src/**/*.java",
         "src/**/*.kt",
@@ -29,18 +30,10 @@ android_library {
     libs: ["android.car"],
 
     static_libs: [
-        "androidx.recyclerview_recyclerview",
-        "androidx.core_core-animation-nodeps",
-        "car-ui-lib-no-overlayable",
         "androidx.lifecycle_lifecycle-extensions",
         "com.google.android.material_material",
-        "CarDockUtilLib",
-        "CarLauncherCommon",
-        "SystemUISharedLib",
-        "iconloader",
+        "car-ui-lib-no-overlayable",
     ],
-
-    platform_apis: true,
 
     manifest: "AndroidManifest.xml",
 }

@@ -1,7 +1,10 @@
 package com.android.car.docklib.view
 
+import android.car.media.CarMediaManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.res.Resources
+import android.os.UserHandle
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.car.docklib.TestUtils
@@ -19,17 +22,22 @@ import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 class DockItemLongClickListenerTest {
-    private val dockAppItemMock = mock<DockAppItem>()
     private val resourcesMock = mock<Resources>()
-    private val contextMock = mock<Context> { on { resources } doReturn resourcesMock }
+    private val userHandleMock = mock<UserHandle>()
+    private val contextMock = mock<Context> {
+        on { resources } doReturn resourcesMock
+        on { user } doReturn userHandleMock
+    }
     private val viewMock = mock<View> { on { context } doReturn contextMock }
     private val runnableMock1 = mock<Runnable>()
     private val runnableMock2 = mock<Runnable>()
     private val carUiShortcutsPopupMock = mock<CarUiShortcutsPopup>()
-    private val carUiShortcutsPopupBuilderMock = mock<CarUiShortcutsPopup.Builder>() {
+    private val carUiShortcutsPopupBuilderMock = mock<CarUiShortcutsPopup.Builder> {
         on { addShortcut(any<CarUiShortcutsPopup.ShortcutItem>()) } doReturn it
         on { build(any<Context>(), any<View>()) } doReturn carUiShortcutsPopupMock
     }
+    private val carMediaManagerMock = mock<CarMediaManager>()
+
     private lateinit var dockItemLongClickListener: DockItemLongClickListener
 
     @Before
@@ -77,15 +85,20 @@ class DockItemLongClickListenerTest {
     }
 
     private fun createDockItemLongClickListener(
-            dockAppItem: DockAppItem = dockAppItemMock
+        dockAppItem: DockAppItem = TestUtils.createAppItem()
     ): DockItemLongClickListener {
         return spy(object : DockItemLongClickListener(
-                dockAppItem,
-                runnableMock1,
-                runnableMock2
+            dockAppItem,
+            runnableMock1,
+            runnableMock2,
+            ComponentName("testPkg", "testClass"),
+            contextMock,
+            carMediaManagerMock,
+            setOf()
+
         ) {
             override fun createCarUiShortcutsPopupBuilder(): CarUiShortcutsPopup.Builder =
-                    carUiShortcutsPopupBuilderMock
+                carUiShortcutsPopupBuilderMock
         })
     }
 }

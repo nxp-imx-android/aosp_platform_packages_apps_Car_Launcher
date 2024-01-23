@@ -20,14 +20,10 @@ import static android.car.settings.CarSettings.Secure.KEY_PACKAGES_DISABLED_ON_R
 import static android.car.settings.CarSettings.Secure.KEY_UNACCEPTED_TOS_DISABLED_APPS;
 import static android.car.settings.CarSettings.Secure.KEY_USER_TOS_ACCEPTED;
 
-import static com.android.car.carlauncher.hidden.HiddenApiAccess.hasBaseUserRestriction;
-
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.ActivityOptions;
-import android.app.admin.DevicePolicyManager;
 import android.car.Car;
 import android.car.CarNotConnectedException;
 import android.car.content.pm.CarPackageManager;
@@ -36,15 +32,12 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
 import android.os.Process;
 import android.os.UserHandle;
-import android.os.UserManager;
 import android.provider.Settings;
 import android.service.media.MediaBrowserService;
 import android.text.TextUtils;
@@ -57,9 +50,11 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.car.carlaunchercommon.shortcuts.AppInfoShortcutItem;
+import com.android.car.carlaunchercommon.shortcuts.ForceStopShortcutItem;
+import com.android.car.carlaunchercommon.shortcuts.PinShortcutItem;
 import com.android.car.dockutil.Flags;
 import com.android.car.dockutil.events.DockEventSenderHelper;
-import com.android.car.dockutil.shortcuts.PinShortcutItem;
 import com.android.car.media.common.source.MediaSourceUtil;
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup;
 
@@ -77,6 +72,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Util class that contains helper method used by app launcher classes.
@@ -246,6 +242,9 @@ public class AppLauncherUtils {
         Map<ComponentName, ResolveInfo> mediaServicesMap = new HashMap<>(mediaServices.size());
         Set<String> mEnabledPackages = new ArraySet<>(launchablesSize);
         Set<String> tosDisabledPackages = getTosDisabledPackages(context);
+        Set<ComponentName> mediaServiceComponents = mediaServices.stream()
+                .map(resolveInfo -> resolveInfo.serviceInfo.getComponentName())
+                .collect(Collectors.toSet());
 
         Set<String> customMediaComponents = Sets.newHashSet(
                 context.getResources().getStringArray(
@@ -278,7 +277,8 @@ public class AppLauncherUtils {
                                             carMediaManager);
                                 }
                             },
-                            buildShortcuts(componentName, displayName, shortcutsListener));
+                            buildShortcuts(componentName, displayName, shortcutsListener,
+                                    carMediaManager, mediaServiceComponents));
                     launchablesMap.put(componentName, appMetaData);
                 }
             }
@@ -316,7 +316,8 @@ public class AppLauncherUtils {
                                         isMirroring ? mirroringAppRedirect :
                                                 createAppLaunchIntent(componentName));
                             },
-                            buildShortcuts(componentName, displayName, shortcutsListener));
+                            buildShortcuts(componentName, displayName, shortcutsListener,
+                                    carMediaManager, mediaServiceComponents));
                     launchablesMap.put(componentName, appMetaData);
                 }
             }
@@ -359,7 +360,8 @@ public class AppLauncherUtils {
                             AppLauncherUtils.launchApp(contextArg,
                                     createAppLaunchIntent(componentName));
                         },
-                        buildShortcuts(componentName, displayName, shortcutsListener));
+                        buildShortcuts(componentName, displayName, shortcutsListener,
+                                carMediaManager, mediaServiceComponents));
                 launchablesMap.put(componentName, appMetaData);
             }
 
@@ -417,14 +419,21 @@ public class AppLauncherUtils {
 
     private static Consumer<Pair<Context, View>> buildShortcuts(
             ComponentName componentName, CharSequence displayName,
-            ShortcutsListener shortcutsListener) {
+            ShortcutsListener shortcutsListener, CarMediaManager carMediaManager,
+            Set<ComponentName> mediaServiceComponents) {
         return pair -> {
             CarUiShortcutsPopup.Builder carUiShortcutsPopupBuilder =
                     new CarUiShortcutsPopup.Builder()
-                            .addShortcut(buildForceStopShortcut(componentName.getPackageName(),
-                                    displayName, pair.first, shortcutsListener))
-                            .addShortcut(buildAppInfoShortcut(componentName.getPackageName(),
-                                    pair.first));
+                            .addShortcut(new ForceStopShortcutItem(
+                                    pair.first,
+                                    componentName.getPackageName(),
+                                    displayName,
+                                    carMediaManager,
+                                    mediaServiceComponents
+                            ))
+                            .addShortcut(new AppInfoShortcutItem(pair.first,
+                                    componentName.getPackageName(),
+                                    UserHandle.getUserHandleForUid(Process.myUid())));
             if (Flags.dockFeature()) {
                 carUiShortcutsPopupBuilder
                         .addShortcut(buildPinToDockShortcut(componentName, pair.first));
@@ -437,60 +446,6 @@ public class AppLauncherUtils {
         };
     }
 
-    private static CarUiShortcutsPopup.ShortcutItem buildForceStopShortcut(String packageName,
-            CharSequence displayName,
-            Context context,
-            ShortcutsListener shortcutsListener) {
-        return new CarUiShortcutsPopup.ShortcutItem() {
-            @Override
-            public CarUiShortcutsPopup.ItemData data() {
-                return new CarUiShortcutsPopup.ItemData(
-                        R.drawable.ic_force_stop_caution_icon,
-                        context.getResources().getString(
-                                R.string.app_launcher_stop_app_action));
-            }
-
-            @Override
-            public boolean onClick() {
-                shortcutsListener.onShortcutsItemClick(packageName, displayName,
-                        /* allowStopApp= */ true);
-                return true;
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return shouldAllowStopApp(packageName, context);
-            }
-        };
-    }
-
-    private static CarUiShortcutsPopup.ShortcutItem buildAppInfoShortcut(String packageName,
-            Context context) {
-        return new CarUiShortcutsPopup.ShortcutItem() {
-            @Override
-            public CarUiShortcutsPopup.ItemData data() {
-                return new CarUiShortcutsPopup.ItemData(
-                        R.drawable.ic_app_info,
-                        context.getResources().getString(
-                                R.string.app_launcher_app_info_action));
-            }
-
-            @Override
-            public boolean onClick() {
-                Uri packageURI = Uri.parse(PACKAGE_URI_PREFIX + packageName);
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        packageURI);
-                context.startActivity(intent);
-                return true;
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return true;
-            }
-        };
-    }
-
     private static CarUiShortcutsPopup.ShortcutItem buildPinToDockShortcut(
             ComponentName componentName, Context context) {
         DockEventSenderHelper mHelper = new DockEventSenderHelper(context);
@@ -498,114 +453,6 @@ public class AppLauncherUtils {
                 /* pinItemClickDelegate= */ () -> mHelper.sendPinEvent(componentName),
                 /* unpinItemClickDelegate= */ () -> mHelper.sendUnpinEvent(componentName)
         );
-    }
-
-    /**
-     * Force stops an app
-     * <p>Note: Uses hidden apis<p/>
-     */
-    public static void forceStop(String packageName, Context context, CharSequence displayName,
-            CarMediaManager carMediaManager, Map<ComponentName, ResolveInfo> mediaServices,
-            ShortcutsListener listener) {
-        ActivityManager activityManager = context.getSystemService(ActivityManager.class);
-        if (activityManager != null) {
-            maybeReplaceMediaSource(carMediaManager, packageName, mediaServices,
-                    CarMediaManager.MEDIA_SOURCE_MODE_BROWSE);
-            maybeReplaceMediaSource(carMediaManager, packageName, mediaServices,
-                    CarMediaManager.MEDIA_SOURCE_MODE_PLAYBACK);
-            activityManager.forceStopPackage(packageName);
-            String message = context.getResources()
-                    .getString(R.string.app_launcher_stop_app_success_toast_text, displayName);
-            listener.onStopAppSuccess(message);
-        }
-    }
-
-    private static boolean isCurrentMediaSource(CarMediaManager carMediaManager,
-            String packageName, int mode) {
-        ComponentName componentName = carMediaManager.getMediaSource(mode);
-        if (componentName == null) {
-            //There is no current media source.
-            return false;
-        }
-        return Objects.equals(componentName.getPackageName(), packageName);
-    }
-
-    /***
-     * Updates the MediaSource to second most recent if {@code  packageName} is current media source
-     * Sets to MediaSource to null if no previous MediaSource exists.
-     */
-    private static void maybeReplaceMediaSource(CarMediaManager carMediaManager, String packageName,
-            Map<ComponentName, ResolveInfo> allMediaServices,
-            int mode) {
-        if (!isCurrentMediaSource(carMediaManager, packageName, mode)) {
-            return;
-        }
-        //find the most recent source from history not equal to force-stopping package.
-        List<ComponentName> mediaSources = carMediaManager.getLastMediaSources(mode);
-        ComponentName componentName = mediaSources.stream().filter(c-> (!c.getPackageName()
-                .equals(packageName))).findFirst().orElse(null);
-        if (componentName == null) {
-            //no recent package found, find from all available media services.
-            componentName = allMediaServices.keySet().stream().filter(
-                    c -> (!c.getPackageName().equals(packageName))).findFirst().orElse(null);
-            if (componentName == null) {
-                Log.e(TAG, "Stop-app, no alternative media service found");
-            }
-        }
-        carMediaManager.setMediaSource(componentName, mode);
-    }
-
-    /**
-     * <p>Note: Uses hidden apis<p/>
-     * @return true if the user has restrictions to force stop an app with {@code appInfo}
-     */
-    private static boolean hasUserRestriction(ApplicationInfo appInfo, Context context) {
-        String restriction = UserManager.DISALLOW_APPS_CONTROL;
-        UserManager userManager = context.getSystemService(UserManager.class);
-        if (userManager == null) {
-            Log.e(TAG, " Disabled because , UserManager is null");
-            return true;
-        }
-        if (!userManager.hasUserRestriction(restriction)) {
-            return false;
-        }
-        UserHandle user = UserHandle.getUserHandleForUid(appInfo.uid);
-        if (hasBaseUserRestriction(userManager, restriction, user)) {
-            Log.d(TAG, " Disabled because " + user + " has " + restriction
-                    + " restriction");
-            return true;
-        }
-        // Not disabled for this User
-        return false;
-    }
-
-    /**
-     * <p>Note: uses hidden apis</p>
-     *
-     * @param packageName name of the package to stop the app
-     * @param context     app context
-     * @return true if an app should show the Stop app action
-     */
-    private static boolean shouldAllowStopApp(String packageName, Context context) {
-        DevicePolicyManager dm = context.getSystemService(DevicePolicyManager.class);
-        if (dm == null || dm.packageHasActiveAdmins(packageName)) {
-            return false;
-        }
-        try {
-            ApplicationInfo appInfo = context.getPackageManager().getApplicationInfo(packageName,
-                    PackageManager.ApplicationInfoFlags.of(PackageManager.GET_META_DATA));
-            // Show only if the User has no restrictions to force stop this app
-            if (hasUserRestriction(appInfo, context)) {
-                return false;
-            }
-            // Show only if the app is running
-            if ((appInfo.flags & ApplicationInfo.FLAG_STOPPED) == 0) {
-                return true;
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.d(TAG, "shouldAllowStopApp() Package " + packageName + " was not found");
-        }
-        return false;
     }
 
     private static List<ResolveInfo> getDisabledActivities(Context context,
@@ -759,11 +606,6 @@ public class AppLauncherUtils {
     protected interface ShortcutsListener {
 
         void onShortcutsShow(CarUiShortcutsPopup carUiShortcutsPopup);
-
-        void onShortcutsItemClick(String packageName, CharSequence displayName,
-                boolean allowStopApp);
-
-        void onStopAppSuccess(String message);
     }
 
     /**

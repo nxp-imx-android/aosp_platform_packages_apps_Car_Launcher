@@ -354,7 +354,7 @@ open class DockViewModel(
                 id = getUniqueDockItemId(),
                 type = itemType,
                 component = componentName,
-                name = ai.name,
+                name = ai.loadLabel(packageManager).toString(),
                 icon = icon,
                 iconColor = iconColor,
                 isDistractionOptimized =

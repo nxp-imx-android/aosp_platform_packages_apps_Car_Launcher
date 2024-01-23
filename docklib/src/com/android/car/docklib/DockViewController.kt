@@ -18,6 +18,7 @@ package com.android.car.docklib
 
 import android.car.Car
 import android.car.content.pm.CarPackageManager
+import android.car.media.CarMediaManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -56,13 +57,13 @@ class DockViewController(
     private val dockViewWeakReference: WeakReference<DockView>
     private val dockViewModel: DockViewModel
     private val dockEventsReceiver: DockEventsReceiver
-    private val dockPackageRemovedReceiver: DockPackageChangeReceiver
+    private val dockPackageChangeReceiver: DockPackageChangeReceiver
     private val taskStackChangeListeners: TaskStackChangeListeners
     private val dockTaskStackChangeListener: DockTaskStackChangeListener
 
     init {
         if (DEBUG) Log.d(TAG, "Init DockViewController for user ${userContext.userId}")
-        val adapter = DockAdapter(this)
+        val adapter = DockAdapter(this, userContext)
         dockView.setAdapter(adapter)
         dockViewWeakReference = WeakReference(dockView)
         val launcherActivities = userContext.getSystemService<LauncherApps>()
@@ -94,15 +95,17 @@ class DockViewController(
         ) { car, ready ->
             run {
                 if (ready) {
-                    val carPackageManager = car.getCarManager(CarPackageManager::class.java)
-                    carPackageManager?.let { carPM ->
+                    car.getCarManager(CarPackageManager::class.java)?.let { carPM ->
                         dockViewModel.setCarPackageManager(carPM)
+                    }
+                    car.getCarManager(CarMediaManager::class.java)?.let { carMM ->
+                        adapter.setCarMediaManager(carMM)
                     }
                 }
             }
         }
         dockEventsReceiver = DockEventsReceiver.registerDockReceiver(userContext, this)
-        dockPackageRemovedReceiver = DockPackageChangeReceiver.registerReceiver(userContext, this)
+        dockPackageChangeReceiver = DockPackageChangeReceiver.registerReceiver(userContext, this)
         dockTaskStackChangeListener =
                 DockTaskStackChangeListener(userContext.userId, this)
         taskStackChangeListeners = TaskStackChangeListeners.getInstance()
@@ -114,7 +117,7 @@ class DockViewController(
         if (DEBUG) Log.d(TAG, "Destroy called")
         car.disconnect()
         userContext.unregisterReceiver(dockEventsReceiver)
-        userContext.unregisterReceiver(dockPackageRemovedReceiver)
+        userContext.unregisterReceiver(dockPackageChangeReceiver)
         taskStackChangeListeners.unregisterTaskStackListener(dockTaskStackChangeListener)
         dockViewModel.destroy()
     }

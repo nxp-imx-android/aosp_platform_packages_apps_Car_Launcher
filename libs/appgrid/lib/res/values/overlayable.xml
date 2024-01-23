@@ -34,7 +34,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="color" name="icon_tint"/>
       <item type="color" name="page_indicator_bar_color"/>
       <item type="color" name="recent_apps_line_divider_color"/>
-      <item type="color" name="shortcuts_icon_color"/>
       <item type="dimen" name="app_bar_height"/>
       <item type="dimen" name="app_grid_header_margin"/>
       <item type="dimen" name="app_grid_height"/>
@@ -75,8 +74,6 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="dimen" name="threshold_to_start_drag_drop"/>
       <item type="drawable" name="app_item_highlight"/>
       <item type="drawable" name="banner_warning_image"/>
-      <item type="drawable" name="ic_app_info"/>
-      <item type="drawable" name="ic_force_stop_caution_icon"/>
       <item type="drawable" name="page_indicator_bar"/>
       <item type="id" name="app_icon"/>
       <item type="id" name="app_item"/>
@@ -113,12 +110,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="app_item"/>
       <item type="layout" name="banner"/>
       <item type="layout" name="recent_apps_row"/>
-      <item type="string" name="app_launcher_app_info_action"/>
-      <item type="string" name="app_launcher_stop_app_action"/>
       <item type="string" name="app_launcher_stop_app_cant_stop_text"/>
-      <item type="string" name="app_launcher_stop_app_dialog_text"/>
-      <item type="string" name="app_launcher_stop_app_dialog_title"/>
-      <item type="string" name="app_launcher_stop_app_success_toast_text"/>
       <item type="string" name="app_launcher_title_all_apps"/>
       <item type="string" name="app_launcher_title_media_only"/>
       <item type="string" name="banner_dismiss_button_text"/>

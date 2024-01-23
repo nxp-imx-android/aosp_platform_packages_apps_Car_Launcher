@@ -16,7 +16,9 @@
 
 package com.android.car.docklib.view
 
+import android.car.media.CarMediaManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Point
@@ -43,6 +45,8 @@ import kotlin.math.floor
 class DockItemViewHolder(
         private val dockController: DockInterface,
         itemView: View,
+        private val userContext: Context,
+        private val carMediaManager: CarMediaManager?,
 ) : RecyclerView.ViewHolder(itemView) {
 
     companion object {
@@ -180,6 +184,10 @@ class DockItemViewHolder(
                 dockAppItem,
                 pinItemClickDelegate = { dockController.appPinned(dockAppItem.id) },
                 unpinItemClickDelegate = { dockController.appUnpinned(dockAppItem.id) },
+            dockAppItem.component,
+            userContext,
+            carMediaManager,
+            dockController.getMediaServiceComponents()
         )
         appIcon.onLongClickListener = dockItemLongClickListener
 
