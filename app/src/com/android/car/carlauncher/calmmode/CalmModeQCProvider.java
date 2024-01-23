@@ -16,6 +16,7 @@
 
 package com.android.car.carlauncher.calmmode;
 
+import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -108,12 +109,15 @@ public class CalmModeQCProvider extends BaseQCProvider {
                 resources.getString(R.string.config_calmMode_componentName));
         Intent intent = new Intent();
         intent.setComponent(componentName);
-        PendingIntent ambientModeIntent = PendingIntent.getActivity(mContext, 0, intent,
-                PendingIntent.FLAG_IMMUTABLE);
+        ActivityOptions activityOptions = ActivityOptions.makeBasic()
+                .setPendingIntentCreatorBackgroundActivityStartMode(
+                        ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED);
+        PendingIntent calmModeIntent = PendingIntent.getActivity(mContext, 0, intent,
+                PendingIntent.FLAG_IMMUTABLE, activityOptions.toBundle());
 
         QCRow calmModeRow = new QCRow.Builder()
                 .setTitle(mContext.getString(R.string.calm_mode_title))
-                .setPrimaryAction(ambientModeIntent)
+                .setPrimaryAction(calmModeIntent)
                 .build();
 
         return new QCList.Builder().addRow(calmModeRow).build();
