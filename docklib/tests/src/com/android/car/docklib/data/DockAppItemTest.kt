@@ -16,6 +16,7 @@
 
 package com.android.car.docklib.data
 
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.car.docklib.TestUtils
@@ -82,6 +83,42 @@ class DockAppItemTest {
         val id = UUID.randomUUID()
         val item1: DockAppItem = TestUtils.createAppItem(id = id, isDrivingOptimized = true)
         val item2: DockAppItem = TestUtils.createAppItem(id = id, isDrivingOptimized = false)
+
+        assertThat(item1).isNotEqualTo(item2)
+    }
+
+    @Test
+    fun compareAppItems_notEqual_differentIconColor() {
+        val id = UUID.randomUUID()
+        val item1: DockAppItem = TestUtils.createAppItem(id = id, iconColor = Color.WHITE)
+        val item2: DockAppItem = TestUtils.createAppItem(id = id, iconColor = Color.BLACK)
+
+        assertThat(item1).isNotEqualTo(item2)
+    }
+
+    @Test
+    fun compareAppItems_notEqual_differentIconColorScrim() {
+        val id = UUID.randomUUID()
+        val item1: DockAppItem = TestUtils.createAppItem(
+                id = id,
+                iconColor = Color.WHITE,
+                iconColorScrim = Color.argb(
+                        100, // alpha
+                        255, // red
+                        0, // green
+                        0 // blue
+                )
+        )
+        val item2: DockAppItem = TestUtils.createAppItem(
+                id = id,
+                iconColor = Color.WHITE,
+                iconColorScrim = Color.argb(
+                        150, // alpha
+                        0, // red
+                        255, // green
+                        0 // blue
+                )
+        )
 
         assertThat(item1).isNotEqualTo(item2)
     }

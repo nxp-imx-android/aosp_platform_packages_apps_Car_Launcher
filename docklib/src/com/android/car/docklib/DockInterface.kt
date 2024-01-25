@@ -47,4 +47,7 @@ interface DockInterface {
 
     /** called to launch an app */
     fun launchApp(componentName: ComponentName)
+
+    /** @return the dominant color to be used with the icon corresponding to [componentName] */
+    fun getIconColorWithScrim(componentName: ComponentName): Int
 }

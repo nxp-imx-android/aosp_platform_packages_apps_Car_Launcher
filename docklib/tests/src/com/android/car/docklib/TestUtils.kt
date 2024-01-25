@@ -1,7 +1,9 @@
 package com.android.car.docklib
 
 import android.content.ComponentName
+import android.graphics.Color
 import android.graphics.drawable.Drawable
+import androidx.annotation.ColorInt
 import com.android.car.docklib.data.DockAppItem
 import com.android.car.docklib.data.DockItemId
 import java.util.UUID
@@ -18,8 +20,30 @@ object TestUtils {
             name: String = "app",
             component: ComponentName = ComponentName(pkg, clazz),
             icon: Drawable = mock<Drawable>(),
+            @ColorInt iconColor: Int = Color.WHITE,
+            @ColorInt iconColorScrim: Int? = null,
             isDrivingOptimized: Boolean = true
     ): DockAppItem {
-        return DockAppItem(id, type, component, name, icon, isDrivingOptimized)
+        if (iconColorScrim != null) {
+            return DockAppItem(
+                    id = id,
+                    type = type,
+                    component = component,
+                    name = name,
+                    icon = icon,
+                    iconColor = iconColor,
+                    iconColorScrim = iconColorScrim,
+                    isDistractionOptimized = isDrivingOptimized
+            )
+        }
+        return DockAppItem(
+                id = id,
+                type = type,
+                component = component,
+                name = name,
+                icon = icon,
+                iconColor = iconColor,
+                isDistractionOptimized = isDrivingOptimized
+        )
     }
 }

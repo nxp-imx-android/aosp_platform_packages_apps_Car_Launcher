@@ -24,10 +24,13 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ComponentInfoFlags
+import android.content.res.Resources
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.car.docklib.data.DockAppItem
+import com.android.launcher3.icons.IconFactory
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
 import org.junit.Assert.assertThrows
@@ -35,6 +38,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
@@ -57,10 +61,17 @@ class DockViewModelTest {
 
     private lateinit var items: List<DockAppItem>
     private lateinit var model: DockViewModel
-    private val contextMock =
-            mock<Context> { on { getString(eq(R.string.pin_failed_no_spots)) } doReturn TOAST_STR }
+    private val resourcesMock = mock<Resources> {}
+    private val contextMock = mock<Context> {
+        on { getString(eq(R.string.pin_failed_no_spots)) } doReturn TOAST_STR
+        on { resources } doReturn resourcesMock
+    }
     private val packageManagerMock = mock<PackageManager> {}
     private var carPackageManagerMock = mock<CarPackageManager> {}
+    private var bitmapMock = mock<Bitmap> {}
+    private var iconFactoryMock = mock<IconFactory> {
+        on { createScaledBitmap(any<Drawable>(), anyInt()) } doReturn bitmapMock
+    }
 
     @Before
     fun setUp() {
@@ -78,6 +89,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doNothing().whenever(model).showToast(any())
@@ -99,6 +111,7 @@ class DockViewModelTest {
                 defaultPinnedItems = defaultPinnedItems,
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         )
 
@@ -360,6 +373,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(List<ActivityManager.RunningTaskInfo>(0) { return })
@@ -384,6 +398,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = cmpList.toSet(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(List<ActivityManager.RunningTaskInfo>(0) { return })
@@ -408,6 +423,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(List<ActivityManager.RunningTaskInfo>(0) { return })
@@ -436,6 +452,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(List<ActivityManager.RunningTaskInfo>(0) { return })
@@ -465,6 +482,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(createTestRunningTaskInfoList(userId = CURRENT_USER_ID + 1))
@@ -496,6 +514,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(excludedComponent),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(createTestRunningTaskInfoList(component = excludedComponent))
@@ -528,6 +547,7 @@ class DockViewModelTest {
                         pkgPrefix = "DEFAULT_PKG", classPrefix = "DEFAULT_CLASS"),
                 excludedComponents = setOf(),
                 excludedPackages = setOf(),
+                iconFactory = iconFactoryMock,
                 observer = { items = it },
         ))
         doReturn(createTestRunningTaskInfoList(component = recentTaskComponent))
