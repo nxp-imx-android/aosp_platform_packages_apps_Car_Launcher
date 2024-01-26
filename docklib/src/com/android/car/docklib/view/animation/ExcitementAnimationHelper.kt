@@ -30,6 +30,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
 import androidx.core.animation.ArgbEvaluator
 import androidx.core.animation.ObjectAnimator
+import androidx.core.animation.PathInterpolator
 import androidx.core.animation.PropertyValuesHolder
 import androidx.core.graphics.alpha
 import androidx.core.graphics.toColorLong
@@ -209,6 +210,7 @@ class ExcitementAnimationHelper {
                 pvhStrokeColor
             )
             animator.setDuration(animationDuration)
+            animator.interpolator = PathInterpolator(0f, 0f, 0f, 1f)
             animator.addListener(getAnimatorListener(successCallback, failureCallback))
             return animator
         }
