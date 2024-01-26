@@ -142,6 +142,7 @@ open class DockDragListener(
         dragEvent: DragEvent,
         component: ComponentName
     ) {
+        callback.dropAnimationsStarting(component)
         val dropContainerLocation = callback.getDropContainerLocation()
         // todo(b/312718542): hidden api(offsetX and offsetY) usage
         val fromX: Float = dropContainerLocation.x + (dragEvent.x - dragEvent.offsetX)
@@ -341,6 +342,11 @@ open class DockDragListener(
          * @param cleanupCallback [Runnable] to be called when the dropped item is ready/drawn.
          */
         fun dropSuccessful(componentName: ComponentName, cleanupCallback: Runnable? = null) {}
+
+        /**
+         * Drop animations about to start.
+         */
+        fun dropAnimationsStarting(componentName: ComponentName) {}
 
         /**
          * Drop animation scale down completed.
