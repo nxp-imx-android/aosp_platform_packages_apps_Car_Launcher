@@ -16,7 +16,4 @@
   -->
 
 <resources>
-    <!-- Flag to enable/disable dock -->
-    <!-- todo(b/304320644): remove flag -->
-    <bool name="config_enableDock">false</bool>
 </resources>
