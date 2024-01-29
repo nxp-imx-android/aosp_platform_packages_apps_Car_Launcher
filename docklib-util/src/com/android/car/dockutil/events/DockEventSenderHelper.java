@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.car.dockutil.R;
+import com.android.car.dockutil.Flags;
 
 /**
  * Helper used to send Dock Events.
@@ -35,11 +35,9 @@ public class DockEventSenderHelper {
     public static final String EXTRA_COMPONENT = "EXTRA_COMPONENT";
 
     private final Context mContext;
-    private final boolean mIsDockEnabled;
 
     public DockEventSenderHelper(Context context) {
         mContext = context;
-        mIsDockEnabled = mContext.getResources().getBoolean(R.bool.config_enableDock);
     }
 
     /**
@@ -91,7 +89,7 @@ public class DockEventSenderHelper {
     }
 
     private void sendEventBroadcast(@NonNull DockEvent event, @NonNull ComponentName component) {
-        if (!mIsDockEnabled) {
+        if (!Flags.dockFeature()) {
             return;
         }
 
