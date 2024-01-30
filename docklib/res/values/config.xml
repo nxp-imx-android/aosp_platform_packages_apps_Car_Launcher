@@ -43,8 +43,8 @@
     1. move to the proper location and to a scaled down version (scale down)
     2. change from the scaled down version to the final scale version (scale up)
     -->
-    <integer name="drop_animation_scale_down_duration_ms">600</integer>
-    <integer name="drop_animation_scale_up_duration_ms">300</integer>
+    <integer name="drop_animation_scale_down_duration_ms">400</integer>
+    <integer name="drop_animation_scale_up_duration_ms">250</integer>
 
     <!-- Duration of animation for when item is dragged over the drop location. -->
     <integer name="excite_icon_animation_duration_ms">100</integer>

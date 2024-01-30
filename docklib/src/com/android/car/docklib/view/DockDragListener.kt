@@ -29,6 +29,7 @@ import android.view.View
 import androidx.annotation.OpenForTesting
 import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
+import androidx.core.animation.PathInterpolator
 import androidx.core.animation.PropertyValuesHolder
 import androidx.core.animation.ValueAnimator
 import com.android.car.docklib.R
@@ -255,6 +256,7 @@ open class DockDragListener(
                 pvhScaleY
             )
         animator.setDuration(animationDuration)
+        animator.interpolator = PathInterpolator(0f, 0f, 0f, 1f)
         val trx = Transaction()
         animator.addUpdateListener(getAnimatorUpdateListener(surfaceControl, trx))
         animator.addListener(getAnimatorListener { trx.close() })
