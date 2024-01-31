@@ -121,7 +121,7 @@ public class NavigationStateViewModelTest extends AbstractExtendedMockitoTestCas
 
         NavigationState.NavigationStateProto navStateProto =
                 NavigationState.NavigationStateProto.newBuilder().build();
-        mNavigationStateViewModel.onNavigationState(navStateProto.toByteArray());
+        mNavigationStateViewModel.onNavigationStateChanged(navStateProto.toByteArray());
 
         NavigationStateData navStateData =
                 mNavigationStateViewModel.getNavigationState().getValue();
@@ -130,7 +130,7 @@ public class NavigationStateViewModelTest extends AbstractExtendedMockitoTestCas
 
     @Test
     public void onNavigationState_protoExceptionWhileParsing_navStateIsSetToNull() {
-        mNavigationStateViewModel.onNavigationState(new byte[] {});
+        mNavigationStateViewModel.onNavigationStateChanged(new byte[] {});
         NavigationStateData navStateData =
                 mNavigationStateViewModel.getNavigationState().getValue();
         assertNull(navStateData);
@@ -143,7 +143,7 @@ public class NavigationStateViewModelTest extends AbstractExtendedMockitoTestCas
 
         NavigationState.NavigationStateProto navStateProto =
                 buildNavStateProto(distanceToDest, NavigationState.Distance.Unit.MILES, timeToDest);
-        mNavigationStateViewModel.onNavigationState(navStateProto.toByteArray());
+        mNavigationStateViewModel.onNavigationStateChanged(navStateProto.toByteArray());
 
         NavigationStateData navStateData =
                 mNavigationStateViewModel.getNavigationState().getValue();
@@ -160,7 +160,7 @@ public class NavigationStateViewModelTest extends AbstractExtendedMockitoTestCas
         NavigationState.NavigationStateProto navStateProto =
                 buildNavStateProto(
                         distanceToDest, NavigationState.Distance.Unit.KILOMETERS, timeToDest);
-        mNavigationStateViewModel.onNavigationState(navStateProto.toByteArray());
+        mNavigationStateViewModel.onNavigationStateChanged(navStateProto.toByteArray());
 
         NavigationStateData navStateData =
                 mNavigationStateViewModel.getNavigationState().getValue();
@@ -176,7 +176,7 @@ public class NavigationStateViewModelTest extends AbstractExtendedMockitoTestCas
         final String distanceToDest = "1000";
         NavigationState.NavigationStateProto navStateProto =
                 buildNavStateProto(distanceToDest, NavigationState.Distance.Unit.FEET, timeToDest);
-        mNavigationStateViewModel.onNavigationState(navStateProto.toByteArray());
+        mNavigationStateViewModel.onNavigationStateChanged(navStateProto.toByteArray());
 
         NavigationStateData navStateData =
                 mNavigationStateViewModel.getNavigationState().getValue();
