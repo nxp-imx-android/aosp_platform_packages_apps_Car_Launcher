@@ -41,6 +41,7 @@ android_test {
         "mockito-kotlin2",
         "truth",
         "CarDockUtilLib",
+        "flag-junit",
     ],
 
     manifest: "AndroidManifest.xml",

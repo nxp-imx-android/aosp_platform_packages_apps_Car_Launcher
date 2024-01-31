@@ -57,6 +57,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.car.dockutil.Flags;
 import com.android.car.dockutil.events.DockEventSenderHelper;
 import com.android.car.dockutil.shortcuts.PinShortcutItem;
 import com.android.car.media.common.source.MediaSourceUtil;
@@ -230,8 +231,6 @@ public class AppLauncherUtils {
             return EMPTY_APPS_INFO;
         }
 
-        boolean isDockEnabled = context.getResources().getBoolean(R.bool.config_enableDock);
-
         // Using new list since we require a mutable list to do removeIf.
         List<ResolveInfo> mediaServices = new ArrayList<>();
         mediaServices.addAll(
@@ -279,8 +278,7 @@ public class AppLauncherUtils {
                                             carMediaManager);
                                 }
                             },
-                            buildShortcuts(componentName, displayName, shortcutsListener,
-                                    isDockEnabled));
+                            buildShortcuts(componentName, displayName, shortcutsListener));
                     launchablesMap.put(componentName, appMetaData);
                 }
             }
@@ -318,8 +316,7 @@ public class AppLauncherUtils {
                                         isMirroring ? mirroringAppRedirect :
                                                 createAppLaunchIntent(componentName));
                             },
-                            buildShortcuts(componentName, displayName, shortcutsListener,
-                                    isDockEnabled));
+                            buildShortcuts(componentName, displayName, shortcutsListener));
                     launchablesMap.put(componentName, appMetaData);
                 }
             }
@@ -362,8 +359,7 @@ public class AppLauncherUtils {
                             AppLauncherUtils.launchApp(contextArg,
                                     createAppLaunchIntent(componentName));
                         },
-                        buildShortcuts(componentName, displayName, shortcutsListener,
-                                isDockEnabled));
+                        buildShortcuts(componentName, displayName, shortcutsListener));
                 launchablesMap.put(componentName, appMetaData);
             }
 
@@ -421,7 +417,7 @@ public class AppLauncherUtils {
 
     private static Consumer<Pair<Context, View>> buildShortcuts(
             ComponentName componentName, CharSequence displayName,
-            ShortcutsListener shortcutsListener, boolean isDockEnabled) {
+            ShortcutsListener shortcutsListener) {
         return pair -> {
             CarUiShortcutsPopup.Builder carUiShortcutsPopupBuilder =
                     new CarUiShortcutsPopup.Builder()
@@ -429,7 +425,7 @@ public class AppLauncherUtils {
                                     displayName, pair.first, shortcutsListener))
                             .addShortcut(buildAppInfoShortcut(componentName.getPackageName(),
                                     pair.first));
-            if (isDockEnabled) {
+            if (Flags.dockFeature()) {
                 carUiShortcutsPopupBuilder
                         .addShortcut(buildPinToDockShortcut(componentName, pair.first));
             }
