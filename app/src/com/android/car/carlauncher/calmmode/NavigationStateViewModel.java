@@ -65,7 +65,7 @@ public class NavigationStateViewModel extends AndroidViewModel
 
 
     @Override
-    public void onNavigationState(byte[] navigationStateByteArr) {
+    public void onNavigationStateChanged(byte[] navigationStateByteArr) {
         if (DEBUG) {
             Log.v(TAG, "ClusterNavigationStateListener onNavigationState");
         }
