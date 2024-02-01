@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Google Inc.
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import androidx.test.rule.ActivityTestRule;
 import com.android.car.apps.common.CrossfadeImageView;
 import com.android.car.carlauncher.CarLauncher;
 import com.android.car.carlauncher.R;
+import com.android.car.carlauncher.homescreen.audio.dialer.DialerCardFragment;
+import com.android.car.carlauncher.homescreen.audio.media.MediaCardFragment;
 import com.android.car.carlauncher.homescreen.ui.CardContent.CardBackgroundImage;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
@@ -50,7 +52,7 @@ import org.junit.runner.RunWith;
 
 @Suppress // To be ignored until b/224978827 is fixed
 @RunWith(AndroidJUnit4.class)
-public class AudioFragmentTest {
+public class AudioCardFragmentTest {
 
     private static final CardHeader CARD_HEADER = new CardHeader("Test App Name", null);
     private static final BitmapDrawable BITMAP = new BitmapDrawable(
@@ -83,17 +85,19 @@ public class AudioFragmentTest {
 
     @Test
     public void updateContentAndHeaderView_audioContentNoControls_showsMediaPlaybackControlsBar() {
-        AudioFragment fragment = (AudioFragment) mActivityTestRule.getActivity()
+        AudioCardFragment fragment = (AudioCardFragment) mActivityTestRule.getActivity()
                 .getSupportFragmentManager().findFragmentById(R.id.bottom_card);
         mActivityTestRule.getActivity().runOnUiThread(fragment::hideCard);
-        fragment.updateContentView(mDescriptiveTextWithControlsView);
+        MediaCardFragment mediaCardFragment = (MediaCardFragment) fragment.getMediaFragment();
+
+        mediaCardFragment.updateContentView(mDescriptiveTextWithControlsView);
         // Card is only made visible when the header is updated
         // But content should still be updated so it is correct when card is next made visible
         onView(allOf(withId(R.id.card_view), isDescendantOfA(withId(R.id.bottom_card))))
                 .check(matches(not(isDisplayed())));
 
         // Now the card is made visible and we verify that content has been updated
-        fragment.updateHeaderView(CARD_HEADER);
+        mediaCardFragment.updateHeaderView(CARD_HEADER);
         onView(allOf(withId(R.id.card_background),
                 isDescendantOfA(withId(R.id.bottom_card)))).check(matches(isDisplayed()));
         onView(allOf(withId(R.id.card_background_image), is(instanceOf(CrossfadeImageView.class)),
@@ -117,12 +121,14 @@ public class AudioFragmentTest {
     }
 
     @Test
-    public void updateContentAndHeaderView_audioContentWithControls_showsControlBar() {
-        AudioFragment fragment = (AudioFragment) mActivityTestRule.getActivity()
+    public void updateContentAndHeaderView_audioContentWithControls_showsDialerControlBar() {
+        AudioCardFragment fragment = (AudioCardFragment) mActivityTestRule.getActivity()
                 .getSupportFragmentManager().findFragmentById(R.id.bottom_card);
         mActivityTestRule.getActivity().runOnUiThread(fragment::hideCard);
-        fragment.updateHeaderView(CARD_HEADER);
-        fragment.updateContentView(mDescriptiveTextWithControlsViewWithButtons);
+        DialerCardFragment dialerCardFragment = (DialerCardFragment) fragment.getInCallFragment();
+
+        dialerCardFragment.updateHeaderView(CARD_HEADER);
+        dialerCardFragment.updateContentView(mDescriptiveTextWithControlsViewWithButtons);
 
         onView(allOf(withId(R.id.optional_timer),
                 isDescendantOfA(withId(R.id.descriptive_text_with_controls_layout)),
@@ -144,11 +150,12 @@ public class AudioFragmentTest {
     }
 
     @Test
-    public void updateContentView_descriptiveText_hidesPlaybackControlsBar() {
-        AudioFragment fragment = (AudioFragment) mActivityTestRule.getActivity()
+    public void mediaFragment_updateContentView_descriptiveText_hidesPlaybackControlsBar() {
+        AudioCardFragment fragment = (AudioCardFragment) mActivityTestRule.getActivity()
                 .getSupportFragmentManager().findFragmentById(R.id.bottom_card);
-        fragment.updateContentView(mDescriptiveTextWithControlsView);
-        fragment.updateContentView(DESCRIPTIVE_TEXT_VIEW);
+        MediaCardFragment mediaCardFragment = (MediaCardFragment) fragment.getMediaFragment();
+        mediaCardFragment.updateContentView(mDescriptiveTextWithControlsView);
+        mediaCardFragment.updateContentView(DESCRIPTIVE_TEXT_VIEW);
 
         onView(allOf(withId(R.id.card_background),
                 isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
@@ -163,11 +170,52 @@ public class AudioFragmentTest {
     }
 
     @Test
-    public void updateContentView_textBlock_hidesPlaybackControlsBar() {
-        AudioFragment fragment = (AudioFragment) mActivityTestRule.getActivity()
+    public void mediaFragment_updateContentView_textBlock_hidesPlaybackControlsBar() {
+        AudioCardFragment fragment = (AudioCardFragment) mActivityTestRule.getActivity()
                 .getSupportFragmentManager().findFragmentById(R.id.bottom_card);
-        fragment.updateContentView(mDescriptiveTextWithControlsView);
-        fragment.updateContentView(TEXT_BLOCK_VIEW);
+        MediaCardFragment mediaCardFragment = (MediaCardFragment) fragment.getMediaFragment();
+        mediaCardFragment.updateContentView(mDescriptiveTextWithControlsView);
+        mediaCardFragment.updateContentView(TEXT_BLOCK_VIEW);
+
+        onView(allOf(withId(R.id.card_background),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.card_background_image), is(instanceOf(CrossfadeImageView.class)),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.text_block_layout),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.descriptive_text_with_controls_layout),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.media_layout), isDescendantOfA(withId(R.id.bottom_card)))).check(
+                matches(not(isDisplayed())));
+    }
+
+    @Test
+    public void dialerFragment_updateContentView_descriptiveText_hidesDescriptiveControlsView() {
+        AudioCardFragment fragment = (AudioCardFragment) mActivityTestRule.getActivity()
+                .getSupportFragmentManager().findFragmentById(R.id.bottom_card);
+        DialerCardFragment dialerCardFragment = (DialerCardFragment) fragment.getInCallFragment();
+        dialerCardFragment.updateContentView(mDescriptiveTextWithControlsViewWithButtons);
+        dialerCardFragment.updateContentView(DESCRIPTIVE_TEXT_VIEW);
+
+        onView(allOf(withId(R.id.card_background),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.card_background_image), is(instanceOf(CrossfadeImageView.class)),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.descriptive_text_layout),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.descriptive_text_with_controls_layout),
+                isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.media_layout), isDescendantOfA(withId(R.id.bottom_card)))).check(
+                matches(not(isDisplayed())));
+    }
+
+    @Test
+    public void dialerFragment_updateContentView_textBlock_hidesDescriptiveControlsView() {
+        AudioCardFragment fragment = (AudioCardFragment) mActivityTestRule.getActivity()
+                .getSupportFragmentManager().findFragmentById(R.id.bottom_card);
+        DialerCardFragment dialerCardFragment = (DialerCardFragment) fragment.getInCallFragment();
+        dialerCardFragment.updateContentView(mDescriptiveTextWithControlsViewWithButtons);
+        dialerCardFragment.updateContentView(TEXT_BLOCK_VIEW);
 
         onView(allOf(withId(R.id.card_background),
                 isDescendantOfA(withId(R.id.bottom_card)))).check(matches(not(isDisplayed())));

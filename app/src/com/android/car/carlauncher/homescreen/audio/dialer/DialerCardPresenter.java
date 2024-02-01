@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.Display;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.android.car.carlauncher.homescreen.CardPresenter;
 import com.android.car.carlauncher.homescreen.HomeCardFragment.OnViewClickListener;
 import com.android.car.carlauncher.homescreen.HomeCardFragment.OnViewLifecycleChangeListener;
@@ -44,14 +46,15 @@ public class DialerCardPresenter extends CardPresenter {
     private InCallModel mViewModel;
     private DialerCardFragment mFragment;
 
-    private boolean mHasActiveCall;
+    @VisibleForTesting
+    boolean mHasActiveCall;
 
     public void setOnInCallStateChangeListener(
             OnInCallStateChangeListener onInCallStateChangeListener) {
         mOnInCallStateChangeListener = onInCallStateChangeListener;
     }
 
-    private OnInCallStateChangeListener mOnInCallStateChangeListener;
+    OnInCallStateChangeListener mOnInCallStateChangeListener;
 
     private final OnViewClickListener mOnViewClickListener =
             new OnViewClickListener() {
@@ -66,7 +69,8 @@ public class DialerCardPresenter extends CardPresenter {
                     }
                 }
             };
-    private final HomeCardInterface.Model.OnModelUpdateListener mOnInCallModelUpdateListener =
+    @VisibleForTesting
+    HomeCardInterface.Model.OnModelUpdateListener mOnInCallModelUpdateListener =
             new HomeCardInterface.Model.OnModelUpdateListener() {
                 @Override
                 public void onModelUpdate(HomeCardInterface.Model model) {

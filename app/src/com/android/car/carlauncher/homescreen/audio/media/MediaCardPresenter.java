@@ -18,6 +18,8 @@ package com.android.car.carlauncher.homescreen.audio.media;
 
 import android.content.Intent;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.android.car.carlauncher.homescreen.CardPresenter;
 import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.HomeCardFragment.OnViewLifecycleChangeListener;
@@ -52,7 +54,8 @@ public class MediaCardPresenter extends CardPresenter {
                 }
             };
 
-    private final HomeCardInterface.Model.OnModelUpdateListener mOnMediaModelUpdateListener =
+    @VisibleForTesting
+    HomeCardInterface.Model.OnModelUpdateListener mOnMediaModelUpdateListener =
             new HomeCardInterface.Model.OnModelUpdateListener() {
                 @Override
                 public void onModelUpdate(HomeCardInterface.Model model) {
