@@ -30,11 +30,9 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 
 import android.car.test.mocks.AbstractExtendedMockitoTestCase;
 import android.car.user.CarUserManager;
-import android.car.user.CarUserManager.UserLifecycleListener;
 import android.content.Intent;
 import android.provider.Settings;
 import android.testing.TestableContext;
@@ -115,16 +113,6 @@ public class CarLauncherTest extends AbstractExtendedMockitoTestCase {
         mActivityScenario.moveToState(Lifecycle.State.RESUMED);
 
         onView(withId(R.id.bottom_card)).check(matches(isDisplayed()));
-    }
-
-    @Test
-    public void onDestroy_unregistersUserLifecycleListener() {
-        mActivityScenario = ActivityScenario.launch(CarLauncher.class);
-        mActivityScenario.onActivity(activity -> activity.setCarUserManager(mMockCarUserManager));
-
-        mActivityScenario.moveToState(Lifecycle.State.DESTROYED);
-
-        verify(mMockCarUserManager).removeListener(any(UserLifecycleListener.class));
     }
 
     @Test

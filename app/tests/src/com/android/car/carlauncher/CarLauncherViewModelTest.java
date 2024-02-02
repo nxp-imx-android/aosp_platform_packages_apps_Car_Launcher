@@ -18,6 +18,7 @@ package com.android.car.carlauncher;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Activity;
 import android.app.Instrumentation;
 import android.car.app.RemoteCarTaskView;
 import android.car.test.mocks.AbstractExtendedMockitoTestCase;
@@ -29,14 +30,15 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.car.carlauncher.TaskViewManagerTest.TestActivity;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4.class)
 public final class CarLauncherViewModelTest extends AbstractExtendedMockitoTestCase {
@@ -109,5 +111,22 @@ public final class CarLauncherViewModelTest extends AbstractExtendedMockitoTestC
 
     private void runOnMain(Runnable runnable) {
         mContext.getMainExecutor().execute(runnable);
+    }
+
+
+    public static class TestActivity extends Activity {
+        private static final int FINISH_TIMEOUT_MS = 1000;
+        private final CountDownLatch mDestroyed = new CountDownLatch(1);
+
+        @Override
+        protected void onDestroy() {
+            super.onDestroy();
+            mDestroyed.countDown();
+        }
+
+        void finishCompletely() throws InterruptedException {
+            finish();
+            mDestroyed.await(FINISH_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }
     }
 }
