@@ -22,32 +22,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center">
-    <LinearLayout
-        android:id="@+id/apps_grid_background"
-        android:orientation="vertical"
+    <FrameLayout
+        android:id="@+id/apps_grid_background_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center">
         <com.android.car.carlauncher.Banner
-            android:id="@+id/tos_banner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
             app:first_button_text="@string/banner_review_button_text"
             app:second_button_text="@string/banner_dismiss_button_text"
-            app:title_text="@string/banner_title_text" />
-        <com.android.car.carlauncher.AppGridRecyclerView
-            android:id="@+id/apps_grid"
+            app:title_text="@string/banner_title_text"
+            android:id="@+id/tos_banner"
+            android:alpha="0.0"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-        <FrameLayout
-            android:id="@+id/page_indicator_container"
+            android:layout_height="wrap_content"
+            android:elevation="10dp"
+            android:visibility="gone" />
+        <LinearLayout
+            android:id="@+id/apps_grid_background"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <com.android.car.carlauncher.PageIndicator
-                android:id="@+id/page_indicator"
+            android:layout_height="match_parent"
+            android:gravity="center">
+            <com.android.car.carlauncher.AppGridRecyclerView
+                android:id="@+id/apps_grid"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/page_indicator_height"/>
-        </FrameLayout>
-    </LinearLayout>
+                android:layout_height="match_parent"/>
+            <FrameLayout
+                android:id="@+id/page_indicator_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <com.android.car.carlauncher.PageIndicator
+                    android:id="@+id/page_indicator"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/page_indicator_height"/>
+            </FrameLayout>
+        </LinearLayout>
+    </FrameLayout>
 </com.android.car.ui.FocusArea>

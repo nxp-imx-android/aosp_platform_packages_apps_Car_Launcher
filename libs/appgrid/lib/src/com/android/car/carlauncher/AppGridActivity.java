@@ -60,6 +60,7 @@ import android.util.Log;
 import android.view.DragEvent;
 import android.view.SurfaceControl;
 import android.view.View;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -167,6 +168,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     ContentObserver mTosContentObserver;
     @VisibleForTesting
     ContentObserver mTosDisabledAppsContentObserver;
+    private BackgroundAnimationHelper mBackgroundAnimationHelper;
 
     /**
      * enum to define the state of display area possible.
@@ -451,6 +453,9 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         mPaginationController = new PaginationController(windowBackground, dimensionUpdateCallback);
 
         mBanner = requireViewById(R.id.tos_banner);
+
+        mBackgroundAnimationHelper = new BackgroundAnimationHelper(windowBackground, mBanner);
+
         setupTosBanner();
 
         setupContentObserversForTos();
@@ -598,6 +603,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     @Override
     protected void onPause() {
         dismissForceStopMenus();
+        // Required as banner needs to be animated when activity is resumed
+        if (showTosBanner(/* context = */ this)) {
+            mBackgroundAnimationHelper.hideBanner();
+        }
+
         super.onPause();
     }
 
@@ -913,22 +923,30 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     }
 
     private void setupTosBanner() {
+        if (AppLauncherUtils.tosAccepted(/* context = */ this)) {
+            return;
+        }
+        mBanner.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                updateTosBannerVisibility();
+                mBanner.getViewTreeObserver().removeOnGlobalLayoutListener(/* victim = */ this);
+            }
+        });
         mBanner.setFirstButtonOnClickListener(v -> {
             Intent tosIntent = AppLauncherUtils.getIntentForTosAcceptanceFlow(v.getContext());
             AppLauncherUtils.launchApp(v.getContext(), tosIntent);
         });
         mBanner.setSecondButtonOnClickListener(
                 v -> {
-                    mBanner.setVisibility(View.GONE);
+                    mBackgroundAnimationHelper.hideBanner();
                     saveTosBannerDismissalTime();
                 });
     }
 
     private void updateTosBannerVisibility() {
         if (showTosBanner(/* context = */ this)) {
-            runOnUiThread(() -> {
-                mBanner.setVisibility(View.VISIBLE);
-            });
+            mBackgroundAnimationHelper.showBanner();
         } else {
             mBanner.setVisibility(View.GONE);
         }
