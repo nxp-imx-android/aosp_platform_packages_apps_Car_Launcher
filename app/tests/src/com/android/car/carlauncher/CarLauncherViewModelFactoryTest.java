@@ -34,7 +34,7 @@ import android.view.WindowManager;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.android.car.carlauncher.TaskViewManagerTest.TestActivity;
+import com.android.car.carlauncher.CarLauncherViewModelTest.TestActivity;
 
 import org.junit.After;
 import org.junit.Before;

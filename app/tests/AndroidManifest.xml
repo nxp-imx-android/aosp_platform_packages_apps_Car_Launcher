@@ -23,9 +23,7 @@
         android:label="@string/app_test_title"
         tools:replace="android:label">
 
-        <activity android:name="com.android.car.carlauncher.TaskViewManagerTest$TestActivity"/>
-        <activity
-            android:name="com.android.car.carlauncher.TaskViewInputInterceptorTest$TestActivity"/>
+        <activity android:name="com.android.car.carlauncher.CarLauncherViewModelTest$TestActivity"/>
         <uses-library android:name="android.test.runner"/>
         <provider android:name="com.android.car.carlauncher.calmmode.CalmModeQCProvider"
                  tools:node="remove"/>
