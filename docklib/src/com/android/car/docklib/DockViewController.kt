@@ -26,7 +26,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.getSystemService
 import com.android.car.docklib.events.DockEventsReceiver
-import com.android.car.docklib.events.DockPackageRemovedReceiver
+import com.android.car.docklib.events.DockPackageChangeReceiver
 import com.android.car.docklib.task.DockTaskStackChangeListener
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
@@ -56,7 +56,7 @@ class DockViewController(
     private val dockViewWeakReference: WeakReference<DockView>
     private val dockViewModel: DockViewModel
     private val dockEventsReceiver: DockEventsReceiver
-    private val dockPackageRemovedReceiver: DockPackageRemovedReceiver
+    private val dockPackageRemovedReceiver: DockPackageChangeReceiver
     private val taskStackChangeListeners: TaskStackChangeListeners
     private val dockTaskStackChangeListener: DockTaskStackChangeListener
 
@@ -102,7 +102,7 @@ class DockViewController(
             }
         }
         dockEventsReceiver = DockEventsReceiver.registerDockReceiver(userContext, this)
-        dockPackageRemovedReceiver = DockPackageRemovedReceiver.registerReceiver(userContext, this)
+        dockPackageRemovedReceiver = DockPackageChangeReceiver.registerReceiver(userContext, this)
         dockTaskStackChangeListener =
                 DockTaskStackChangeListener(userContext.userId, this)
         taskStackChangeListeners = TaskStackChangeListeners.getInstance()
@@ -149,4 +149,9 @@ class DockViewController(
             dockViewModel.getIconColorWithScrim(componentName)
 
     override fun packageRemoved(packageName: String) = dockViewModel.removeItems(packageName)
+
+    override fun packageAdded(packageName: String) = dockViewModel.addMediaComponents(packageName)
+
+    override fun getMediaServiceComponents(): Set<ComponentName> =
+        dockViewModel.getMediaServiceComponents()
 }

@@ -21,10 +21,13 @@ import android.app.ActivityTaskManager
 import android.car.content.pm.CarPackageManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.service.media.MediaBrowserService
 import android.util.Log
 import android.view.Display
 import android.widget.Toast
@@ -38,6 +41,7 @@ import com.android.launcher3.icons.ColorExtractor
 import com.android.launcher3.icons.IconFactory
 import java.util.Collections
 import java.util.UUID
+import java.util.stream.Collectors
 
 /**
  * This class contains a live list of dock app items. All changes to dock items will go through it
@@ -71,6 +75,7 @@ open class DockViewModel(
             null // theme
     )
     private val currentItems = MutableLiveData<List<DockAppItem>>()
+    private val mediaServiceComponents = fetchMediaServiceComponents()
 
     /*
      * Maintain a mapping of dock index to dock item, with the order of addition,
@@ -164,8 +169,24 @@ open class DockViewModel(
     /** Removes all items of the given [packageName] from the dock. */
     fun removeItems(packageName: String) {
         internalItems.entries.removeAll { it.value.component.packageName == packageName }
+        val areMediaComponentsRemoved =
+            mediaServiceComponents.removeIf { it.packageName == packageName }
+        if (areMediaComponentsRemoved && DEBUG) {
+            Log.d(TAG, "Media components were removed for $packageName")
+        }
         currentItems.value = createDockList()
     }
+
+    /** Adds all media service components for the given [packageName]. */
+    fun addMediaComponents(packageName: String) {
+        val intent = Intent(MediaBrowserService.SERVICE_INTERFACE)
+        intent.setPackage(packageName)
+        val components = fetchMediaServiceComponents(intent)
+        if (DEBUG) Log.d(TAG, "Added media components: $components")
+        mediaServiceComponents.addAll(components)
+    }
+
+    fun getMediaServiceComponents(): Set<ComponentName> = mediaServiceComponents
 
     /**
      * Add a new app to the dock. If the app is already in the dock, the recency of the app is
@@ -375,6 +396,17 @@ open class DockViewModel(
             if (!existingKeys.contains(id)) return id
         }
         return UUID.randomUUID()
+    }
+
+    private fun fetchMediaServiceComponents(
+        intent: Intent = Intent(MediaBrowserService.SERVICE_INTERFACE)
+    ): MutableSet<ComponentName> {
+        return packageManager.queryIntentServices(
+            intent,
+            PackageManager.GET_RESOLVED_FILTER
+        ).stream()
+            .map { resolveInfo: ResolveInfo -> resolveInfo.serviceInfo.componentName }
+            .collect(Collectors.toSet())
     }
 
     /** To be disabled for tests since [Toast] cannot be shown on that process */

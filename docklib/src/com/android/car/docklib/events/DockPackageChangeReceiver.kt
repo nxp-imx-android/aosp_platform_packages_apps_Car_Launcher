@@ -26,26 +26,27 @@ import android.os.Build
 import android.util.Log
 import com.android.car.docklib.DockInterface
 
-class DockPackageRemovedReceiver(
+class DockPackageChangeReceiver(
     private val dockController: DockInterface
 ) : BroadcastReceiver() {
     companion object {
         private val DEBUG = Build.isDebuggable()
-        private const val TAG = "DockPackageRemovedReceiver"
+        private const val TAG = "DockPackageChangeReceiver"
 
         /**
-         * Helper method to register [DockPackageRemovedReceiver] through context and listen to
+         * Helper method to register [DockPackageChangeReceiver] through context and listen to
          * changes to packages in the system.
          *
-         * @param context the context through which the [DockPackageRemovedReceiver] is registered
-         * @return successfully registered [DockPackageRemovedReceiver].
+         * @param context the context through which the [DockPackageChangeReceiver] is registered
+         * @return successfully registered [DockPackageChangeReceiver].
          */
         fun registerReceiver(
             context: Context,
             dockController: DockInterface
-        ): DockPackageRemovedReceiver {
-            val receiver = DockPackageRemovedReceiver(dockController)
+        ): DockPackageChangeReceiver {
+            val receiver = DockPackageChangeReceiver(dockController)
             val filter = IntentFilter()
+            filter.addAction(Intent.ACTION_PACKAGE_ADDED)
             filter.addAction(Intent.ACTION_PACKAGE_REMOVED)
             filter.addAction(Intent.ACTION_PACKAGE_CHANGED)
             filter.addDataScheme("package")
@@ -53,7 +54,7 @@ class DockPackageRemovedReceiver(
             if (DEBUG) {
                 Log.d(
                     TAG,
-                    "DockPackageRemovedReceiver registered from package: " +
+                    "DockPackageChangeReceiver registered from package: " +
                             "${context.packageName}, for user ${context.userId}"
                 )
             }
@@ -62,17 +63,21 @@ class DockPackageRemovedReceiver(
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        val uid = intent?.getIntExtra(
-            Intent.EXTRA_UID,
-            -1 // defaultValue
-        )
-        if (DEBUG) Log.d(TAG, "uid: $uid")
-
-        if (uid == null || uid == -1) return
-
-        intent.data?.schemeSpecificPart?.let { packageName ->
+        intent?.data?.schemeSpecificPart?.let { packageName ->
             if (DEBUG) Log.d(TAG, "package name: $packageName")
             when (intent.action) {
+                Intent.ACTION_PACKAGE_ADDED -> {
+                    if (intent.getBooleanExtra(
+                            Intent.EXTRA_REPLACING,
+                            false // defaultValue
+                        )
+                    ) {
+                        return
+                    }
+                    if (DEBUG) Log.d(TAG, "ACTION_PACKAGE_ADDED")
+                    dockController.packageAdded(packageName)
+                }
+
                 Intent.ACTION_PACKAGE_REMOVED -> {
                     if (intent.getBooleanExtra(
                             Intent.EXTRA_REPLACING,
