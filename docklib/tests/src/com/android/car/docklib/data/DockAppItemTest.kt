@@ -88,6 +88,15 @@ class DockAppItemTest {
     }
 
     @Test
+    fun compareAppItems_notEqual_differentMediaType() {
+        val id = UUID.randomUUID()
+        val item1: DockAppItem = TestUtils.createAppItem(id = id, isMediaApp = true)
+        val item2: DockAppItem = TestUtils.createAppItem(id = id, isMediaApp = false)
+
+        assertThat(item1).isNotEqualTo(item2)
+    }
+
+    @Test
     fun compareAppItems_notEqual_differentIconColor() {
         val id = UUID.randomUUID()
         val item1: DockAppItem = TestUtils.createAppItem(id = id, iconColor = Color.WHITE)

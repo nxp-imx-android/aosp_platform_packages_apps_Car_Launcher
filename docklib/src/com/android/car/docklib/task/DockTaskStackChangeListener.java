@@ -22,7 +22,6 @@ import android.util.Log;
 import android.view.Display;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.android.car.docklib.DockInterface;
 import com.android.systemui.shared.system.TaskStackChangeListener;
@@ -48,18 +47,10 @@ public class DockTaskStackChangeListener implements TaskStackChangeListener {
             }
             return;
         }
-        ComponentName component = getComponentName(taskInfo);
+
+        ComponentName component = TaskUtils.Companion.getComponentName(taskInfo);
         if (component != null) {
             mDockController.appLaunched(component);
         }
-    }
-
-    @Nullable
-    private ComponentName getComponentName(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        if (taskInfo.baseActivity == null && taskInfo.baseIntent.getComponent() == null) {
-            return null;
-        }
-        return taskInfo.baseActivity != null ? taskInfo.baseActivity
-                : taskInfo.baseIntent.getComponent();
     }
 }

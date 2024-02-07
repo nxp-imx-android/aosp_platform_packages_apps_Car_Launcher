@@ -21,13 +21,10 @@ import android.app.ActivityTaskManager
 import android.car.content.pm.CarPackageManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.pm.ActivityInfo
+import android.content.pm.PackageItemInfo
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.service.media.MediaBrowserService
 import android.util.Log
 import android.view.Display
 import android.widget.Toast
@@ -36,12 +33,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.car.docklib.data.DockAppItem
 import com.android.car.docklib.data.DockItemId
+import com.android.car.docklib.media.MediaUtils
+import com.android.car.docklib.task.TaskUtils
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.ColorExtractor
 import com.android.launcher3.icons.IconFactory
 import java.util.Collections
 import java.util.UUID
-import java.util.stream.Collectors
 
 /**
  * This class contains a live list of dock app items. All changes to dock items will go through it
@@ -53,7 +51,7 @@ open class DockViewModel(
         private val packageManager: PackageManager,
         private var carPackageManager: CarPackageManager? = null,
         private val userId: Int = context.userId,
-        private val launcherActivities: List<ComponentName>? = null,
+        private var launcherActivities: MutableSet<ComponentName>,
         defaultPinnedItems: List<ComponentName>,
         private val excludedComponents: Set<ComponentName>,
         private val excludedPackages: Set<String>,
@@ -75,7 +73,7 @@ open class DockViewModel(
             null // theme
     )
     private val currentItems = MutableLiveData<List<DockAppItem>>()
-    private val mediaServiceComponents = fetchMediaServiceComponents()
+    private val mediaServiceComponents = MediaUtils.fetchMediaServiceComponents(packageManager)
 
     /*
      * Maintain a mapping of dock index to dock item, with the order of addition,
@@ -90,7 +88,11 @@ open class DockViewModel(
     init {
         defaultPinnedItems.forEachIndexed { index, component ->
             if (index < maxItemsInDock) {
-                createDockItem(component, DockAppItem.Type.STATIC)?.let { dockItem ->
+                createDockItem(
+                    component,
+                    DockAppItem.Type.STATIC,
+                    isMediaApp(component)
+                )?.let { dockItem ->
                     internalItems[index] = dockItem
                 }
             }
@@ -126,7 +128,11 @@ open class DockViewModel(
      */
     fun pinItem(component: ComponentName, indexToPin: Int? = null) {
         if (DEBUG) Log.d(TAG, "Pin Item, component: $component, indexToPin: $indexToPin")
-        createDockItem(component, DockAppItem.Type.STATIC)?.let { dockItem ->
+        createDockItem(
+            component,
+            DockAppItem.Type.STATIC,
+            isMediaApp(component)
+        )?.let { dockItem ->
             if (indexToPin != null) {
                 if (indexToPin in 0..<maxItemsInDock) {
                     if (DEBUG) Log.d(TAG, "Pinning $component at $indexToPin")
@@ -174,16 +180,20 @@ open class DockViewModel(
         if (areMediaComponentsRemoved && DEBUG) {
             Log.d(TAG, "Media components were removed for $packageName")
         }
+        launcherActivities.removeAll { it.packageName == packageName }
         currentItems.value = createDockList()
     }
 
     /** Adds all media service components for the given [packageName]. */
     fun addMediaComponents(packageName: String) {
-        val intent = Intent(MediaBrowserService.SERVICE_INTERFACE)
-        intent.setPackage(packageName)
-        val components = fetchMediaServiceComponents(intent)
+        val components = MediaUtils.fetchMediaServiceComponents(packageManager, packageName)
         if (DEBUG) Log.d(TAG, "Added media components: $components")
         mediaServiceComponents.addAll(components)
+    }
+
+    /** Adds all launcher components. */
+    fun addLauncherComponents(components: List<ComponentName>) {
+        launcherActivities.addAll(components)
     }
 
     fun getMediaServiceComponents(): Set<ComponentName> = mediaServiceComponents
@@ -208,7 +218,11 @@ open class DockViewModel(
                         ?: indexOfLeastRecentDynamicItemInDock()
         if (indexToUpdate == null || indexToUpdate >= maxItemsInDock) return
 
-        createDockItem(component)?.let { newDockItem ->
+        createDockItem(
+            component,
+            DockAppItem.Type.DYNAMIC,
+            isMediaApp(component)
+        )?.let { newDockItem ->
             if (DEBUG) Log.d(TAG, "Updating $component at $indexToUpdate")
             internalItems.remove(indexToUpdate)
             internalItems[indexToUpdate] = newDockItem
@@ -246,11 +260,13 @@ open class DockViewModel(
             if (internalItems.contains(index)) continue
 
             var isItemFound = false
-            for (component in runningTaskList.mapNotNull {
-                it.baseActivity ?: it.baseIntent.component
-            }) {
+            for (component in runningTaskList.mapNotNull { TaskUtils.getComponentName(it) }) {
                 if (!isItemExcluded(component) && !isItemInDock(component)) {
-                    createDockItem(component, DockAppItem.Type.DYNAMIC)?.let { dockItem ->
+                    createDockItem(
+                        component,
+                        DockAppItem.Type.DYNAMIC,
+                        isMediaApp(component)
+                    )?.let { dockItem ->
                         if (DEBUG) {
                             Log.d(TAG, "Adding recent item(${dockItem.component}) at $index")
                         }
@@ -263,9 +279,13 @@ open class DockViewModel(
 
             if (isItemFound) continue
 
-            launcherActivities?.shuffled()?.forEach {
-                if (!isItemExcluded(it) && !isItemInDock(it)) {
-                    createDockItem(componentName = it, DockAppItem.Type.DYNAMIC)?.let { dockItem ->
+            for (component in launcherActivities.shuffled()) {
+                if (!isItemExcluded(component) && !isItemInDock(component)) {
+                    createDockItem(
+                        componentName = component,
+                        DockAppItem.Type.DYNAMIC,
+                        isMediaApp(component)
+                    )?.let { dockItem ->
                         if (DEBUG) {
                             Log.d(TAG, "Adding recommended item(${dockItem.component}) at $index")
                         }
@@ -273,6 +293,7 @@ open class DockViewModel(
                         isItemFound = true
                     }
                 }
+                if (isItemFound) break
             }
 
             if (!isItemFound) {
@@ -341,12 +362,13 @@ open class DockViewModel(
     /* Creates Dock item from a ComponentName. */
     private fun createDockItem(
             componentName: ComponentName,
-            itemType: DockAppItem.Type = DockAppItem.Type.DYNAMIC,
+            itemType: DockAppItem.Type,
+            isMediaApp: Boolean,
     ): DockAppItem? {
         // TODO: Compare the component against LauncherApps to make sure the component
         // is launchable, similar to what app grid has
 
-        val ai = getActivityInfo(componentName) ?: return null
+        val ai = getPackageItemInfo(componentName) ?: return null
         // todo(b/315210225): handle getting icon lazily
         val icon = ai.loadIcon(packageManager)
         val iconColor = getIconColor(icon)
@@ -358,19 +380,29 @@ open class DockViewModel(
                 icon = icon,
                 iconColor = iconColor,
                 isDistractionOptimized =
-                carPackageManager?.isActivityDistractionOptimized(
-                        componentName.packageName,
-                        componentName.className
-                ) ?: false
+                isMediaApp || (carPackageManager?.isActivityDistractionOptimized(
+                    componentName.packageName,
+                    componentName.className
+                ) ?: false),
+            isMediaApp = isMediaApp
         )
     }
 
-    private fun getActivityInfo(componentName: ComponentName): ActivityInfo? {
+    private fun getPackageItemInfo(componentName: ComponentName): PackageItemInfo? {
         try {
-            return packageManager.getActivityInfo(
-                    componentName,
-                    PackageManager.ComponentInfoFlags.of(0L)
+            val isMediaApp = isMediaApp(componentName)
+            val pkgInfo = packageManager.getPackageInfo(
+                componentName.packageName,
+                PackageManager.PackageInfoFlags.of(
+                    (if (isMediaApp) PackageManager.GET_SERVICES else PackageManager.GET_ACTIVITIES)
+                        .toLong()
+                )
             )
+            return if (isMediaApp) {
+                pkgInfo.services?.find { it.componentName == componentName }
+            } else {
+                pkgInfo.activities?.find { it.componentName == componentName }
+            }
         } catch (e: PackageManager.NameNotFoundException) {
             if (DEBUG) {
                 // don't need to crash for this failure, log error instead
@@ -381,7 +413,7 @@ open class DockViewModel(
     }
 
     private fun getIconColor(componentName: ComponentName): Int {
-        val ai = getActivityInfo(componentName) ?: return defaultIconColor
+        val ai = getPackageItemInfo(componentName) ?: return defaultIconColor
         return getIconColor(ai.loadIcon(packageManager))
     }
 
@@ -398,16 +430,7 @@ open class DockViewModel(
         return UUID.randomUUID()
     }
 
-    private fun fetchMediaServiceComponents(
-        intent: Intent = Intent(MediaBrowserService.SERVICE_INTERFACE)
-    ): MutableSet<ComponentName> {
-        return packageManager.queryIntentServices(
-            intent,
-            PackageManager.GET_RESOLVED_FILTER
-        ).stream()
-            .map { resolveInfo: ResolveInfo -> resolveInfo.serviceInfo.componentName }
-            .collect(Collectors.toSet())
-    }
+    private fun isMediaApp(component: ComponentName) = mediaServiceComponents.contains(component)
 
     /** To be disabled for tests since [Toast] cannot be shown on that process */
     @VisibleForTesting

@@ -179,7 +179,9 @@ class DockItemViewHolder(
         appIcon.contentDescription = dockAppItem.name
         appIcon.setImageDrawable(dockAppItem.icon)
         appIcon.postDelayed({ callback?.run() }, CLEANUP_DELAY)
-        appIcon.setOnClickListener { dockController.launchApp(dockAppItem.component) }
+        appIcon.setOnClickListener {
+            dockController.launchApp(dockAppItem.component, dockAppItem.isMediaApp)
+        }
         dockItemLongClickListener = DockItemLongClickListener(
                 dockAppItem,
                 pinItemClickDelegate = { dockController.appPinned(dockAppItem.id) },

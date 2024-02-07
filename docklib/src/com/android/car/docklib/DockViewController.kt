@@ -16,6 +16,7 @@
 
 package com.android.car.docklib
 
+import android.app.ActivityOptions
 import android.car.Car
 import android.car.content.pm.CarPackageManager
 import android.car.media.CarMediaManager
@@ -28,6 +29,7 @@ import android.util.Log
 import androidx.core.content.getSystemService
 import com.android.car.docklib.events.DockEventsReceiver
 import com.android.car.docklib.events.DockPackageChangeReceiver
+import com.android.car.docklib.media.MediaUtils
 import com.android.car.docklib.task.DockTaskStackChangeListener
 import com.android.car.docklib.view.DockAdapter
 import com.android.car.docklib.view.DockView
@@ -60,15 +62,18 @@ class DockViewController(
     private val dockPackageChangeReceiver: DockPackageChangeReceiver
     private val taskStackChangeListeners: TaskStackChangeListeners
     private val dockTaskStackChangeListener: DockTaskStackChangeListener
+    private val launcherApps = userContext.getSystemService<LauncherApps>()
 
     init {
         if (DEBUG) Log.d(TAG, "Init DockViewController for user ${userContext.userId}")
         val adapter = DockAdapter(this, userContext)
         dockView.setAdapter(adapter)
         dockViewWeakReference = WeakReference(dockView)
-        val launcherActivities = userContext.getSystemService<LauncherApps>()
+
+        val launcherActivities = launcherApps
                 ?.getActivityList(null, userContext.user)
                 ?.map { it.componentName }
+                ?.toMutableSet() ?: mutableSetOf()
 
         dockViewModel = DockViewModel(
                 maxItemsInDock = numItems,
@@ -138,14 +143,19 @@ class DockViewController(
     override fun appLaunched(componentName: ComponentName) =
             dockViewModel.addDynamicItem(componentName)
 
-    override fun launchApp(componentName: ComponentName) {
-        val intent = Intent(Intent.ACTION_MAIN)
+    override fun launchApp(componentName: ComponentName, isMediaApp: Boolean) {
+        val intent = if (isMediaApp) {
+            MediaUtils.createLaunchIntent(componentName)
+        } else {
+            Intent(Intent.ACTION_MAIN)
                 .setComponent(componentName)
                 .addCategory(Intent.CATEGORY_LAUNCHER)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
+        }
+        val options = ActivityOptions.makeBasic()
+        options.setLaunchDisplayId(userContext.display.displayId)
         // todo(b/312718542): hidden api(context.startActivityAsUser) usage
-        userContext.startActivityAsUser(intent, userContext.user)
+        userContext.startActivityAsUser(intent, options.toBundle(), userContext.user)
     }
 
     override fun getIconColorWithScrim(componentName: ComponentName) =
@@ -153,7 +163,13 @@ class DockViewController(
 
     override fun packageRemoved(packageName: String) = dockViewModel.removeItems(packageName)
 
-    override fun packageAdded(packageName: String) = dockViewModel.addMediaComponents(packageName)
+    override fun packageAdded(packageName: String) {
+        dockViewModel.addMediaComponents(packageName)
+        dockViewModel.addLauncherComponents(
+            launcherApps?.getActivityList(packageName, userContext.user)
+                ?.map { it.componentName } ?: listOf()
+        )
+    }
 
     override fun getMediaServiceComponents(): Set<ComponentName> =
         dockViewModel.getMediaServiceComponents()

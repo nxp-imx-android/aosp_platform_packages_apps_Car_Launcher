@@ -41,6 +41,7 @@ data class DockAppItem(
         @ColorInt val iconColor: Int,
         @ColorInt private val iconColorScrim: Int = defaultIconColorScrim,
         val isDistractionOptimized: Boolean,
+        val isMediaApp: Boolean,
 ) {
     companion object{
         private val defaultIconColorScrim = GraphicsUtils.setColorAlphaBound(
@@ -83,7 +84,8 @@ data class DockAppItem(
                         this.icon.constantState == other.icon.constantState &&
                         this.iconColor == other.iconColor &&
                         this.iconColorWithScrim == other.iconColorWithScrim &&
-                        this.isDistractionOptimized == other.isDistractionOptimized)
+                        this.isDistractionOptimized == other.isDistractionOptimized &&
+                        this.isMediaApp == other.isMediaApp)
     }
 
     override fun toString(): String {
