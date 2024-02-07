@@ -21,7 +21,7 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
-class DockPackageRemovedReceiverTest {
+class DockPackageChangeReceiverTest {
     private companion object {
         private const val TEST_UID = 10
         private const val TEST_PKG_NAME = "TEST_PKG_NAME"
@@ -36,7 +36,7 @@ class DockPackageRemovedReceiverTest {
     private val intentMock = mock<Intent> {
         on { data } doReturn uriMock
     }
-    private val dockPackageRemovedReceiver = DockPackageRemovedReceiver(dockInterfaceMock)
+    private val dockPackageChangeReceiver = DockPackageChangeReceiver(dockInterfaceMock)
 
     @Test
     fun onReceive_uidNotSent_noop() {
@@ -44,7 +44,7 @@ class DockPackageRemovedReceiverTest {
         whenever(intentMock.getIntExtra(eq(Intent.EXTRA_UID), anyInt()))
             .then { it.getArgument<Int>(1) }
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verifyNoMoreInteractions(dockInterfaceMock)
     }
@@ -54,7 +54,7 @@ class DockPackageRemovedReceiverTest {
         whenever(intentMock.getIntExtra(eq(Intent.EXTRA_UID), anyInt())).thenReturn(TEST_UID)
         whenever(uriMock.schemeSpecificPart).thenReturn(null)
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verifyNoMoreInteractions(dockInterfaceMock)
     }
@@ -67,7 +67,7 @@ class DockPackageRemovedReceiverTest {
         whenever(intentMock.getIntExtra(eq(Intent.EXTRA_UID), anyInt())).thenReturn(TEST_UID)
         whenever(uriMock.schemeSpecificPart).thenReturn(TEST_PKG_NAME)
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verifyNoMoreInteractions(dockInterfaceMock)
     }
@@ -80,9 +80,35 @@ class DockPackageRemovedReceiverTest {
         whenever(intentMock.getIntExtra(eq(Intent.EXTRA_UID), anyInt())).thenReturn(TEST_UID)
         whenever(uriMock.schemeSpecificPart).thenReturn(TEST_PKG_NAME)
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verify(dockInterfaceMock).packageRemoved(eq(TEST_PKG_NAME))
+    }
+
+    @Test
+    fun onReceive_actionPackageAdded_replacing_noop() {
+        whenever(intentMock.action).thenReturn(Intent.ACTION_PACKAGE_ADDED)
+        whenever(intentMock.getBooleanExtra(eq(Intent.EXTRA_REPLACING), anyBoolean()))
+            .thenReturn(true)
+        whenever(intentMock.getIntExtra(eq(Intent.EXTRA_UID), anyInt())).thenReturn(TEST_UID)
+        whenever(uriMock.schemeSpecificPart).thenReturn(TEST_PKG_NAME)
+
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
+
+        verifyNoMoreInteractions(dockInterfaceMock)
+    }
+
+    @Test
+    fun onReceive_actionPackageAdded_notReplacing_packageAddedCalled() {
+        whenever(intentMock.action).thenReturn(Intent.ACTION_PACKAGE_ADDED)
+        whenever(intentMock.getBooleanExtra(eq(Intent.EXTRA_REPLACING), anyBoolean()))
+            .thenReturn(false)
+        whenever(intentMock.getIntExtra(eq(Intent.EXTRA_UID), anyInt())).thenReturn(TEST_UID)
+        whenever(uriMock.schemeSpecificPart).thenReturn(TEST_PKG_NAME)
+
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
+
+        verify(dockInterfaceMock).packageAdded(eq(TEST_PKG_NAME))
     }
 
     @Test
@@ -93,7 +119,7 @@ class DockPackageRemovedReceiverTest {
         whenever(packageManagerMock.getApplicationEnabledSetting(eq(TEST_PKG_NAME)))
             .thenReturn(COMPONENT_ENABLED_STATE_ENABLED)
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verifyNoMoreInteractions(dockInterfaceMock)
     }
@@ -106,7 +132,7 @@ class DockPackageRemovedReceiverTest {
         whenever(packageManagerMock.getApplicationEnabledSetting(eq(TEST_PKG_NAME)))
             .thenReturn(COMPONENT_ENABLED_STATE_DISABLED)
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verify(dockInterfaceMock).packageRemoved(eq(TEST_PKG_NAME))
     }
@@ -119,7 +145,7 @@ class DockPackageRemovedReceiverTest {
         whenever(packageManagerMock.getApplicationEnabledSetting(eq(TEST_PKG_NAME)))
             .thenReturn(COMPONENT_ENABLED_STATE_DISABLED_USER)
 
-        dockPackageRemovedReceiver.onReceive(contextMock, intentMock)
+        dockPackageChangeReceiver.onReceive(contextMock, intentMock)
 
         verify(dockInterfaceMock).packageRemoved(eq(TEST_PKG_NAME))
     }

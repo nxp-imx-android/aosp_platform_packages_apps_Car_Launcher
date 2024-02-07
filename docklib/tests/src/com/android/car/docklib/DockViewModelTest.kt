@@ -66,7 +66,11 @@ class DockViewModelTest {
         on { getString(eq(R.string.pin_failed_no_spots)) } doReturn TOAST_STR
         on { resources } doReturn resourcesMock
     }
-    private val packageManagerMock = mock<PackageManager> {}
+    private val packageManagerMock = mock<PackageManager> {
+        on {
+            queryIntentServices(any<Intent>(), any<PackageManager.ResolveInfoFlags>())
+        } doReturn listOf()
+    }
     private var carPackageManagerMock = mock<CarPackageManager> {}
     private var bitmapMock = mock<Bitmap> {}
     private var iconFactoryMock = mock<IconFactory> {

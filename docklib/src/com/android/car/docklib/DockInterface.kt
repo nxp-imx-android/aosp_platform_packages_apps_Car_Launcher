@@ -45,9 +45,18 @@ interface DockInterface {
      */
     fun packageRemoved(packageName: String)
 
+    /**
+     * called when an app is installed in the system or is enabled in the dock.
+     * @param packageName packageName of removed package
+     */
+    fun packageAdded(packageName: String)
+
     /** called to launch an app */
     fun launchApp(componentName: ComponentName)
 
     /** @return the dominant color to be used with the icon corresponding to [componentName] */
     fun getIconColorWithScrim(componentName: ComponentName): Int
+
+    /** get the set of all media service components */
+    fun getMediaServiceComponents(): Set<ComponentName>
 }
