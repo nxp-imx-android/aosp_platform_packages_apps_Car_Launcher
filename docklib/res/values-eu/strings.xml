@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Paketeak oinarrira gertaerak igortzeko baimena behar du."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Oinarriaren igorpen-hargailua"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Entzuteko paketeak oinarrira gertaerak igortzeko baimena behar du."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"Ez dago ainguratzeko tokirik erabilgarri"</string>
 </resources>

@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"ড’কলৈ ইভেণ্ট সম্প্ৰচাৰ কৰিবলৈ পেকেজক অনুমতিৰ প্ৰয়োজন।"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"ড’কৰ সম্প্ৰচাৰ ৰিচিভাৰ"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ড’কটোৰ বাবে অনুষ্ঠান সম্প্ৰচাৰ কৰিবলৈ পেকেজ শুনাৰ অনুমতিৰ আৱশ্যক।"</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"পিন কৰিবলৈ কোনো স্থান নাই"</string>
 </resources>

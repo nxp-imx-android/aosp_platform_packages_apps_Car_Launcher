@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Tarvitaan lupa, jotta paketti voi lähettää tapahtumia telineeseen."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Telineen lähetysvastaanotin"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Paketti tarvitsee luvan kuunteluun, jotta se voi lähettää tapahtumia telineeseen."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"Ei kohtaa, johon sovelluksen voi kiinnittää"</string>
 </resources>

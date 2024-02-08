@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Изисква се разрешение, за да може пакетът да съобщава събития към докинг станцията"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Приемник на излъчвания от докинг станцията"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Изисква се разрешение за слушане на пакета с цел съобщаване на събития към докинг станцията."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"Няма налично място за фиксиране"</string>
 </resources>

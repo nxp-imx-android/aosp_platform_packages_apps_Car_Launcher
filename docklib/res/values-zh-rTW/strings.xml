@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"必須授予權限，套件才能將事件播送到工具列。"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"工具列廣播接收器"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"必須授予權限，套件監聽才能播送工具列的事件。"</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"沒有可以固定的地點"</string>
 </resources>

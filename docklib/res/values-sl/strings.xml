@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Paket potrebuje dovoljenje za objavljanje dogodkov v vrstici z aplikacijami."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Sprejemnik za objavljanje v vrstici z aplikacijami"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Poslušanje paketov potrebuje dovoljenje za objavljanje dogodkov za vrstico z aplikacijami."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"Ni mesta za pripenjanje"</string>
 </resources>
