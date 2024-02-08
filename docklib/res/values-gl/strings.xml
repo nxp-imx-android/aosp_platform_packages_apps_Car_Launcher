@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Requírese permiso para que o paquete poida difundir eventos á barra de aplicacións."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Receptor de difusións da barra de aplicacións"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Requírese permiso para que o paquete poida escoitar co fin de difundir eventos á barra de aplicacións."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"Non hai ningún oco para fixar o contido"</string>
 </resources>

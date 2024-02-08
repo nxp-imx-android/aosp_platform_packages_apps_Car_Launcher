@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"डॉक वर इव्हेंट ब्रॉडकास्ट करण्यासाठी पॅकेजला परवानगी हवी आहे."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"डॉक ब्रॉडकास्ट प्राप्‍तकर्ता"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"डॉक साठीचे ब्रॉडकास्ट इव्हेंट ऐकण्याकरिता पॅकेजला परवानगी हवी आहे."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"पिन करण्यासाठी जागा उपलब्ध नाही"</string>
 </resources>

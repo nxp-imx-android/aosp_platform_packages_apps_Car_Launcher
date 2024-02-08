@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Engedély szükséges a csomag számára, hogy eseményeket közvetíthessen a dokkra."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Dokk broadcast receivere"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Engedély szükséges a csomag számára, hogy figyelhesse a dokkhoz kapcsolódó közvetítési eseményeket."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"Nincs rendelkezésre álló hely a kitűzéshez"</string>
 </resources>
