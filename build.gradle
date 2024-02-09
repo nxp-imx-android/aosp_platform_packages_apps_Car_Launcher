@@ -52,12 +52,12 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.1.2' apply false
-    id 'com.android.library' version '8.1.2' apply false
+    // TODO b/324426571: The version for com.android.application and com.android.library is 8.1.2
+    id 'com.android.application' apply false
+    id 'com.android.library' apply false
     id 'org.jetbrains.kotlin.android' version '1.8.21' apply false
     id 'com.google.protobuf' version '0.9.1' apply false
 }
-
 
 allprojects {
     tasks.withType(JavaCompile).tap {
@@ -68,4 +68,5 @@ allprojects {
             options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
         }
     }
+    ext.ANDROID_TOP = gradle.ext.repoRootPath
 }
