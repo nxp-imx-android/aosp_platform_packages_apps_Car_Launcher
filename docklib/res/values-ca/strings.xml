@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"Es necessita permís perquè el paquet emeti esdeveniments al connector."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"Receptor d\'emissió al connector"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"Es necessita permís perquè el paquet escolti els esdeveniments d\'emissió per al connector."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"No hi ha cap lloc disponible per fixar"</string>
 </resources>

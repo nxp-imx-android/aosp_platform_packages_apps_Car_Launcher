@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"ਡੌਕ \'ਤੇ ਇਵੈਂਟਾਂ ਦਾ ਪ੍ਰਸਾਰਨ ਕਰਨ ਲਈ ਪੈਕੇਜ ਵਾਸਤੇ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਹੈ।"</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"ਡੌਕ broadcast receiver"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"ਡੌਕ \'ਤੇ ਇਵੈਂਟਾਂ ਦਾ ਪ੍ਰਸਾਰਨ ਕਰਨ ਲਈ ਪੈਕੇਜ ਵਾਸਤੇ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਹੈ।"</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"ਪਿੰਨ ਕਰਨ ਲਈ ਕੋਈ ਥਾਂ ਉਪਲਬਧ ਨਹੀਂ ਹੈ"</string>
 </resources>

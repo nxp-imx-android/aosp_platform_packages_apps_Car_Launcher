@@ -21,6 +21,5 @@
     <string name="broadcast_sender_permission_desc" msgid="5052882219053515363">"נדרשת הרשאה כדי שהחבילה תוכל לשדר אירועים למגש האפליקציות."</string>
     <string name="broadcast_receiver_permission_label" msgid="6015991948761587466">"מקלט השידורים של מגש האפליקציות"</string>
     <string name="broadcast_receiver_permission_desc" msgid="1623002370607914795">"נדרשת הרשאה כדי שהחבילה תוכל לקלוט אירועים שישודרו למגש האפליקציות."</string>
-    <!-- no translation found for pin_failed_no_spots (745687732976464502) -->
-    <skip />
+    <string name="pin_failed_no_spots" msgid="745687732976464502">"אין מקום פנוי להצמדה"</string>
 </resources>
