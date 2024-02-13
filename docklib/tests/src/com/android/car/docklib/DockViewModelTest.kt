@@ -693,8 +693,10 @@ class DockViewModelTest {
 
     private fun createMockActivityInfo(component: ComponentName): ActivityInfo {
         val icon = mock<Drawable> {}
-        val ai = mock<ActivityInfo> { on { loadIcon(any()) } doReturn icon }
-        ai.name = "${component.packageName}-${component.className}"
+        val ai = mock<ActivityInfo> {
+            on { loadIcon(any()) } doReturn icon
+            on { loadLabel(any()) } doReturn "${component.packageName}-${component.className}"
+        }
         return ai
     }
 }

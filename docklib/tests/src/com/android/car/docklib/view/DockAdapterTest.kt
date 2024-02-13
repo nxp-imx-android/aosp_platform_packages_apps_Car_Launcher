@@ -1,5 +1,6 @@
 package com.android.car.docklib.view
 
+import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.car.docklib.DockInterface
 import com.android.car.docklib.data.DockAppItem
@@ -20,8 +21,9 @@ class DockAdapterTest {
     private val dockInterfaceMock = mock<DockInterface> {}
     private val dockItemViewHolderMock = mock<DockItemViewHolder> {}
     private val runnableMock = mock<Runnable> {}
+    private val contextMock = mock<Context> {}
+    private val dockAdapter: DockAdapter = spy(DockAdapter(dockInterfaceMock, contextMock))
     private val dockItemList: MutableList<DockAppItem> = mutableListOf()
-    private val dockAdapter: DockAdapter = spy(DockAdapter(dockInterfaceMock))
 
     @Before
     fun setup() {
