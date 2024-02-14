@@ -27,7 +27,6 @@ import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_MEDIA_SERVIC
 import static com.android.car.carlauncher.hidden.HiddenApiAccess.getDragSurface;
 
 import android.animation.ValueAnimator;
-import android.app.AlertDialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.car.Car;
@@ -63,7 +62,6 @@ import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -82,7 +80,6 @@ import com.android.car.carlauncher.recyclerview.AppGridAdapter;
 import com.android.car.carlauncher.recyclerview.AppGridItemAnimator;
 import com.android.car.carlauncher.recyclerview.AppGridLayoutManager;
 import com.android.car.carlauncher.recyclerview.AppItemViewHolder;
-import com.android.car.ui.AlertDialogBuilder;
 import com.android.car.ui.FocusArea;
 import com.android.car.ui.baselayout.Insets;
 import com.android.car.ui.baselayout.InsetsChangedListener;
@@ -129,7 +126,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private CarPackageManager mCarPackageManager;
     private CarMediaManager mCarMediaManager;
     private Mode mMode;
-    private AlertDialog mStopAppAlertDialog;
     private LauncherAppsInfo mAppsInfo;
     private LauncherViewModel mLauncherModel;
     private AppGridAdapter mAdapter;
@@ -155,7 +151,6 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
     private int mCurrentScrollOffset;
     private int mCurrentScrollState;
     private int mNextScrollDestination;
-    private RecyclerView.ItemDecoration mPageMarginDecorator;
     private AppGridPageSnapper.AppGridPageSnapCallback mSnapCallback;
     private AppItemViewHolder.AppItemDragCallback mDragCallback;
 
@@ -254,7 +249,7 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
                 mLayoutManager.setShouldLayoutChildren(true);
                 mRecyclerView.cancelDragAndDrop();
             }
-            dismissForceStopMenus();
+            dismissShortcutPopup();
         }
     }
 
@@ -602,12 +597,11 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
 
     @Override
     protected void onPause() {
-        dismissForceStopMenus();
+        dismissShortcutPopup();
         // Required as banner needs to be animated when activity is resumed
         if (showTosBanner(/* context = */ this)) {
             mBackgroundAnimationHelper.hideBanner();
         }
-
         super.onPause();
     }
 
@@ -736,47 +730,12 @@ public class AppGridActivity extends AppCompatActivity implements InsetsChangedL
         sCarUiShortcutsPopup = carUiShortcutsPopup;
     }
 
-    @Override
-    public void onShortcutsItemClick(String packageName, CharSequence displayName,
-            boolean allowStopApp) {
-        AlertDialogBuilder builder = new AlertDialogBuilder(this)
-                .setTitle(R.string.app_launcher_stop_app_dialog_title);
-
-        if (allowStopApp) {
-            builder.setMessage(R.string.app_launcher_stop_app_dialog_text)
-                    .setPositiveButton(android.R.string.ok,
-                            (d, w) -> AppLauncherUtils.forceStop(packageName, AppGridActivity.this,
-                                    displayName, mCarMediaManager, mAppsInfo.getMediaServices(),
-                                    this))
-                    .setNegativeButton(android.R.string.cancel, /* onClickListener= */ null);
-        } else {
-            builder.setMessage(R.string.app_launcher_stop_app_cant_stop_text)
-                    .setNeutralButton(android.R.string.ok, /* onClickListener= */ null);
-        }
-        mStopAppAlertDialog = builder.show();
-    }
-
-    @Override
-    public void onStopAppSuccess(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-    }
-
     private void dismissShortcutPopup() {
         // TODO (b/268563442): shortcut popup is set to be static since its
         // sometimes recreated when taskview is present, find out why
         if (sCarUiShortcutsPopup != null) {
             sCarUiShortcutsPopup.dismiss();
             sCarUiShortcutsPopup = null;
-        }
-    }
-
-    private void dismissForceStopMenus() {
-        if (sCarUiShortcutsPopup != null) {
-            sCarUiShortcutsPopup.dismissImmediate();
-            sCarUiShortcutsPopup = null;
-        }
-        if (mStopAppAlertDialog != null) {
-            mStopAppAlertDialog.dismiss();
         }
     }
 

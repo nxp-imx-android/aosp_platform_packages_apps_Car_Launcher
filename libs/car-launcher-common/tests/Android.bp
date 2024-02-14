@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2023 The Android Open Source Project
+// Copyright (C) 2024 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,34 +13,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-android_library {
-    name: "CarDockLib",
+android_test {
+    name: "CarLauncherCommonTests",
+
     srcs: [
         "src/**/*.java",
         "src/**/*.kt",
     ],
 
-    resource_dirs: ["res"],
-
-    libs: ["android.car"],
-
-    static_libs: [
-        "androidx.recyclerview_recyclerview",
-        "androidx.core_core-animation-nodeps",
-        "car-ui-lib-no-overlayable",
-        "androidx.lifecycle_lifecycle-extensions",
-        "com.google.android.material_material",
-        "CarDockUtilLib",
-        "CarLauncherCommon",
-        "SystemUISharedLib",
-        "iconloader",
+    libs: [
+        "android.test.base",
+        "android.car",
     ],
 
-    platform_apis: true,
+    optimize: {
+        enabled: false,
+    },
+
+    static_libs: [
+        "androidx.test.runner",
+        "androidx.test.ext.junit",
+        "mockito-target-extended",
+        "mockito-kotlin2",
+        "truth",
+        "CarLauncherCommon",
+        "flag-junit",
+    ],
 
     manifest: "AndroidManifest.xml",
+
+    instrumentation_for: "CarLauncherCommon",
+
+    dex_preopt: {
+        enabled: false,
+    },
+
+    jni_libs: [
+        // For mockito extended
+        "libdexmakerjvmtiagent",
+        "libstaticjvmtiagent",
+    ],
+
+    test_suites: [
+        "automotive-tests",
+    ],
 }
