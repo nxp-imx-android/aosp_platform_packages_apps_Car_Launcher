@@ -24,7 +24,7 @@
         <item>com.android.car.settings/com.android.car.settings.Settings_Launcher_Homepage</item>
         <item>com.android.car.dialer/com.android.car.dialer.ui.TelecomActivity</item>
         <item>com.android.contacts/com.android.contacts.activities.PeopleActivity</item>
-        <item>com.android.car.messenger/com.android.car.messenger.core.ui.launcher.MessageLauncherActivity</item>
+        <item>com.android.car.messenger/com.android.car.messenger.ui.launcher.MessageLauncherActivity</item>
     </string-array>
 
     <!-- A list of components that are excluded from being shown on Dock -->
@@ -36,6 +36,7 @@
     <string-array name="config_componentsExcludedFromDock" translatable="false">
         <item>com.google.android.apps.maps/com.google.android.apps.gmm.car.embedded.activity.LimitedMapsActivity</item>
         <item>com.google.android.carassistant/com.google.android.libraries.assistant.auto.tng.assistant.ui.activity.AutoAssistantActivity</item>
+        <item>com.android.car.media/com.android.car.media.MediaDispatcherActivity</item>
     </string-array>
 
     <!--

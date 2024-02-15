@@ -22,7 +22,8 @@ object TestUtils {
             icon: Drawable = mock<Drawable>(),
             @ColorInt iconColor: Int = Color.WHITE,
             @ColorInt iconColorScrim: Int? = null,
-            isDrivingOptimized: Boolean = true
+            isDrivingOptimized: Boolean = true,
+            isMediaApp: Boolean = false,
     ): DockAppItem {
         if (iconColorScrim != null) {
             return DockAppItem(
@@ -33,7 +34,8 @@ object TestUtils {
                     icon = icon,
                     iconColor = iconColor,
                     iconColorScrim = iconColorScrim,
-                    isDistractionOptimized = isDrivingOptimized
+                    isDistractionOptimized = isDrivingOptimized,
+                    isMediaApp = isMediaApp,
             )
         }
         return DockAppItem(
@@ -43,7 +45,8 @@ object TestUtils {
                 name = name,
                 icon = icon,
                 iconColor = iconColor,
-                isDistractionOptimized = isDrivingOptimized
+                isDistractionOptimized = isDrivingOptimized,
+                isMediaApp = isMediaApp,
         )
     }
 }
