@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"이 기능은 모든 맞춤설정 정렬을 삭제합니다. 계속하시겠습니까?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"모든 앱"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"미디어 앱"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"앱 종료"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"앱 정보"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱이 종료되었습니다."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"앱을 종료하시겠습니까?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"강제로 앱을 종료하면 예기치 않은 오류가 발생할 수 있습니다."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"앱을 닫을 수 없습니다."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"운전 중에는 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱을 사용할 수 없습니다."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"디버그 앱 숨기기"</string>

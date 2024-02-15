@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Esta función eliminará todo el orden personalizado. ¿Quieres continuar?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Todas las aplicaciones"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Aplicaciones multimedia"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Detener aplicación"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Información de la aplicación"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> se ha detenido."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"¿Detener la aplicación?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Si fuerzas la detención de una aplicación, puede que no funcione correctamente."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"La aplicación no se puede detener."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"<xliff:g id="APP_NAME">%1$s</xliff:g> no se puede usar mientras se conduce."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Ocultar aplicaciones de depuración"</string>

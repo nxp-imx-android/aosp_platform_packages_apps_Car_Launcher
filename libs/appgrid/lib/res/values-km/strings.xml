@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"មុខងារនេះនឹងដកការបញ្ជាទិញផ្ទាល់ខ្លួនទាំងអស់ចេញ។ តើ​អ្នក​ចង់​បន្ត​ដែរ​ឬ​ទេ?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"កម្មវិធី​ទាំងអស់"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"កម្មវិធីមេឌៀ"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"បញ្ឈប់កម្មវិធី"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"ព័ត៌មានកម្មវិធី"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> ត្រូវបានបញ្ឈប់។"</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"បញ្ឈប់កម្មវិធីឬ?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"ប្រសិនបើអ្នក​បង្ខំឱ្យបញ្ឈប់​កម្មវិធី​ កម្មវិធីអាចនឹង​ដំណើរការ​មិនត្រឹមត្រូវ។"</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"មិនអាច​បញ្ឈប់កម្មវិធី​បានទេ។"</string>
     <string name="driving_toast_text" msgid="397905281933065053">"មិនអាចប្រើ​ <xliff:g id="APP_NAME">%1$s</xliff:g> នៅពេលបើកបរបានទេ។"</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"លាក់កម្មវិធីជួសជុល"</string>

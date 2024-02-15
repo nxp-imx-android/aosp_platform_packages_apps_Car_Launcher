@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"ଏହି ଫଙ୍କସନ ସମସ୍ତ କଷ୍ଟମ ଅର୍ଡରିଂକୁ କାଢ଼ି ଦେବ। ଆପଣ ଜାରି ରଖିବାକୁ ଚାହାଁନ୍ତି?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"ସମସ୍ତ ଆପ୍ସ"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"ମିଡିଆ ଆପ୍ସ"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"ଆପକୁ ବନ୍ଦ କରନ୍ତୁ"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"ଆପ ସୂଚନା"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ବନ୍ଦ କରାଯାଇଛି।"</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"ଆପକୁ ବନ୍ଦ କରିବେ?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"ଯଦି ଆପଣ ଏକ ଆପକୁ ବାଧ୍ୟତାର ସହ ବନ୍ଦ କରନ୍ତି, ତେବେ ଏହା ଠିକ୍ ଭାବେ କାମ ନକରିପାରେ।"</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"ଆପ ବନ୍ଦ କରାଯାଇପାରିବ ନାହିଁ।"</string>
     <string name="driving_toast_text" msgid="397905281933065053">"ଡ୍ରାଇଭ୍ କରିବା ସମୟରେ <xliff:g id="APP_NAME">%1$s</xliff:g> ବ୍ୟବହାର କରାଯାଇପାରିବ ନାହିଁ।"</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"ଡିବଗ ଆପ୍ସ ଲୁଚାନ୍ତୁ"</string>

@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Táto funkcia zruší všetko vlastné poradie. Chcete pokračovať?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Všetky aplikácie"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Prehrávače"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Zastaviť aplikáciu"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Informácie o aplikácii"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"Aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g> bola zastavená."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Chcete zastaviť aplikáciu?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Ak vynútite zastavenie aplikácie, môže sa správať zvláštne."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Aplikáciu nie je možné ukončiť."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Pri šoférovaní nie je možné používať aplikáciu <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Skryť aplikácie na ladenie"</string>

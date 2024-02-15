@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Esta função vai remover toda a ordenação personalizada. Quer continuar?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Todas as apps"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Apps de multimédia"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Parar app"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Informações da app"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> foi parada."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Parar a app?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Se forçar a paragem de uma app, esta pode apresentar um comportamento anormal."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Não é possível parar a app."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Não é possível usar a app <xliff:g id="APP_NAME">%1$s</xliff:g> durante a condução."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Ocultar apps de depuração"</string>
