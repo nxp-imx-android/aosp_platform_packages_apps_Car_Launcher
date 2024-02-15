@@ -39,6 +39,7 @@ import java.util.Locale;
 @RunWith(AndroidJUnit4.class)
 public class NavigationStateDataTest extends AbstractExtendedMockitoTestCase {
 
+    private static final String SEPARATOR = "\\u0020\\u0020\\u0020\\u2022\\u0020\\u0020\\u0020";
     private static final String TIME_TO_DEST = "1hr 30min";
     private static final double DISTANCE_TO_DEST = 100;
     private static final String DISTANCE_TO_DEST_STR = "100";
@@ -85,14 +86,16 @@ public class NavigationStateDataTest extends AbstractExtendedMockitoTestCase {
 
     @Test
     public void testBuildTripStatusString_nullNavState_returnsNull() {
-        assertNull(NavigationStateData.buildTripStatusString(null, LOCALE_US));
+        assertNull(NavigationStateData.buildTripStatusString(null, LOCALE_US,
+                SEPARATOR));
     }
 
     @Test
     public void testBuildTripStatusString_nullTime_returnsNull() {
         when(mNavigationStateDataImperial.getTimeToDestination()).thenReturn(null);
         final String tripStatusActual =
-                NavigationStateData.buildTripStatusString(mNavigationStateDataImperial, null);
+                NavigationStateData.buildTripStatusString(mNavigationStateDataImperial, null,
+                        SEPARATOR);
         assertNull(tripStatusActual);
     }
 
@@ -100,25 +103,28 @@ public class NavigationStateDataTest extends AbstractExtendedMockitoTestCase {
     public void testBuildTripStatusString_nullDistanceUnit_returnsNull() {
         when(mNavigationStateDataImperial.getDistanceUnit()).thenReturn(null);
         final String tripStatusActual =
-                NavigationStateData.buildTripStatusString(mNavigationStateDataImperial, LOCALE_US);
+                NavigationStateData.buildTripStatusString(mNavigationStateDataImperial, LOCALE_US,
+                        SEPARATOR);
         assertNull(tripStatusActual);
     }
 
     @Test
     public void testBuildTripStatusString_navStateDataImperial_matchesForLocaleUS() {
         final String tripStatusExpected =
-                TIME_TO_DEST + "  " + DISTANCE_TO_DEST_STR + " " + DISTANCE_UNIT_IMPERIAL_STR;
+                TIME_TO_DEST + SEPARATOR + DISTANCE_TO_DEST_STR + " " + DISTANCE_UNIT_IMPERIAL_STR;
         final String tripStatusActual =
-                NavigationStateData.buildTripStatusString(mNavigationStateDataImperial, LOCALE_US);
+                NavigationStateData.buildTripStatusString(mNavigationStateDataImperial, LOCALE_US,
+                        SEPARATOR);
         assertEquals(tripStatusExpected, tripStatusActual);
     }
 
     @Test
     public void testBuildTripStatusString_navStateDataMetric_matchesForLocaleUS() {
         final String tripStatusExpected =
-                TIME_TO_DEST + "  " + DISTANCE_TO_DEST_STR + " " + DISTANCE_UNIT_METRIC_STR;
+                TIME_TO_DEST + SEPARATOR + DISTANCE_TO_DEST_STR + " " + DISTANCE_UNIT_METRIC_STR;
         final String tripStatusActual =
-                NavigationStateData.buildTripStatusString(mNavigationStateDataMetric, LOCALE_US);
+                NavigationStateData.buildTripStatusString(mNavigationStateDataMetric, LOCALE_US,
+                        SEPARATOR);
         assertEquals(tripStatusExpected, tripStatusActual);
     }
 }
