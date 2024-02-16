@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Bu funksiya fərdi sıralamanı siləcək. Davam edilsin?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Bütün tətbiqlər"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Media tətbiqləri"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Tətbiqi dayandırın"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Tətbiq haqqında"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> dayandırılıb."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Tətbiq dayandırılsın?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Tətbiqi məcburi dayandırsanız, səhv işləyə bilər."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Tətbiqi dayandırmaq olmur."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Avtomobil sürərkən <xliff:g id="APP_NAME">%1$s</xliff:g> istifadə edilə bilməz."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Sazlama tətbiqlərini gizlədin"</string>

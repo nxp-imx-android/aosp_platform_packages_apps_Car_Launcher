@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Denne funksjonen fjerner alle tilpassede rekkefølger. Vil du fortsette?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Alle apper"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Medieapper"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Stopp appen"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Appinformasjon"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> er stoppet."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Vil du stoppe appen?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Hvis du tvinger en app til å stoppe, kan det oppstå problemer."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Appen kan ikke stoppes."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Du kan ikke bruke <xliff:g id="APP_NAME">%1$s</xliff:g> mens du kjører."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Skjul feilsøkingsapper"</string>

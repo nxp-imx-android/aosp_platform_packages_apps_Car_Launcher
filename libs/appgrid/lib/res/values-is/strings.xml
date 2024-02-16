@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Þessi eiginleiki fjarlægir alla sérsniðna röðun. Viltu halda áfram?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Öll forrit"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Margmiðlunarforrit"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Stöðva forrit"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Upplýsingar um forrit"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> var stöðvað."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Stöðva forritið?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Ef þú þvingar lokun forrits gæti það látið illa."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Ekki er hægt að stöðva forrit."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Ekki er hægt að nota <xliff:g id="APP_NAME">%1$s</xliff:g> við akstur."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Fela villuleitarforrit"</string>

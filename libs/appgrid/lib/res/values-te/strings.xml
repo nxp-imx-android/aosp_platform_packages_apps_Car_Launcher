@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"ఈ ఫంక్షన్ అన్ని అనుకూల ఆర్డరింగ్‌ను తీసివేస్తుంది. మీరు కొనసాగాలనుకుంటున్నారా?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"అన్ని యాప్‌లు"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"మీడియా యాప్‌లు"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"యాప్‌ను ఆపివేయండి"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"యాప్ సమాచారం"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> ఆపివేయబడింది."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"యాప్‌ను ఆపివేయాలా?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"మీరు యాప్‌ను ఫోర్స్ ఆపివేస్తే, అది సరిగ్గా పని చేయకపోవచ్చు."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"యాప్‌ను ఆపడం సాధ్యం కాదు."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"డ్రైవింగ్ చేస్తున్నపుడు <xliff:g id="APP_NAME">%1$s</xliff:g>ను ఉపయోగించలేరు."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"డీబగ్ యాప్‌లను దాచండి"</string>

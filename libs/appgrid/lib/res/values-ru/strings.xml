@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Текущий порядок приложений будет изменен на алфавитный. Продолжить?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Все приложения"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Мультимедийные приложения"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Остановить"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Сведения о приложении"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" остановлено."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Остановить приложение?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Принудительное закрытие приложения может отразиться на его функциональности."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Невозможно остановить приложение."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" нельзя использовать при вождении."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Скрыть приложения для отладки"</string>

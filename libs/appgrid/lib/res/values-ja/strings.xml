@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"この機能を実行すると、カスタムの並べ替えがすべて削除されます。続行しますか？"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"すべてのアプリ"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"メディアアプリ"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"アプリを停止"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"アプリ情報"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> を停止しました。"</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"アプリを停止しますか？"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"アプリを強制停止すると、アプリが正常に機能しないことがあります。"</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"アプリを停止できません。"</string>
     <string name="driving_toast_text" msgid="397905281933065053">"運転中は <xliff:g id="APP_NAME">%1$s</xliff:g> を使用できません。"</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"デバッグアプリを表示しない"</string>

@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Тази функция ще премахне персонализираното нареждане. Искате ли да продължите?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Всички приложения"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Медийни приложения"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Спиране на приложението"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Информация от приложенията"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"Приложението <xliff:g id="APP_NAME">%1$s</xliff:g> е спряно."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Да се спре ли приложението?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Ако принудително спрете приложение, то може да не функционира правилно."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Приложението не може да бъде спряно."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"<xliff:g id="APP_NAME">%1$s</xliff:g> не може да се използва при шофиране."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Скриване на приложенията за отстраняване на грешки"</string>
