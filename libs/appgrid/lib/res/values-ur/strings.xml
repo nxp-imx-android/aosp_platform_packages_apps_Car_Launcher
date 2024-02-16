@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"یہ فنکشن تمام حسب ضرورت ترتیب کو ہٹا دے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"سبھی ایپس"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"میڈیا ایپس"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"ایپ بند کریں"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"ایپ کی معلومات"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> کو بند کر دیا گیا ہے۔"</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"ایپ بند کریں؟"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"اگر آپ کسی ایپ کو زبردستی بند کر دیتے ہیں تو یہ غلط برتاؤ کر سکتی ہے۔"</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"ایپ کو بند نہیں کیا جا سکتا۔"</string>
     <string name="driving_toast_text" msgid="397905281933065053">"ڈرائیو کرتے وقت <xliff:g id="APP_NAME">%1$s</xliff:g> کا استعمال نہیں کیا جا سکتا۔"</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"ڈیبگ ایپس چھپائیں"</string>

@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Бұл функция арнаулы ретті толығымен өшіреді. Жалғастырғыңыз келе ме?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Барлық қолданба"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Мультимедиа қолданбалары"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Қолданба жұмысын тоқтату"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Қолданба туралы ақпарат"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> жұмысы тоқтатылды."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Қолданба жұмысы тоқтатылсын ба?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Қолданбаны қолмен тоқтату оның жұмысына кері әсерін тигізуі мүмкін."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Қолданба жұмысын тоқтату мүмкін емес."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Көлік жүргізу кезінде <xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасын пайдалануға болмайды."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Түзету қолданбаларын жасыру"</string>

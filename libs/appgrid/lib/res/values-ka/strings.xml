@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"ეს ფუნქცია წაშლის ყველა მორგებულ შეკვეთას. გსურთ გაგრძელება?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"ყველა აპი"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"მედია აპები"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"აპის შეჩერება"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"აპის ინფორმაცია"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> შეჩერებულია."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"გსურთ აპის შეჩერება?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"თუ აპს შეწყვეტას აიძულებთ, შესაძლოა, მან ცუდად განაგრძოს მუშაობა."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"აპის შეჩერება შეუძლებელია."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"მანქანის მართვისას <xliff:g id="APP_NAME">%1$s</xliff:g>-ს ვერ გამოიყენებთ."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"გამართვის აპების დამალვა"</string>

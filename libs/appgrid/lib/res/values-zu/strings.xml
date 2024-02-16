@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Lo msebenzi uzosusa konke uku-oda ngokwezifiso. Ingabe ufuna ukuqhubeka?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Wonke ama-app"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Ama-app emidiya"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Misa i-app"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Ulwazi lwe-app"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> imisiwe."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Misa i-app?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Uma uphoqelela ukumisa i-app, kungenzeka ukuthi ingasebenzi kahle."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"I-App ayikwazi ukumiswa."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"I-<xliff:g id="APP_NAME">%1$s</xliff:g> ayikwazi ukusetshenziswa ngenkathi ushayela."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Fihla ama-app okususa iphutha"</string>

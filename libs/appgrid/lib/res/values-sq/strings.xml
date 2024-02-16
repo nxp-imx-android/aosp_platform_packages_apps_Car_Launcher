@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Ky funksion do të heqë të gjitha renditjet e personalizuara. Dëshiron të vazhdosh?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Të gjitha aplikacionet"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Aplikacionet e medias"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Ndalo aplikacionin"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Informacione mbi aplikacionin"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> është ndaluar."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Të ndalohet aplikacioni?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Nëse e ndalon me forcë një aplikacion, ai mund të ketë çrregullime në funksionim."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Aplikacioni nuk mund të ndalohet."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"\"<xliff:g id="APP_NAME">%1$s</xliff:g>\" nuk mund të përdoret gjatë drejtimit të makinës."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Fshih aplikacionet e korrigjimit të defekteve"</string>

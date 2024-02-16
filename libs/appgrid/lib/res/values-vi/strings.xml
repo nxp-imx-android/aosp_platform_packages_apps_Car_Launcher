@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Chức năng này sẽ xoá mọi thứ tự tuỳ chỉnh. Bạn có muốn tiếp tục không?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Tất cả ứng dụng"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Ứng dụng đa phương tiện"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Dừng ứng dụng"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Thông tin ứng dụng"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> đã bị dừng."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Dừng ứng dụng?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Nếu bạn buộc một ứng dụng dừng lại, ứng dụng đó có thể hoạt động không đúng cách."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Không dừng được ứng dụng."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Không thể dùng <xliff:g id="APP_NAME">%1$s</xliff:g> trong khi lái xe."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"Ẩn các ứng dụng gỡ lỗi"</string>
