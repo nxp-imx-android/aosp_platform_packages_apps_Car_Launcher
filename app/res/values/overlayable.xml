@@ -136,8 +136,10 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="id" name="empty_state"/>
       <item type="id" name="end_edge"/>
       <item type="id" name="fragment_container_view"/>
+      <item type="id" name="in_call_fragment_container"/>
       <item type="id" name="maps_card"/>
       <item type="id" name="media_descriptive_text"/>
+      <item type="id" name="media_fragment_container"/>
       <item type="id" name="media_layout"/>
       <item type="id" name="media_playback_controls_bar"/>
       <item type="id" name="media_title"/>
@@ -184,6 +186,7 @@ REGENERATE USING packages/apps/Car/libs/tools/rro/generate-overlayable.py
       <item type="layout" name="card_content_media"/>
       <item type="layout" name="card_content_text_block"/>
       <item type="layout" name="card_fragment"/>
+      <item type="layout" name="card_fragment_audio_card"/>
       <item type="layout" name="control_bar_container"/>
       <item type="layout" name="descriptive_text"/>
       <item type="layout" name="optional_seek_bar_with_times"/>
