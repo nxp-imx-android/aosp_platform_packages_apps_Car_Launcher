@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"ይህ ተግባር ሁሉንም ብጁ ቅደም ተከተል ማስያዞች ያስወግዳል። መቀጠል ይፈልጋሉ?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"ሁሉም መተግበሪያዎች"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"የሚዲያ መተግበሪያዎች"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"መተግበሪያን አቁም"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"የመተግበሪያ መረጃ"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> እንዲቆም ተደርጓል።"</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"መተግበሪያ ይቁም?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"አንድ መተግበሪያን በኃይል እንዲቆም ካደረጉት በትክክል ላይሠራ ይችላል።"</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"መተግበሪያው ሊቆም አይችልም።"</string>
     <string name="driving_toast_text" msgid="397905281933065053">"<xliff:g id="APP_NAME">%1$s</xliff:g> በመንዳት ላይ ሳለ ጥቅም ላይ መዋል አይችልም።"</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"የስህተት ማረሚያ መተግበሪያዎችን ደብቅ"</string>

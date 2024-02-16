@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"Aalisin ng function na ito ang lahat ng custom na pagkakasunod-sunod. Gusto mo bang magpatuloy?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"Lahat ng app"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"Mga media app"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"Ihinto ang app"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"Impormasyon ng app"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"Inihinto ang <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"Ihinto ang app?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"Kung sapilitan mong ihihinto ang isang app, posible itong gumana nang maayos."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"Hindi puwedeng ihinto ang app."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"Hindi magagamit ang <xliff:g id="APP_NAME">%1$s</xliff:g> habang nagmamaneho."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"I-hide ang mga debug app"</string>

@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"הפונקציה הזו תסיר את כל סידורי התצוגה שהותאמו אישית. רוצה להמשיך?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"כל האפליקציות"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"אפליקציות מדיה"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"עצירת האפליקציה"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"פרטי האפליקציה"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"עצרת את האפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"לעצור את האפליקציה?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"אם סוגרים אפליקציה באופן ידני, יכול להיות שהיא לא תפעל כמו שצריך."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"לא ניתן לעצור את פעולת האפליקציה."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"לא ניתן להשתמש באפליקציה <xliff:g id="APP_NAME">%1$s</xliff:g> במהלך הנהיגה."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"הסתרת אפליקציות לניפוי באגים"</string>

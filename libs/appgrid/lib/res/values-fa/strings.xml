@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"این عملکرد همه ترتیب‌های سفارشی را حذف خواهد کرد. می‌خواهید ادامه دهید؟"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"همه برنامه‌ها"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"برنامه‌های رسانه"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"متوقف کردن برنامه"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"اطلاعات برنامه"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> متوقف شده است."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"برنامه متوقف شود؟"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"توقف اجباری برنامه ممکن است باعث عملکرد نادرست آن شود."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"برنامه متوقف نمی‌شود."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"هنگام رانندگی نمی‌توان از <xliff:g id="APP_NAME">%1$s</xliff:g> استفاده کرد."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"پنهان کردن برنامه‌های اشکال‌زدایی"</string>

@@ -21,11 +21,6 @@
     <string name="reset_appgrid_dialogue_message" msgid="2278301828239327586">"ഈ ഫംഗ്ഷൻ, എല്ലാ ഇഷ്‌ടാനുസൃത ക്രമപ്പെടുത്തലുകളും നീക്കം ചെയ്യും. നിങ്ങൾക്ക് തുടരണമെന്നുണ്ടോ?"</string>
     <string name="app_launcher_title_all_apps" msgid="3522783138519460233">"എല്ലാ ആപ്പുകളും"</string>
     <string name="app_launcher_title_media_only" msgid="7194631822174015710">"മീഡിയ ആപ്പുകൾ"</string>
-    <string name="app_launcher_stop_app_action" msgid="4488562150865461282">"ആപ്പിന്റെ പ്രവർത്തനം നിർത്തുക"</string>
-    <string name="app_launcher_app_info_action" msgid="475788297140730900">"ആപ്പ് വിവരങ്ങൾ"</string>
-    <string name="app_launcher_stop_app_success_toast_text" msgid="1504575154930117738">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിന്റെ പ്രവർത്തനം നിർത്തി."</string>
-    <string name="app_launcher_stop_app_dialog_title" msgid="339411511647776450">"ആപ്പിന്റെ പ്രവർത്തനം നിർത്തണോ?"</string>
-    <string name="app_launcher_stop_app_dialog_text" msgid="5113650734637193870">"ഒരു ആപ്പിന്റെ പ്രവർത്തനം നിർബന്ധിതമായി നിർത്തിയാൽ, അത് ശരിയായി പ്രവർത്തിക്കാനിടയില്ല."</string>
     <string name="app_launcher_stop_app_cant_stop_text" msgid="6513703446595313338">"ആപ്പ് നിർത്താനാകില്ല."</string>
     <string name="driving_toast_text" msgid="397905281933065053">"ഡ്രൈവിംഗിനിടെ <xliff:g id="APP_NAME">%1$s</xliff:g> ഉപയോഗിക്കാനാകില്ല."</string>
     <string name="hide_debug_apps" msgid="7140064693464751647">"ഡീബഗ് ആപ്പുകൾ മറയ്ക്കുക"</string>
