@@ -32,17 +32,16 @@ import androidx.annotation.VisibleForTesting;
 import androidx.constraintlayout.widget.Group;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.carlauncher.R;
+import com.android.car.media.common.MediaItemMetadata;
 import com.android.car.media.common.playback.PlaybackViewModel;
 
 public final class CalmModeFragment extends Fragment {
     private static final String TAG = CalmModeFragment.class.getSimpleName();
     private static final boolean DEBUG = Build.isDebuggable();
     private View mContainerView;
-    private Group mMediaGroup;
     private Group mNavGroup;
     private Group mTemperatureGroup;
     private TextView mMediaTitleView;
@@ -54,7 +53,6 @@ public final class CalmModeFragment extends Fragment {
     private TemperatureViewModel mTemperatureViewModel;
     private LiveData<TemperatureData> mTemperatureData;
     private PlaybackViewModel mPlaybackViewModel;
-
     @Nullable
     private NavigationStateViewModel mNavigationStateViewModel;
 
@@ -76,7 +74,6 @@ public final class CalmModeFragment extends Fragment {
         mNavStateView = rootView.findViewById(R.id.nav_state);
         mTemperatureGroup = rootView.findViewById(R.id.temperature_group);
         mTemperatureView = rootView.findViewById(R.id.temperature);
-        mMediaGroup = rootView.findViewById(R.id.media_group);
         mMediaTitleView = rootView.findViewById(R.id.media_title);
 
         initExitOnClick();
@@ -96,12 +93,7 @@ public final class CalmModeFragment extends Fragment {
         if (shouldShowMedia()) {
             mPlaybackViewModel = PlaybackViewModel.get(requireActivity().getApplication(),
                     MEDIA_SOURCE_MODE_PLAYBACK);
-            // Transform LiveData from MediaItemMetadata into a media title CharSequence
-            // If MediaItemMetadata is null, media title value will be null
-            LiveData<CharSequence> mediaTitleLiveData = Transformations.map(
-                    mPlaybackViewModel.getMetadata(), mediaItemMetadata ->
-                            mediaItemMetadata == null ? null : mediaItemMetadata.getTitle());
-            mediaTitleLiveData.observe(this, this::updateMediaTitle);
+            mPlaybackViewModel.getMetadata().observe(this, this::updateMediaTitle);
         }
     }
 
@@ -190,7 +182,8 @@ public final class CalmModeFragment extends Fragment {
         mTemperatureGroup.setVisibility(View.VISIBLE);
         mTemperatureView.setText(
                 TemperatureData.buildTemperatureString(
-                        temperatureData, getResources().getConfiguration().getLocales().get(0)));
+                        temperatureData, getResources().getConfiguration().getLocales().get(0),
+                        /* showUnit = */ false));
     }
 
     private void updateNavigationState(NavigationStateData navState) {
@@ -200,28 +193,59 @@ public final class CalmModeFragment extends Fragment {
 
         if (navState == null) {
             mNavGroup.setVisibility(View.GONE);
-            mNavStateView.setText(null);
+            mNavStateView.setText("");
             return;
         }
 
         mNavGroup.setVisibility(View.VISIBLE);
         mNavStateView.setText(
                 NavigationStateData.buildTripStatusString(navState,
-                        getResources().getConfiguration().getLocales().get(0)));
+                        getResources().getConfiguration().getLocales().get(0),
+                        getResources().getString(R.string.calm_mode_separator)));
     }
 
     @VisibleForTesting
-    void updateMediaTitle(CharSequence mediaTitle) {
+    void updateMediaTitle(MediaItemMetadata mediaItemMetadata) {
         if (DEBUG) {
-            Log.v(TAG, "updateMediaTitle mediaTitle = " + mediaTitle);
+            Log.v(TAG, "updateMediaTitle mediaItemMetadata = " + mediaItemMetadata);
         }
-
-        if (mediaTitle == null || mediaTitle.length() == 0) {
-            mMediaGroup.setVisibility(View.GONE);
+        if (mediaItemMetadata == null || mediaItemMetadata.getTitle() == null
+                || mediaItemMetadata.getTitle().length() == 0) {
+            mMediaTitleView.setVisibility(View.GONE);
+            mClockView.setTranslationY(0f);
             mMediaTitleView.setText("");
             return;
         }
-        mMediaGroup.setVisibility(View.VISIBLE);
-        mMediaTitleView.setText(mediaTitle);
+
+        StringBuilder medaTitleBuilder = new StringBuilder();
+        medaTitleBuilder.append(mediaItemMetadata.getTitle());
+
+        if (mediaItemMetadata.getSubtitle() != null
+                && mediaItemMetadata.getSubtitle().length() > 0) {
+            medaTitleBuilder.append(getResources().getString(R.string.calm_mode_separator));
+            medaTitleBuilder.append(mediaItemMetadata.getSubtitle());
+        }
+
+        mMediaTitleView.setVisibility(View.VISIBLE);
+        mClockView.setTranslationY(
+                -getResources().getDimension(R.dimen.calm_mode_clock_translationY));
+        mContainerView.requestLayout();
+        mMediaTitleView.setText(medaTitleBuilder.toString());
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        int launchType = requireActivity().getIntent().getIntExtra(
+                CalmModeStatsLogHelper.INTENT_EXTRA_CALM_MODE_LAUNCH_TYPE,
+                CalmModeStatsLogHelper.CalmModeLaunchType.UNSPECIFIED_LAUNCH_TYPE);
+        CalmModeStatsLogHelper.getInstance().logSessionStarted(launchType);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        CalmModeStatsLogHelper.getInstance().logSessionFinished();
+    }
+
 }

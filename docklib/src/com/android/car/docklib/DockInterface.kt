@@ -52,7 +52,7 @@ interface DockInterface {
     fun packageAdded(packageName: String)
 
     /** called to launch an app */
-    fun launchApp(componentName: ComponentName)
+    fun launchApp(componentName: ComponentName, isMediaApp: Boolean)
 
     /** @return the dominant color to be used with the icon corresponding to [componentName] */
     fun getIconColorWithScrim(componentName: ComponentName): Int

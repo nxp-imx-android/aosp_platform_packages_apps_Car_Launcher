@@ -22,28 +22,41 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 
 import androidx.fragment.app.testing.FragmentScenario;
 
 import com.android.car.carlauncher.R;
+import com.android.car.media.common.MediaItemMetadata;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 public class CalmModeFragmentTest {
 
     private FragmentScenario<CalmModeFragment> mFragmentScenario;
     private CalmModeFragment mCalmModeFragment;
     private Activity mActivity;
+    @Mock
+    private MediaItemMetadata testMediaItem;
+
+    private static final CharSequence TEST_MEDIA_TITLE = "Title";
+    private static final CharSequence TEST_MEDIA_SUB_TITLE = "Sub Title";
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        when(testMediaItem.getTitle()).thenReturn(TEST_MEDIA_TITLE);
+        when(testMediaItem.getSubtitle()).thenReturn(TEST_MEDIA_SUB_TITLE);
         mFragmentScenario =
                 FragmentScenario.launchInContainer(
                         CalmModeFragment.class, null, R.style.Theme_CalmMode);
@@ -83,21 +96,43 @@ public class CalmModeFragmentTest {
 
     @Test
     public void fragmentResumed_testMedia_isVisible() {
-        String testMediaTitle = "Test media title";
         mFragmentScenario.moveToState(RESUMED);
 
-        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaTitle));
+        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaItem));
 
         onView(withId(R.id.media_title)).check(matches(isDisplayed()));
+        String expectedText =
+                TEST_MEDIA_TITLE.toString() + "   •   " + TEST_MEDIA_SUB_TITLE.toString();
+        onView(withId(R.id.media_title)).check(matches(withText(expectedText)));
+    }
+
+    @Test
+    public void fragmentResumed_testMediaItemNull_isGone() {
+        mFragmentScenario.moveToState(RESUMED);
+
+        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(null));
+
+        onView(withId(R.id.media_title)).check(matches(not(isDisplayed())));
     }
 
     @Test
     public void fragmentResumed_testMediaTitleNull_isGone() {
-        String testMediaTitle = null;
+        when(testMediaItem.getTitle()).thenReturn(null);
         mFragmentScenario.moveToState(RESUMED);
 
-        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaTitle));
+        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaItem));
 
         onView(withId(R.id.media_title)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    public void fragmentResumed_testMediaSubTitleNull_isVisible() {
+        when(testMediaItem.getSubtitle()).thenReturn(null);
+        mFragmentScenario.moveToState(RESUMED);
+
+        mActivity.runOnUiThread(()->mCalmModeFragment.updateMediaTitle(testMediaItem));
+
+        onView(withId(R.id.media_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.media_title)).check(matches(withText(TEST_MEDIA_TITLE.toString())));
     }
 }

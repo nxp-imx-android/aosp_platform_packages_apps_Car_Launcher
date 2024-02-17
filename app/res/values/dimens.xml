@@ -88,10 +88,12 @@
     <dimen name="recent_task_width">432dp</dimen>
 
     <!-- Calm mode sizes -->
-    <dimen name="calm_mode_padding_vertical">12dp</dimen>
+    <dimen name="calm_mode_padding_vertical">40dp</dimen>
     <dimen name="calm_mode_padding_horizontal">12dp</dimen>
     <dimen name="calm_mode_icon_size_regular">32dp</dimen>
     <dimen name="calm_mode_icon_size_small">16dp</dimen>
-    <dimen name="calm_mode_icon_margin">4dp</dimen>
+    <dimen name="calm_mode_icon_margin">24dp</dimen>
     <dimen name="calm_mode_text_size">24sp</dimen>
+    <dimen name="calm_mode_clock_translationY">40dp</dimen>
+    <dimen name="calm_mode_clock_media_title_margin">-16dp</dimen>
 </resources>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Google Inc.
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher.homescreen.audio;
+package com.android.car.carlauncher.homescreen.audio.media;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.view.View;
 
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
+import com.android.car.carlauncher.homescreen.audio.MediaViewModel;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
-import com.android.car.carlauncher.homescreen.ui.DescriptiveTextWithControlsView;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,23 +36,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
-public class HomeAudioCardPresenterTest {
+public class MediaCardPresenterTest {
 
     private static final CardHeader CARD_HEADER = new CardHeader("testAppName", /* appIcon = */
             null);
     private static final DescriptiveTextView CARD_CONTENT = new DescriptiveTextView(/* image = */
             null, "title", "subtitle");
 
-    private HomeAudioCardPresenter mPresenter;
+    private MediaCardPresenter mPresenter;
 
     @Mock
     private View mFragmentView;
+
     @Mock
-    private AudioFragment mView;
+    private MediaCardFragment mView;
     @Mock
-    private AudioModel mModel;
-    @Mock
-    private InCallModel mOtherModel;
+    private MediaViewModel mModel;
 
     private HomeCardInterface.Model.OnModelUpdateListener mOnModelUpdateListener;
 
@@ -62,9 +60,10 @@ public class HomeAudioCardPresenterTest {
         MockitoAnnotations.initMocks(this);
         when(mModel.getCardHeader()).thenReturn(CARD_HEADER);
         when(mModel.getCardContent()).thenReturn(CARD_CONTENT);
-        mPresenter = new HomeAudioCardPresenter();
+        mPresenter = new MediaCardPresenter();
         mPresenter.setView(mView);
-        mOnModelUpdateListener = mPresenter.mOnModelUpdateListener;
+        mPresenter.setModel(mModel);
+        mOnModelUpdateListener = mPresenter.mOnMediaModelUpdateListener;
     }
 
     @Test
@@ -76,57 +75,26 @@ public class HomeAudioCardPresenterTest {
     }
 
     @Test
-    public void onModelUpdated_nullDifferentModel_doesNotUpdate() {
-        when(mOtherModel.getCardHeader()).thenReturn(null);
+    public void onModelUpdated_nullHeaderAndContent_doesNotUpdateFragment() {
+        when(mModel.getCardHeader()).thenReturn(null);
+        when(mModel.getCardContent()).thenReturn(null);
+
         mOnModelUpdateListener.onModelUpdate(mModel);
-        reset(mView);
 
-        mOnModelUpdateListener.onModelUpdate(mOtherModel);
-
-        verify(mView, never()).hideCard();
-        verify(mView, never()).updateHeaderView(any());
         verify(mView, never()).updateContentView(any());
+        verify(mView, never()).updateHeaderView(any());
     }
 
     @Test
     public void onModelUpdated_activePhoneCall_doesNotUpdateFragment() {
-        //setUpActivePhoneCall in presenter
-        CardHeader callModelHeader = new CardHeader("dialer", /* appIcon = */
-                null);
-        DescriptiveTextWithControlsView callModelContent = new DescriptiveTextWithControlsView(
-                /* image = */ null, "callerNumber", "ongoingCall");
-        when(mOtherModel.getCardHeader()).thenReturn(callModelHeader);
-        when(mOtherModel.getCardContent()).thenReturn(callModelContent);
-        mOnModelUpdateListener.onModelUpdate(mOtherModel);
+        //mimic active phone call in presenter
+        mPresenter.setShowMedia(false);
 
         // send MediaModel update during ongoing call
         mOnModelUpdateListener.onModelUpdate(mModel);
 
         //verify call
-        verify(mView).updateHeaderView(callModelHeader);
-        verify(mView).updateContentView(callModelContent);
-        verify(mView, never()).hideCard();
-        verify(mView, never()).updateHeaderView(CARD_HEADER);
-        verify(mView, never()).updateContentView(CARD_CONTENT);
-    }
-
-    @Test
-    public void onModelUpdated_nullSameModel_updatesFragment() {
-        mOnModelUpdateListener.onModelUpdate(mModel);
-        reset(mView);
-        when(mModel.getCardHeader()).thenReturn(null);
-
-        mOnModelUpdateListener.onModelUpdate(mModel);
-
-        verify(mView).hideCard();
-    }
-
-    @Test
-    public void onModelUpdated_nullModelAndNullCurrentModel_updatesFragment() {
-        when(mModel.getCardHeader()).thenReturn(null);
-
-        mOnModelUpdateListener.onModelUpdate(mModel);
-
-        verify(mView, never()).hideCard();
+        verify(mView, never()).updateHeaderView(any());
+        verify(mView, never()).updateContentView(any());
     }
 }

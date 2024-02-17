@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,34 @@
 
 package com.android.car.carlauncher.homescreen.audio;
 
-import android.os.SystemClock;
-import android.util.Log;
-
 import androidx.lifecycle.ViewModelProvider;
 
 import com.android.car.carlauncher.R;
-import com.android.car.carlauncher.homescreen.CardPresenter;
-import com.android.car.carlauncher.homescreen.HomeCardFragment;
+import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.HomeCardModule;
-
-import java.util.Arrays;
-import java.util.Collections;
+import com.android.car.carlauncher.homescreen.audio.dialer.DialerCardPresenter;
+import com.android.car.carlauncher.homescreen.audio.media.MediaCardPresenter;
 
 /**
- * Home screen card that displays audio related content
+ * The Audio card module. This class initializes the necessary components to present an audio card
+ * as a home module.
  */
 public class AudioCardModule implements HomeCardModule {
-
-    private static final String TAG = "HomeScreenAudioCard";
-
+    private AudioCardPresenter mAudioCardPresenter;
+    private AudioCardFragment mAudioCardView;
     private ViewModelProvider mViewModelProvider;
-    private HomeAudioCardPresenter mAudioCardPresenter;
-    private AudioFragment mAudioCardView;
-
     @Override
     public void setViewModelProvider(ViewModelProvider viewModelProvider) {
+        if (mViewModelProvider != null) {
+            throw new IllegalStateException("Cannot reset the view model provider");
+        }
         mViewModelProvider = viewModelProvider;
-    }
 
-    protected ViewModelProvider getViewModelProvider() {
-        return mViewModelProvider;
+        mAudioCardPresenter = new AudioCardPresenter(
+                new DialerCardPresenter(), new MediaCardPresenter());
+        mAudioCardPresenter.setModel(new AudioCardModel(mViewModelProvider));
+        mAudioCardView = new AudioCardFragment();
+        mAudioCardPresenter.setView(mAudioCardView);
     }
 
     @Override
@@ -55,29 +52,12 @@ public class AudioCardModule implements HomeCardModule {
     }
 
     @Override
-    public CardPresenter getCardPresenter() {
-        if (mAudioCardPresenter == null) {
-            mAudioCardPresenter = new HomeAudioCardPresenter();
-            if (mViewModelProvider == null) {
-                Log.w(TAG, "No ViewModelProvider set. Cannot get MediaViewModel");
-                mAudioCardPresenter.setModels(
-                        Collections.unmodifiableList(Collections.singletonList(
-                                new InCallModel(SystemClock.elapsedRealtimeClock()))));
-            } else {
-                mAudioCardPresenter.setModels(Collections.unmodifiableList(Arrays.asList(
-                        mViewModelProvider.get(MediaViewModel.class),
-                        new InCallModel(SystemClock.elapsedRealtimeClock()))));
-            }
-        }
+    public HomeCardInterface.Presenter getCardPresenter() {
         return mAudioCardPresenter;
     }
 
     @Override
-    public HomeCardFragment getCardView() {
-        if (mAudioCardView == null) {
-            mAudioCardView = new AudioFragment();
-            getCardPresenter().setView(mAudioCardView);
-        }
+    public HomeCardInterface.View getCardView() {
         return mAudioCardView;
     }
 }

@@ -123,6 +123,7 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
         mRootView = inflater.inflate(R.layout.card_fragment, container, false);
         mCardTitle = mRootView.findViewById(R.id.card_name);
         mCardIcon = mRootView.findViewById(R.id.card_icon);
+        mCardBackgroundImage = mRootView.findViewById(R.id.card_background_image);
         return mRootView;
     }
 
@@ -171,16 +172,6 @@ public class HomeCardFragment extends Fragment implements HomeCardInterface.View
      */
     public void setOnViewClickListener(OnViewClickListener onViewClickListener) {
         mOnViewClickListener = onViewClickListener;
-    }
-
-    /**
-     * Returns the size of the card or null if the view hasn't yet been laid out
-     */
-    protected Size getCardSize() {
-        if (mSize == null && mRootView.isLaidOut()) {
-            mSize = new Size(mRootView.getWidth(), mRootView.getHeight());
-        }
-        return mSize;
     }
 
     /**

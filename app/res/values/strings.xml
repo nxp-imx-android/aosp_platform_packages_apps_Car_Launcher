@@ -56,4 +56,5 @@
 
     <!-- Calm mode strings -->
     <string name="calm_mode_title">Calm mode</string>
+    <string name="calm_mode_separator" translatable="false">\u0020\u0020\u0020\u2022\u0020\u0020\u0020</string>
 </resources>

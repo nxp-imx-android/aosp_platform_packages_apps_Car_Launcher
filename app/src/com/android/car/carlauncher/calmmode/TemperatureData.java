@@ -52,11 +52,11 @@ public class TemperatureData {
      */
     @NonNull
     public static String buildTemperatureString(
-            @NonNull TemperatureData temperatureData, @NonNull Locale locale) {
+            @NonNull TemperatureData temperatureData, @NonNull Locale locale, boolean showUnit) {
         return NumberFormatter.withLocale(locale)
                 .notation(Notation.compactShort())
                 .precision(Precision.integer())
-                .unit(temperatureData.getUnit())
+                .unit(showUnit ? temperatureData.getUnit() : MeasureUnit.GENERIC_TEMPERATURE)
                 .format(temperatureData.getValue())
                 .toString();
     }
