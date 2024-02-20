@@ -22,6 +22,7 @@ import android.net.Uri
 import android.os.UserHandle
 import android.provider.Settings
 import com.android.car.carlaunchercommon.R
+import com.android.car.hidden.apis.HiddenApiAccess.startActivityAsUser
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup
 
 class AppInfoShortcutItem constructor(
@@ -47,7 +48,7 @@ class AppInfoShortcutItem constructor(
             packageURI
         )
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivityAsUser(intent, userHandle)
+        startActivityAsUser(context, intent, userHandle)
         return true
     }
 

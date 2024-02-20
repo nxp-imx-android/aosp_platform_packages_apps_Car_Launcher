@@ -17,12 +17,12 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-
 android_library {
     name: "CarDockUtilLib",
     srcs: [
         "src/**/*.java",
         "src/**/*.kt",
+        ":hidden_api_enabled_srcs",
     ],
 
     resource_dirs: ["res"],

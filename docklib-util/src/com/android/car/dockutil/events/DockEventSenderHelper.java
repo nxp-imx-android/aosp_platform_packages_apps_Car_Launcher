@@ -16,6 +16,8 @@
 
 package com.android.car.dockutil.events;
 
+import static com.android.car.hidden.apis.HiddenApiAccess.getDisplayId;
+
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -78,8 +80,8 @@ public class DockEventSenderHelper {
 
     @VisibleForTesting
     void sendEventBroadcast(@NonNull DockEvent event,
-                            @NonNull ActivityManager.RunningTaskInfo taskInfo) {
-        if (taskInfo.getDisplayId() != Display.DEFAULT_DISPLAY) {
+            @NonNull ActivityManager.RunningTaskInfo taskInfo) {
+        if (getDisplayId(taskInfo) != Display.DEFAULT_DISPLAY) {
             return;
         }
         ComponentName component = getComponentName(taskInfo);

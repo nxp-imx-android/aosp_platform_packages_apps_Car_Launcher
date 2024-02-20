@@ -35,7 +35,7 @@ android_library {
     srcs: [
         "lib/src/**/*.java",
         "lib/src/**/*.kt",
-        "lib/hidden_apis_enabled/**/*.java",
+        ":hidden_api_enabled_srcs",
     ],
 
     resource_dirs: ["lib/res"],

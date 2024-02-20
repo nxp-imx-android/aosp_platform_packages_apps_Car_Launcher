@@ -24,7 +24,7 @@ import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_LAUNCHABLES;
 import static com.android.car.carlauncher.AppLauncherUtils.APP_TYPE_MEDIA_SERVICES;
-import static com.android.car.carlauncher.hidden.HiddenApiAccess.getDragSurface;
+import static com.android.car.hidden.apis.HiddenApiAccess.getDragSurface;
 
 import android.animation.ValueAnimator;
 import android.app.usage.UsageStats;

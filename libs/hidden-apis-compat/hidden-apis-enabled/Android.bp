@@ -13,27 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package {
-    default_applicable_licenses: ["Android-Apache-2.0"],
-}
 
-android_library {
-    name: "CarLauncherCommon",
+filegroup {
+    name: "hidden_api_enabled_srcs",
     srcs: [
         "src/**/*.java",
-        "src/**/*.kt",
-        ":hidden_api_enabled_srcs",
     ],
-
-    resource_dirs: ["res"],
-
-    libs: ["android.car"],
-
-    static_libs: [
-        "androidx.lifecycle_lifecycle-extensions",
-        "com.google.android.material_material",
-        "car-ui-lib-no-overlayable",
-    ],
-
-    manifest: "AndroidManifest.xml",
 }

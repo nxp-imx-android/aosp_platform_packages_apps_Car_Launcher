@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.car.carlauncher.hidden;
+package com.android.car.hidden.apis;
 
+import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.view.DragEvent;
@@ -33,6 +38,13 @@ import android.view.View;
 public class HiddenApiAccess {
 
     /**
+     * @return true: For gradle builds can always consider as debuggable
+     */
+    public static boolean isDebuggable() {
+        return Build.isDebuggable();
+    }
+
+    /**
      * Calls hidden api {@link  android.view.DragEvent#getDragSurface}
      */
     public static SurfaceControl getDragSurface(DragEvent event) {
@@ -42,6 +54,7 @@ public class HiddenApiAccess {
     /**
      * Calls hidden api {@link  android.os.UserManager#hasBaseUserRestriction}
      */
+    @SuppressLint("MissingPermission")
     public static boolean hasBaseUserRestriction(UserManager userManager, String restriction,
             UserHandle user) {
         return userManager.hasBaseUserRestriction(restriction, user);
@@ -52,4 +65,20 @@ public class HiddenApiAccess {
      */
     public static int DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION =
             View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION;
+
+
+    /**
+     * Calls the hidden api
+     */
+    public static int getDisplayId(ActivityManager.RunningTaskInfo taskInfo) {
+        return taskInfo.getDisplayId();
+    }
+
+    /**
+     * Start Activity with the current user
+     */
+    @SuppressLint("MissingPermission")
+    public static void startActivityAsUser(Context context, Intent intent, UserHandle userHandle) {
+        context.startActivityAsUser(intent, userHandle);
+    }
 }
