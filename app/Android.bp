@@ -32,7 +32,6 @@ carlauncher_srcs = [
 
 android_library {
     name: "CarLauncher-core",
-    platform_apis: true,
 
     srcs: carlauncher_srcs,
 
