@@ -243,7 +243,8 @@ public class AppLauncherUtils {
         Set<String> mEnabledPackages = new ArraySet<>(launchablesSize);
         Set<String> tosDisabledPackages = getTosDisabledPackages(context);
         Set<ComponentName> mediaServiceComponents = mediaServices.stream()
-                .map(resolveInfo -> resolveInfo.serviceInfo.getComponentName())
+                .map(resolveInfo -> new ComponentName(resolveInfo.serviceInfo.packageName,
+                        resolveInfo.serviceInfo.name))
                 .collect(Collectors.toSet());
 
         Set<String> customMediaComponents = Sets.newHashSet(

@@ -26,7 +26,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.os.UserHandle
 import android.os.UserManager
@@ -35,6 +34,8 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import com.android.car.carlaunchercommon.R
+import com.android.car.hidden.apis.HiddenApiAccess.hasBaseUserRestriction
+import com.android.car.hidden.apis.HiddenApiAccess.isDebuggable
 import com.android.car.ui.AlertDialogBuilder
 import com.android.car.ui.shortcutspopup.CarUiShortcutsPopup
 
@@ -54,7 +55,7 @@ open class ForceStopShortcutItem(
 
     companion object {
         private const val TAG = "ForceStopShortcutItem"
-        private val DEBUG = Build.isDebuggable()
+        private val DEBUG = isDebuggable()
     }
 
     private var forceStopDialog: AlertDialog? = null
@@ -133,7 +134,6 @@ open class ForceStopShortcutItem(
      */
     private fun shouldAllowStopApp(packageName: String): Boolean {
         val dm = context.getSystemService(DevicePolicyManager::class.java)
-        // todo(b/312718542): hidden api(DevicePolicyManager.packageHasActiveAdmins) usage
         if (dm == null || dm.packageHasActiveAdmins(packageName)) {
             return false
         }
@@ -170,8 +170,7 @@ open class ForceStopShortcutItem(
             return false
         }
         val user = UserHandle.getUserHandleForUid(appInfo.uid)
-        // todo(b/312718542): hidden api(UserManager.hasBaseUserRestriction) usage
-        if (userManager.hasBaseUserRestriction(restriction, user)) {
+        if (hasBaseUserRestriction(userManager, restriction, user)) {
             if (DEBUG) Log.d(TAG, " Disabled because $user has $restriction restriction")
             return true
         }
