@@ -30,7 +30,6 @@ java_library_static {
 
 android_library {
     name: "CarLauncher-core",
-    platform_apis: true,
 
     srcs: ["src/**/*.java"],
 
