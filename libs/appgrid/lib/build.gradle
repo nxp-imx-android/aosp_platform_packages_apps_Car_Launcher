@@ -39,7 +39,6 @@ android {
             res.srcDirs = ['res']
             java.srcDirs = ['src']
             java {
-                srcDirs += 'hidden_apis_disabled/src/com/android/car/carlauncher/hidden'
                 srcDirs += 'build/generated/source/proto/java'
             }
             kotlin {
@@ -80,18 +79,22 @@ android {
 dependencies {
     compileOnly files(gradle.ext.lib_car_system_stubs)
     compileOnly files(gradle.ext.lib_car_ui_lib_oem_apis)
+    implementation project(":libs:hidden-apis-compat:hidden-apis-disabled")
+    implementation project(":libs:car-launcher-common")
     implementation project(":libs:car-apps-common")
     implementation project(":libs:car-media-common")
     implementation project(":libs:car-ui-lib")
+    implementation project(":docklib-util")
     implementation 'androidx.core:core-ktx:1.12.0'
-    api 'androidx.annotation:annotation:1.7.0'
+    api 'androidx.annotation:annotation:1.7.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.10.0'
-    implementation 'com.android.car.ui:car-ui-lib:2.5.1'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'com.google.guava:guava:31.0.1-jre'
     implementation  "androidx.datastore:datastore:1.0.0"
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation('com.google.protobuf:protobuf-javalite:3.25.1')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     //Test dependencies
     testImplementation files(gradle.ext.lib_car_system_stubs)

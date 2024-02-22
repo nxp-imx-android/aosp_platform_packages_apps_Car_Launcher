@@ -22,7 +22,7 @@ import static android.view.View.DRAG_FLAG_OPAQUE;
 import static com.android.car.carlauncher.AppGridConstants.AppItemBoundDirection;
 import static com.android.car.carlauncher.AppGridConstants.PageOrientation;
 import static com.android.car.carlauncher.AppGridConstants.isHorizontal;
-import static com.android.car.carlauncher.hidden.HiddenApiAccess.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION;
+import static com.android.car.hidden.apis.HiddenApiAccess.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION;
 
 import android.content.ClipData;
 import android.content.ComponentName;

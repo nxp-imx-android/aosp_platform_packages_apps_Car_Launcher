@@ -201,6 +201,7 @@ open class DockDragListener(
             }
         }))
         scaleUpAnimator.addListener(getAnimatorListener(onAnimationEnd = { isCancelled ->
+            callback.dropAnimationComplete(component)
             if (!isCancelled) callback.dropSuccessful(component, getCleanUpCallback(surfaceControl))
         }))
 
@@ -354,6 +355,11 @@ open class DockDragListener(
          * Drop animation scale down completed.
          */
         fun dropAnimationScaleDownComplete(componentName: ComponentName) {}
+
+        /**
+         * Drop animation completed.
+         */
+        fun dropAnimationComplete(componentName: ComponentName) {}
 
         /**
          * Excite the view to indicate the item can be dropped in this position when dragged inside
