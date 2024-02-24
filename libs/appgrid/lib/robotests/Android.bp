@@ -26,6 +26,8 @@ android_robolectric_test {
         "src/**/*.kt",
     ],
 
+    java_resource_dirs: ["config"],
+
     static_libs: [
         "mockito-robolectric-prebuilt",
         "mockito-kotlin2",
