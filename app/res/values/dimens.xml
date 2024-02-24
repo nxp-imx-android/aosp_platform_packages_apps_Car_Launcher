@@ -42,8 +42,8 @@
     <dimen name="descriptive_text_with_controls_top_margin">24dp</dimen>
     <!-- Percent transparency of the scrim applied to the image used for the card's background as a float between 0 and 1, where 0 applies no darkening scrim-->
     <dimen name="card_background_scrim_alpha" format="float">0.72</dimen>
-    <!--Percent by which to blur the image used for the card's background as a float between 0 and 1, where 0 is not blurred-->
-    <dimen name="card_background_image_blur_radius" format="float">0.36</dimen>
+    <!--Blur radius for the RenderEffect for the card's background image as a float, where 0 is not blurred -->
+    <dimen name="card_background_image_blur_radius" format="float">25</dimen>
 
     <!-- card_content_descriptive_text dimensions -->
     <dimen name="card_content_image_size">76dp</dimen>
