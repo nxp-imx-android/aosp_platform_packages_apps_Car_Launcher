@@ -15,14 +15,16 @@
  */
 package com.android.car.carlauncher.homescreen.audio.dialer;
 
+import static android.graphics.Shader.TileMode.MIRROR;
+
 import android.graphics.Bitmap;
+import android.graphics.RenderEffect;
 import android.os.Bundle;
 import android.util.Size;
 import android.view.View;
 import android.widget.Chronometer;
 
 import com.android.car.apps.common.BitmapUtils;
-import com.android.car.apps.common.ImageUtils;
 import com.android.car.carlauncher.R;
 import com.android.car.carlauncher.homescreen.HomeCardFragment;
 import com.android.car.carlauncher.homescreen.ui.CardContent;
@@ -122,14 +124,14 @@ public class DialerCardFragment extends HomeCardFragment {
         Size scaledSize = new Size(maxDimen, maxDimen);
         Bitmap imageBitmap = BitmapUtils.fromDrawable(mCardBackgroundImage.getForeground(),
                 scaledSize);
-        Bitmap blurredBackground = ImageUtils.blur(getContext(), imageBitmap, scaledSize,
-                mBlurRadius);
+        RenderEffect blur = RenderEffect.createBlurEffect(mBlurRadius, mBlurRadius, MIRROR);
+        getCardBackgroundImage().setRenderEffect(blur);
 
         if (mCardBackgroundImage.getBackground() != null) {
             getCardBackgroundImage().setBackground(mCardBackgroundImage.getBackground());
             getCardBackgroundImage().setClipToOutline(true);
         }
-        getCardBackgroundImage().setImageBitmap(blurredBackground, /* showAnimation= */ true);
+        getCardBackgroundImage().setImageBitmap(imageBitmap, /* showAnimation= */ true);
         getCardBackground().setVisibility(View.VISIBLE);
     }
 
