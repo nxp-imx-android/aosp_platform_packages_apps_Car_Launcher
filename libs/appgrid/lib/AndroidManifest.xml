@@ -39,6 +39,7 @@
         <activity
             android:name="com.android.car.carlauncher.AppGridActivity"
             android:launchMode="singleInstance"
+            android:windowSoftInputMode="adjustPan"
             android:exported="true"
             android:theme="@style/Theme.Launcher.AppGridActivity"
             android:excludeFromRecents="true">
