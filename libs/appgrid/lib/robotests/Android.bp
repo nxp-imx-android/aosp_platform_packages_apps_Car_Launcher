@@ -35,6 +35,7 @@ android_robolectric_test {
         "kotlinx_coroutines_test",
         "androidx.test.core",
         "android.car.testapi",
+        "android.car-system-stubs",
     ],
 
     test_suites: [
