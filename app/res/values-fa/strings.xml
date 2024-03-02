@@ -31,7 +31,7 @@
     <string name="fake_weather_main_text" msgid="2545755284647327839">"--° بیشتر آفتابی"</string>
     <string name="fake_weather_footer_text" msgid="8640814250285014485">"مانتین ویو • بیشینه: --° کمینه: --°"</string>
     <string name="times_separator" msgid="1962841895013564645">"/"</string>
-    <string name="recents_empty_state_text" msgid="8228569970506899117">"مورد جدیدی وجود ندارد"</string>
+    <string name="recents_empty_state_text" msgid="8228569970506899117">"چیز جدیدی اینجا نیست"</string>
     <string name="recents_clear_all_text" msgid="3594272268167720553">"پاک کردن همه"</string>
     <string name="failure_opening_recent_task_message" msgid="963567570097465902">"برنامه دردسترس نیست"</string>
     <string name="calm_mode_title" msgid="4364804976931157567">"حالت «آرام»"</string>
