@@ -55,7 +55,7 @@ public class MediaCardPresenter extends CardPresenter {
             };
 
     @VisibleForTesting
-    HomeCardInterface.Model.OnModelUpdateListener mOnMediaModelUpdateListener =
+    final HomeCardInterface.Model.OnModelUpdateListener mOnMediaModelUpdateListener =
             new HomeCardInterface.Model.OnModelUpdateListener() {
                 @Override
                 public void onModelUpdate(HomeCardInterface.Model model) {
