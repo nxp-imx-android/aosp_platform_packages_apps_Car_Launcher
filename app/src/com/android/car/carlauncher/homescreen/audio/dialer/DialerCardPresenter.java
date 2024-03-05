@@ -70,7 +70,7 @@ public class DialerCardPresenter extends CardPresenter {
                 }
             };
     @VisibleForTesting
-    HomeCardInterface.Model.OnModelUpdateListener mOnInCallModelUpdateListener =
+    final HomeCardInterface.Model.OnModelUpdateListener mOnInCallModelUpdateListener =
             new HomeCardInterface.Model.OnModelUpdateListener() {
                 @Override
                 public void onModelUpdate(HomeCardInterface.Model model) {

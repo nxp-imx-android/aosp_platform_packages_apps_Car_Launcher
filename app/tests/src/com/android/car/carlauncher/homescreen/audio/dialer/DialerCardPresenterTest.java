@@ -22,8 +22,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.view.View;
-
 import com.android.car.carlauncher.homescreen.HomeCardInterface;
 import com.android.car.carlauncher.homescreen.ui.CardHeader;
 import com.android.car.carlauncher.homescreen.ui.DescriptiveTextView;
@@ -44,9 +42,6 @@ public class DialerCardPresenterTest {
             null, "title", "subtitle");
 
     private DialerCardPresenter mPresenter;
-
-    @Mock
-    private View mFragmentView;
 
     @Mock
     private DialerCardFragment mView;
