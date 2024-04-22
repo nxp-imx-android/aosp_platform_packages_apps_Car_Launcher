@@ -192,7 +192,8 @@ public class CarLauncher extends FragmentActivity {
                 mMapsCard = findViewById(R.id.maps_card);
                 if (mMapsCard != null) {
                     if (mUseRemoteCarTaskView) {
-                        setupRemoteCarTaskView(mMapsCard);
+// AAUTO-1348 Disable Maps panel on home screen.
+//                        setupRemoteCarTaskView(mMapsCard);
                     } else {
                         setUpTaskView(mMapsCard);
                     }
