@@ -336,8 +336,27 @@ public class AppGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
      * same logical order as the adapter indexes.
      */
     public int getNextRotaryFocus(int focusedGridPosition, int direction) {
-        int targetAdapterIndex = mIndexingHelper.gridPositionToAdaptorIndex(focusedGridPosition)
-                + (direction == View.FOCUS_FORWARD ? 1 : -1);
+        int targetAdapterIndex = mIndexingHelper.gridPositionToAdaptorIndex(focusedGridPosition);
+        
+        switch (direction) {
+            case View.FOCUS_FORWARD:
+            case View.FOCUS_RIGHT:
+                targetAdapterIndex += 1;
+                break;
+            case View.FOCUS_BACKWARD:
+            case View.FOCUS_LEFT:
+                targetAdapterIndex -= 1;
+                break;
+            case View.FOCUS_DOWN:
+                targetAdapterIndex += mNumOfCols;
+                break;
+            case View.FOCUS_UP:
+                targetAdapterIndex -= mNumOfCols;
+                break;
+            default:
+                break;
+        }
+            
         if (targetAdapterIndex < 0 || targetAdapterIndex >= getLauncherItemsCount()) {
             return focusedGridPosition;
         }

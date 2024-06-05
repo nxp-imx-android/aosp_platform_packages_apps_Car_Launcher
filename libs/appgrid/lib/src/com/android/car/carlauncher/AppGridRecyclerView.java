@@ -96,11 +96,15 @@ public class AppGridRecyclerView extends RecyclerView implements DimensionUpdate
         if (AppGridConstants.isHorizontal(mPageOrientation)) {
             // TODO: fix rounding issue on last page with rotary
             int pageWidth = getMeasuredWidth();
-            int dx = (direction == View.FOCUS_FORWARD) ? pageWidth : -pageWidth;
+            int dx = (direction == View.FOCUS_FORWARD ||
+                      direction == View.FOCUS_RIGHT ||
+                      direction == View.FOCUS_DOWN) ? pageWidth : -pageWidth;
             smoothScrollBy(dx, 0);
         } else {
             int pageHeight = getMeasuredHeight();
-            int dy = (direction == View.FOCUS_FORWARD) ? pageHeight : -pageHeight;
+            int dy = (direction == View.FOCUS_FORWARD ||
+                      direction == View.FOCUS_RIGHT ||
+                      direction == View.FOCUS_DOWN) ? pageHeight : -pageHeight;
             smoothScrollBy(0, dy);
         }
         mPrevRotaryPageScrollDirection = direction;
